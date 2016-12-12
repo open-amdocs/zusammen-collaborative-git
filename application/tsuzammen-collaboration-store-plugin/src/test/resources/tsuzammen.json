@@ -1,0 +1,17 @@
+{
+  "configuration": {
+    "level": 1,
+    "plugins": {
+      "tsuzammen_collaborative_store": {
+        "properties": {
+          "private.path": "C:/_dev/Collaboration/git/private",
+          "public.path": "C:/_dev/Collaboration/git/public",
+          "blueprint.path": "C:/_dev/Collaboration/git/public/BP",
+          "public.url": "C:/_dev/Collaboration/git/public",
+          "git.username": "",
+          "git.password": ""
+        }
+      }
+    }
+  }
+}
