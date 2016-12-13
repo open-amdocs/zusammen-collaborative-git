@@ -1,6 +1,6 @@
 package org.amdocs.tsuzammen.plugin.collaborationstore.git;
 
-import org.amdocs.tsuzammen.commons.datatypes.Id;
+
 import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
@@ -13,7 +13,7 @@ public interface GitSourceControlDao {
 
   Git clone(SessionContext context, String source, String target, String... branch);
 
-  void createBranch(SessionContext context, Git git, Id baseBranch, Id branch);
+  void createBranch(SessionContext context, Git git, String baseBranch, String branch);
 
   void checkoutBranch(SessionContext context, Git git, String branch);
 
@@ -26,9 +26,9 @@ public interface GitSourceControlDao {
 
   void commit(SessionContext context, Git git, String message);
 
-  void publish(SessionContext context, Git git, Id branch);
+  void publish(SessionContext context, Git git, String branch);
 
-  PullResult sync(SessionContext context, Git git, Id branchId);
+  PullResult sync(SessionContext context, Git git, String branchId);
 
   void close(SessionContext context, Git git);
 

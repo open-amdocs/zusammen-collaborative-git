@@ -1,6 +1,6 @@
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.utils;
 
-import org.amdocs.tsuzammen.commons.datatypes.Id;
+
 import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
 import org.amdocs.tsuzammen.commons.datatypes.item.Content;
 import org.amdocs.tsuzammen.commons.datatypes.item.Entity;
@@ -84,10 +84,10 @@ public class SourceControlFileStore {
 
   }
 
-  private void storeEntityToDisc(SessionContext context, String path, Id entityId, Entity
+  private void storeEntityToDisc(SessionContext context, String path, String entityId, Entity
       entity, Format dataFormat) {
 
-    filesToAdd.add(FileUtils.writeFile(path, entityId.getValue(), entity.getData()));
+    filesToAdd.add(FileUtils.writeFile(path, entityId, entity.getData()));
     if (entity.getInfo() != null) {
       filesToAdd.add(FileUtils.writeFile(path, PluginConstants.INFO_FILE_NAME, entity.getInfo()));
     }

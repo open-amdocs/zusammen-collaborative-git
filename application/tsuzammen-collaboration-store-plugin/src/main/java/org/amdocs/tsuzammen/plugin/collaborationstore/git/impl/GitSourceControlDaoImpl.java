@@ -1,6 +1,6 @@
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.impl;
 
-import org.amdocs.tsuzammen.commons.datatypes.Id;
+
 import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
@@ -48,15 +48,15 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public void createBranch(SessionContext context, Git git, Id baseBranch, Id branch) {
+  public void createBranch(SessionContext context, Git git, String baseBranch, String branch) {
 
-    checkoutBranch(context, git, baseBranch.getValue());
+    checkoutBranch(context, git, baseBranch);
     CheckoutCommand command = git.checkout();
     //CreateBranchCommand command = git.branchCreate();
 
     try {
       command.setCreateBranch(true);
-      command.setName(branch.getValue());
+      command.setName(branch);
       command.call();
     } catch (GitAPIException e) {
       e.printStackTrace();
@@ -124,11 +124,11 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public void publish(SessionContext context, Git git, Id branchId) {
+  public void publish(SessionContext context, Git git, String branchId) {
 
     PushCommand command = git.push();
     try {
-      command.setRefSpecs(new RefSpec(branchId.getValue()));
+      command.setRefSpecs(new RefSpec(branchId));
       command.call();
     } catch (GitAPIException e) {
       throw new RuntimeException(e);
@@ -136,11 +136,11 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public PullResult sync(SessionContext context, Git git, Id branchId) {
+  public PullResult sync(SessionContext context, Git git, String branchId) {
 
     PullCommand command = git.pull();
     try {
-      command.setRemoteBranchName(branchId.getValue());
+      command.setRemoteBranchName(branchId);
       return command.call();
     } catch (GitAPIException e) {
       throw new RuntimeException(e);
