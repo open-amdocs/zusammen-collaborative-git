@@ -41,7 +41,7 @@ public class SourceControlUtil {
   }
 
   public static boolean isEmpty(Entity entity) {
-    return (entity.getOid() != null &&
+    return (entity.getId() != null &&
             entity.getData() == null &&
             entity.getInfo() == null &&
             entity.getRelations() == null &&

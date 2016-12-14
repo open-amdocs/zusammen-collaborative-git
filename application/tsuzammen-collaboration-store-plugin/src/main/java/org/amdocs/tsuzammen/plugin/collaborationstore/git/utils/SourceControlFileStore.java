@@ -62,9 +62,9 @@ public class SourceControlFileStore {
 
 
     for (Entity entity : content.getEntities()) {
-      path += path + File.separator + entity.getOid();
+      path += path + File.separator + entity.getId();
       if (!SourceControlUtil.isEmpty(entity)) {
-        storeEntityToDisc(context, path, entity.getOid(), entity, content.getDataFormat()
+        storeEntityToDisc(context, path, entity.getId(), entity, content.getDataFormat()
         );
       } else {
         deleteEntityFromDisc(context, path);
