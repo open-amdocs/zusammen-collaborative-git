@@ -258,7 +258,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   private String getNamespacePath(URI namespace, String entityId) {
-    return namespace + File.separator + entityId;
+    return namespace.getPath() + File.separator + entityId;
   }
 
 
