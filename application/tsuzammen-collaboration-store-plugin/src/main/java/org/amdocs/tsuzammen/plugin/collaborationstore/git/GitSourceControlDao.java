@@ -22,7 +22,7 @@ public interface GitSourceControlDao {
 
   List<File> add(SessionContext context, Git git, File... files);
 
-  List<File> delete(SessionContext context, Git git, File... files);
+  void delete(SessionContext context, Git git, String... files);
 
   void commit(SessionContext context, Git git, String message);
 

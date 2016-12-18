@@ -13,7 +13,9 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 
@@ -107,9 +109,26 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public List<File> delete(SessionContext context, Git git, File... files) {
-    return null;
+  public void delete(SessionContext context, Git git, String... files) {
+
+    if(files != null && files.length>0){
+      RmCommand command = git.rm();
+      for(String file:files){
+        command.addFilepattern(file);
+      }
+
+      try {
+        DirCache ret = command.call();
+      } catch (GitAPIException e) {
+        e.printStackTrace();
+      }
+    }
+
+
+
   }
+
+
 
   @Override
   public void commit(SessionContext context, Git git, String message) {

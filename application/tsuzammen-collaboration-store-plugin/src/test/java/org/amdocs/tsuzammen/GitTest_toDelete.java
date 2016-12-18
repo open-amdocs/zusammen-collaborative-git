@@ -78,7 +78,7 @@ public class GitTest_toDelete {
     gitCollaborationStorePlugin.init(context);
     String itemId = new String(CommonMethods.nextUUID());
     String versionId = new String("main");
-    gitCollaborationStorePlugin.createItem(context, itemId, versionId,null);
+    gitCollaborationStorePlugin.createItem(context, itemId, null);
     //gitCollaborationStorePlugin.createItemVersion(context, itemId, null, versionId, null);
     //gitCollaborationStorePlugin.publishItemVersion(context, itemId, versionId, "");
     System.out.println("init item:" + itemId);

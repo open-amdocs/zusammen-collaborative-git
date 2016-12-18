@@ -15,4 +15,5 @@ public class PluginConstants {
   public static final String RELATIONS_FILE_NAME = "relations.json";
   public static final String VISUALIZATION_FILE_NAME = "visualization.json";
   public static final String DATA_FILE_NAME = "data";
+  public static final String INITIAL_BRANCH = "main";
 }

@@ -17,7 +17,6 @@ public class SourceControlFileStore {
 
   private SessionContext context;
   private String path;
-  private List<File> filesToRemove;
   private List<File> filesToAdd;
 
 
@@ -26,10 +25,6 @@ public class SourceControlFileStore {
     this.context = context;
   }
 
-
-  public File[] getFilesToRemove() {
-    return CommonMethods.toArray(this.filesToRemove, File.class);
-  }
 
   public File[] getFilesToAdd() {
     return CommonMethods.toArray(this.filesToAdd, File.class);
@@ -66,23 +61,12 @@ public class SourceControlFileStore {
       if (!SourceControlUtil.isEmpty(entity)) {
         storeEntityToDisc(context, path, entity.getId(), entity, content.getDataFormat()
         );
-      } else {
-        deleteEntityFromDisc(context, path);
       }
     }
 
   }
 
-  private void deleteEntityFromDisc(SessionContext context, String path) {
-    File file = new File(path);
-    List<File> fileToDelete = FileUtils.getFiles(path);
-    if (!FileUtils.delete(file)) {
-      throw new RuntimeException("path [" + path + "] does not exist");
-    }
-    this.filesToRemove.addAll(fileToDelete);
 
-
-  }
 
   private void storeEntityToDisc(SessionContext context, String path, String entityId, Entity
       entity, Format dataFormat) {
