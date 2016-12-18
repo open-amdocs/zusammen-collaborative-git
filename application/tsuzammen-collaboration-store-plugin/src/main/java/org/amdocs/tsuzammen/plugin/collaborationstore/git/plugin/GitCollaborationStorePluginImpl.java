@@ -147,24 +147,22 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   }
 
-  @Override
-  public void saveItemVersion(SessionContext context, String itemId, String versionId, ItemVersion
-      itemVersion, String message) {
-    GitSourceControlDao dao = SourceControlDaoFactory.getInstance().createInterface(context);
-    String repositoryPath =
-        SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH, itemId);
-    Git git = dao.openRepository(context, repositoryPath);
-    dao.checkoutBranch(context, git, versionId);
-    SourceControlFileStore sourceControlFileStore =
-        new SourceControlFileStore(context, repositoryPath);
-    sourceControlFileStore.store(itemVersion);
-
-
-    dao.add(context, git, sourceControlFileStore.getFilesToAdd());
-    dao.commit(context, git, "Saved item vestion information");
-
-    dao.close(context, git);
-  }
+//  @Override
+//  public void saveItemVersion(SessionContext context, String itemId, String versionId, ItemVersion
+//      itemVersion, String message) {
+//    GitSourceControlDao dao = SourceControlDaoFactory.getInstance().createInterface(context);
+//    String repositoryPath =
+//        SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH, itemId);
+//    Git git = dao.openRepository(context, repositoryPath);
+//    dao.checkoutBranch(context, git, versionId);
+//    SourceControlFileStore sourceControlFileStore =
+//        new SourceControlFileStore(context, repositoryPath);
+//    sourceControlFileStore.store(itemVersion);
+//    dao.add(context, git, sourceControlFileStore.getFilesToAdd());
+//    dao.commit(context, git, "Saved item vestion information");
+//
+//    dao.close(context, git);
+//  }
 
 
   @Override
