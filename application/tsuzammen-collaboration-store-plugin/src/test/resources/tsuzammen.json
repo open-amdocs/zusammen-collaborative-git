@@ -4,10 +4,10 @@
     "plugins": {
       "tsuzammen_collaborative_store": {
         "properties": {
-          "private.path": "C:/_dev/Collaboration/git/private",
-          "public.path": "C:/_dev/Collaboration/git/public",
-          "blueprint.path": "C:/_dev/Collaboration/git/public/BP",
-          "public.url": "C:/_dev/Collaboration/git/public",
+          "private.path": "C:/_dev/Collaboration/git/{tenant}/private",
+          "public.path": "C:/_dev/Collaboration/git/{tenant}/public",
+          "blueprint.path": "C:/_dev/Collaboration/git/{tenant}/public/BP",
+          "public.url": "C:/_dev/Collaboration/git/{tenant}/public",
           "git.username": "",
           "git.password": ""
         }

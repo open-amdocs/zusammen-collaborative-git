@@ -20,6 +20,7 @@
             <properties>
                 <amdocs.repository.host>10.147.3.4</amdocs.repository.host>
                 <amdocs.repository.port>8081</amdocs.repository.port>
+                <testng.version>6.9.10</testng.version>
                 <amdocs.repository.address>${amdocs.repository.host}:${amdocs.repository.port}
                 </amdocs.repository.address>
                 <amdocs.repository.updatePolicy.default>daily

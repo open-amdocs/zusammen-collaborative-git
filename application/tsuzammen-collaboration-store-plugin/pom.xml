@@ -25,6 +25,12 @@
             <artifactId>org.eclipse.jgit</artifactId>
             <version>4.5.0.201609210915-r</version>
         </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+            <version>${testng.version}</version>
+        </dependency>
     </dependencies>
     
 </project>
