@@ -33,7 +33,7 @@ public class GitTest_toDelete {
       message) {
     GitCollaborationStorePluginImpl gitCollaborationStorePlugin =
         new GitCollaborationStorePluginImpl();
-    gitCollaborationStorePlugin.init(context);
+
     gitCollaborationStorePlugin.publishItemVersion(context, itemId, versionId, message);
     System.out.println("publish item version:" + itemId + ":" + versionId);
   }
@@ -41,7 +41,7 @@ public class GitTest_toDelete {
   private static void syncItem(SessionContext context, String itemId, String versionId) {
     GitCollaborationStorePluginImpl gitCollaborationStorePlugin =
         new GitCollaborationStorePluginImpl();
-    gitCollaborationStorePlugin.init(context);
+
     gitCollaborationStorePlugin.syncItemVersion(context, itemId, versionId);
     System.out.println("sync item version:" + itemId + ":" + versionId);
   }
@@ -49,7 +49,7 @@ public class GitTest_toDelete {
   private static String createItemVersion(SessionContext context, String itemId, Info info) {
     GitCollaborationStorePluginImpl gitCollaborationStorePlugin =
         new GitCollaborationStorePluginImpl();
-    gitCollaborationStorePlugin.init(context);
+
     Info versionInfo = createInfo(info);
 
     String versionId = new String(CommonMethods.nextUUID());
@@ -75,7 +75,7 @@ public class GitTest_toDelete {
   private static String initItem(SessionContext context) {
     GitCollaborationStorePluginImpl gitCollaborationStorePlugin =
         new GitCollaborationStorePluginImpl();
-    gitCollaborationStorePlugin.init(context);
+
     String itemId = new String(CommonMethods.nextUUID());
     String versionId = new String("main");
     gitCollaborationStorePlugin.createItem(context, itemId, null);

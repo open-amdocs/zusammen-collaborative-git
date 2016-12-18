@@ -9,7 +9,8 @@
           "blueprint.path": "C:/_dev/Collaboration/git/{tenant}/public/BP",
           "public.url": "C:/_dev/Collaboration/git/{tenant}/public",
           "git.username": "",
-          "git.password": ""
+          "git.password": "",
+          "main":"main"
         }
       }
     }
