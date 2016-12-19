@@ -52,12 +52,6 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       SdkConstants.TSUZAMMEN_COLLABORATIVE_STORE, PluginConstants.BP_PATH);
   private static String TENANT = "{tenant}";
 
-
-  @Override
-  public void init(SessionContext context) {
-
-  }
-
   @Override
   public void createItem(SessionContext context, String itemId, Info info) {
 
@@ -127,11 +121,6 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     dao.close(context, git);
   }
 
-  @Override
-  public void saveItemVersion(SessionContext context, String itemId, String versionId,
-                              Info versionInfo) {
-
-  }
 
   @Override
   public void createItemVersionEntity(SessionContext context, String itemId, String

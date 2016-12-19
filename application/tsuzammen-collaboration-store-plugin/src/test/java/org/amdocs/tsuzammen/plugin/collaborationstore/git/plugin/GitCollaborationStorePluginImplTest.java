@@ -73,6 +73,7 @@ public class GitCollaborationStorePluginImplTest {
 
 
     Info versionInfo = new Info();
+    versionInfo.addProperty("prop","val");
     gitCollaborationStorePlugin.createItemVersion(context, "itemID_0001", null, "itemID_0001_0001",
         versionInfo);
 
@@ -80,8 +81,6 @@ public class GitCollaborationStorePluginImplTest {
         "itemID_0001_0001",
         versionInfo);
 
-    verify(gitSourceControlDaoMock).commit(context, null,
-        "Create Item Version");
   }
 
   @org.testng.annotations.Test
