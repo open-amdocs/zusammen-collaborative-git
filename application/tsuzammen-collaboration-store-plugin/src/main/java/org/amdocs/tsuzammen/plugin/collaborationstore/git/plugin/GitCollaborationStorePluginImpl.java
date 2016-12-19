@@ -33,13 +33,15 @@ import org.eclipse.jgit.api.Git;
 import java.io.File;
 import java.net.URI;
 
+import static org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants.INFO_FILE_NAME;
 import static org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants.ITEM_VERSION_INFO_FILE_NAME;
 
 public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
-  private static final String CREATE_ITEM_VERSION_MESSAGE = "Create Item Version";
+  private static final String ADD_ITEM_VERSION_INFO_MESSAGE = "Add Item Version Info";
   private static final String SAVE_ITEM_VERSION_MESSAGE = "Save Item Version";
   private static final String DELETE_ITEM_VERSION_MESSAGE = "Delete Item Version";
+  private static final String ADD_ITEM_INFO_MESSAGE = "Add Item Info";
   private static String PUBLIC_PATH = ConfigurationAccessor.getPluginProperty(SdkConstants
       .TSUZAMMEN_COLLABORATIVE_STORE, PluginConstants.PUBLIC_PATH);
   private static String PRIVATE_PATH = ConfigurationAccessor.getPluginProperty(
@@ -74,8 +76,16 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
         .TSUZAMMEN_COLLABORATIVE_STORE, PluginConstants.INITIAL_BRANCH);
     Git git = dao.clone(context, bluePrintPath, itemPublicPath, initialVersion);
     dao.clone(context, itemPublicUrl, itemPrivatePath, null);
+    if(info != null)
+    {
+      addFileContent(context,git,itemPrivatePath,INFO_FILE_NAME,info);
+      dao.commit(context,git,ADD_ITEM_INFO_MESSAGE);
+    }
+
     dao.close(context, git);
   }
+
+
 
 
   @Override
@@ -98,7 +108,22 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
     Git git = dao.openRepository(context, repositoryPath);
     createItemVersionInt(context, git, baseVersionId, versionId, versionInfo);
-    dao.commit(context, git, CREATE_ITEM_VERSION_MESSAGE);
+
+    dao.close(context, git);
+  }
+
+  @Override
+  public void saveItemVersion(SessionContext context, String itemId, String versionId,
+                       Info versionInfo) {
+    String repositoryPath = SourceControlUtil.getPrivateRepositoryPath(
+        context,
+        PRIVATE_PATH.replace(TENANT, context.getTenant()),
+        itemId);
+    GitSourceControlDao dao = getSourceControlDao(context);
+    Git git = dao.openRepository(context, repositoryPath);
+    dao.checkoutBranch(context, git, versionId);
+
+    dao.commit(context,git,SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
   }
 
@@ -139,10 +164,10 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
                                     URI namespace, String entityId, EntityData entityData) {
     GitSourceControlDao dao = getSourceControlDao(context);
     String entityPath = getNamespacePath(namespace, entityId);
-    String repositoryPath =
-        SourceControlUtil
-            .getPrivateRepositoryPath(context, PRIVATE_PATH.replace(TENANT, context.getTenant()),
-                itemId);
+    String repositoryPath = SourceControlUtil.getPrivateRepositoryPath(
+        context,
+        PRIVATE_PATH.replace(TENANT, context.getTenant()),
+        itemId);
     String fullPath = repositoryPath + File.separator + entityPath;
     Git git = dao.openRepository(context, repositoryPath);
     dao.checkoutBranch(context, git, versionId);
@@ -231,28 +256,23 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     GitSourceControlDao dao = getSourceControlDao(context);
     File file2Add;
     if (entityData.getRelations() != null) {
-      file2Add = FileUtils.writeFile(entityPath, PluginConstants.RELATIONS_FILE_NAME,
-          entityData.getRelations());
-      dao.add(context, git, file2Add);
+      addFileContent(context,git,
+          entityPath,PluginConstants.RELATIONS_FILE_NAME,entityData.getRelations());
     }
     if (entityData.getVisualization() != null) {
-
-      file2Add = FileUtils.writeFile(entityPath, PluginConstants.VISUALIZATION_FILE_NAME,
-          entityData.getVisualization());
-      dao.add(context, git, file2Add);
+      addFileContent(context,git,
+          entityPath,PluginConstants.VISUALIZATION_FILE_NAME,entityData.getVisualization());
     }
 
     if (entityData.getData() != null) {
-      file2Add = FileUtils.writeFile(entityPath, PluginConstants.DATA_FILE_NAME,
-          entityData.getData());
-      dao.add(context, git, file2Add);
+      addFileContent(context,git,
+          entityPath,PluginConstants.DATA_FILE_NAME,entityData.getData());
     }
 
     if (entityData.getInfo() != null && entityData.getInfo().getProperties() != null &&
         !entityData.getInfo().getProperties().isEmpty()) {
-      file2Add = FileUtils.writeFile(entityPath, PluginConstants.INFO_FILE_NAME,
-          entityData.getInfo());
-      dao.add(context, git, file2Add);
+      addFileContent(context,git,
+          entityPath,PluginConstants.INFO_FILE_NAME,entityData.getInfo());
     }
   }
 
@@ -267,14 +287,13 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       return;
     }
 
-    File itemVersionInfoFile = FileUtils.writeFile(
-        SourceControlUtil.getPrivateRepositoryPath(git) +
-            File.separator,
+    addFileContent(
+        context,
+        git,
+        SourceControlUtil.getPrivateRepositoryPath(git) + File.separator,
         ITEM_VERSION_INFO_FILE_NAME,
         versionInfo);
-
-    dao.add(context, git, itemVersionInfoFile);
-
+    dao.commit(context, git, ADD_ITEM_VERSION_INFO_MESSAGE);
   }
 
   protected String getNamespacePath(URI namespace, String entityId) {
@@ -285,5 +304,10 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     return SourceControlDaoFactory.getInstance().createInterface(context);
   }
 
+  private void addFileContent(SessionContext context, Git git, String path,String fileName, Object
+                              fileContent) {
+    FileUtils.writeFile(path,ITEM_VERSION_INFO_FILE_NAME,fileContent);
+    getSourceControlDao(context).add(context, git, new File(path+File.separator+fileName));
+  }
 
 }
