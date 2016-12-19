@@ -52,6 +52,11 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
 
   @Override
+  public void init(SessionContext context) {
+
+  }
+
+  @Override
   public void createItem(SessionContext context, String itemId, Info info) {
 
     GitSourceControlDao dao = getSourceControlDao(context);
@@ -87,7 +92,9 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
         .TSUZAMMEN_COLLABORATIVE_STORE, PluginConstants.INITIAL_BRANCH) : baseVersionId;
     GitSourceControlDao dao = getSourceControlDao(context);
     String repositoryPath =
-        SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH.replace(TENANT, context.getTenant()), itemId);
+        SourceControlUtil
+            .getPrivateRepositoryPath(context, PRIVATE_PATH.replace(TENANT, context.getTenant()),
+                itemId);
 
     Git git = dao.openRepository(context, repositoryPath);
     createItemVersionInt(context, git, baseVersionId, versionId, versionInfo);
@@ -96,11 +103,19 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
+  public void saveItemVersion(SessionContext context, String itemId, String versionId,
+                              Info versionInfo) {
+
+  }
+
+  @Override
   public void createItemVersionEntity(SessionContext context, String itemId, String
       versionId,
                                       URI namespace, String entityId, EntityData entityData) {
     String repositoryPath =
-        SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH.replace(TENANT, context.getTenant()), itemId);
+        SourceControlUtil
+            .getPrivateRepositoryPath(context, PRIVATE_PATH.replace(TENANT, context.getTenant()),
+                itemId);
 
     GitSourceControlDao dao = getSourceControlDao(context);
     Git git = dao.openRepository(context, repositoryPath);
@@ -113,7 +128,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     entityPathFile.mkdirs();
 
     updateEntityData(context, git, fullPath, entityData);
-    dao.commit(context,git,SAVE_ITEM_VERSION_MESSAGE);
+    dao.commit(context, git, SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
   }
 
@@ -132,7 +147,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     Git git = dao.openRepository(context, repositoryPath);
     dao.checkoutBranch(context, git, versionId);
     updateEntityData(context, git, fullPath, entityData);
-    dao.commit(context,git,SAVE_ITEM_VERSION_MESSAGE);
+    dao.commit(context, git, SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
   }
 
@@ -151,7 +166,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     Git git = dao.openRepository(context, repositoryPath);
     dao.checkoutBranch(context, git, versionId);
     dao.delete(context, git, fullPath);
-    dao.commit(context,git,DELETE_ITEM_VERSION_MESSAGE);
+    dao.commit(context, git, DELETE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
 
   }
@@ -244,7 +259,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   protected void createItemVersionInt(SessionContext context, Git git, String baseBranch, String
       branch,
-                                 Info versionInfo) {
+                                      Info versionInfo) {
     GitSourceControlDao dao = getSourceControlDao(context);
     dao.createBranch(context, git, baseBranch, branch);
 
