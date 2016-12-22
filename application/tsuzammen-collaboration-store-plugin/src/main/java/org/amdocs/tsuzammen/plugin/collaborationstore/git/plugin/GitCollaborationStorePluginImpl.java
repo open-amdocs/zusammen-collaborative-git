@@ -31,6 +31,7 @@ import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.Git;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 
 import static org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants.INFO_FILE_NAME;
@@ -286,9 +287,15 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     return SourceControlDaoFactory.getInstance().createInterface(context);
   }
 
-  private void addFileContent(SessionContext context, Git git, String path,String fileName, Object
+  private void addFileContent(SessionContext context, Git git, String path,String fileName,
+                              Object
                               fileContent) {
-    FileUtils.writeFile(path,ITEM_VERSION_INFO_FILE_NAME,fileContent);
+
+    if(fileContent instanceof InputStream){
+      FileUtils.writeFileFromInputStream(path,ITEM_VERSION_INFO_FILE_NAME,(InputStream) fileContent);
+    }else{
+      FileUtils.writeFile(path,ITEM_VERSION_INFO_FILE_NAME,fileContent);
+    }
     getSourceControlDao(context).add(context, git, new File(path+File.separator+fileName));
   }
 

@@ -21,10 +21,12 @@ import org.amdocs.tsuzammen.commons.datatypes.UserInfo;
 import org.amdocs.tsuzammen.commons.datatypes.impl.item.EntityData;
 import org.amdocs.tsuzammen.commons.datatypes.item.Info;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.mocks.GitSourceControlDaoEmptyImpl;
+import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeClass;
 
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 
 import static org.mockito.Matchers.any;
@@ -89,7 +91,7 @@ public class GitCollaborationStorePluginImplTest {
     URI nameSpace = new URI("content_0001");
     EntityData entityData = new EntityData();
     entityData.setInfo(new Info());
-    entityData.setData("00000000000011111111111111111111".getBytes());
+    entityData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
     gitCollaborationStorePlugin.createItemVersionEntity(context, "itemID_0001",
         "itemID_0001_0001", nameSpace,"itemID_0001_0001_0001",entityData);
     verify(gitCollaborationStorePlugin).updateEntityData(context, null,
@@ -109,7 +111,7 @@ public class GitCollaborationStorePluginImplTest {
     URI nameSpace = new URI("content_0001");
     EntityData entityData = new EntityData();
     entityData.setInfo(new Info());
-    entityData.setData("00000000000011111111111111111111".getBytes());
+    entityData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
     gitCollaborationStorePlugin.saveItemVersionEntity(context, "itemID_0001",
         "itemID_0001_0001", nameSpace,"itemID_0001_0001_0001",entityData);
     verify(gitCollaborationStorePlugin).updateEntityData(context, null,
