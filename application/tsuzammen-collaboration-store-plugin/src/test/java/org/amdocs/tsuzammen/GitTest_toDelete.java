@@ -1,11 +1,11 @@
 package org.amdocs.tsuzammen;
 
 
+import org.amdocs.tsuzammen.commons.datatypes.Id;
 import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
 import org.amdocs.tsuzammen.commons.datatypes.UserInfo;
 import org.amdocs.tsuzammen.commons.datatypes.item.Info;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.GitCollaborationStorePluginImpl;
-import org.amdocs.tsuzammen.utils.common.CommonMethods;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +17,9 @@ public class GitTest_toDelete {
 
     SessionContext contextA = new SessionContext();
     contextA.setUser(new UserInfo("testA"));
-    String itemId = initItem(contextA);
+    Id itemId = initItem(contextA);
 
-    String versionId = createItemVersion(contextA, itemId, null);
+    Id versionId = createItemVersion(contextA, itemId, null);
     publishItemVersion(contextA, itemId, versionId, "publish new version");
     SessionContext contextB = new SessionContext();
     contextB.setUser(new UserInfo("testB"));
@@ -29,8 +29,8 @@ public class GitTest_toDelete {
 
   }
 
-  private static void publishItemVersion(SessionContext context, String itemId, String versionId, String
-      message) {
+  private static void publishItemVersion(SessionContext context, Id itemId, Id versionId,
+                                         String message) {
     GitCollaborationStorePluginImpl gitCollaborationStorePlugin =
         new GitCollaborationStorePluginImpl();
 
@@ -38,7 +38,7 @@ public class GitTest_toDelete {
     System.out.println("publish item version:" + itemId + ":" + versionId);
   }
 
-  private static void syncItem(SessionContext context, String itemId, String versionId) {
+  private static void syncItem(SessionContext context, Id itemId, Id versionId) {
     GitCollaborationStorePluginImpl gitCollaborationStorePlugin =
         new GitCollaborationStorePluginImpl();
 
@@ -46,14 +46,14 @@ public class GitTest_toDelete {
     System.out.println("sync item version:" + itemId + ":" + versionId);
   }
 
-  private static String createItemVersion(SessionContext context, String itemId, Info info) {
+  private static Id createItemVersion(SessionContext context, Id itemId, Info info) {
     GitCollaborationStorePluginImpl gitCollaborationStorePlugin =
         new GitCollaborationStorePluginImpl();
 
     Info versionInfo = createInfo(info);
 
-    String versionId = new String(CommonMethods.nextUUID());
-    gitCollaborationStorePlugin.createItemVersion(context, itemId, "main", versionId,
+    Id versionId = new Id();
+    gitCollaborationStorePlugin.createItemVersion(context, itemId, null, versionId,
         versionInfo);
     System.out.println("create item version:" + itemId + ":" + versionId);
     return versionId;
@@ -72,11 +72,11 @@ public class GitTest_toDelete {
     return versionInfo;
   }
 
-  private static String initItem(SessionContext context) {
+  private static Id initItem(SessionContext context) {
     GitCollaborationStorePluginImpl gitCollaborationStorePlugin =
         new GitCollaborationStorePluginImpl();
 
-    String itemId = new String(CommonMethods.nextUUID());
+    Id itemId = new Id();
     String versionId = new String("main");
     gitCollaborationStorePlugin.createItem(context, itemId, null);
     //gitCollaborationStorePlugin.createItemVersion(context, itemId, null, versionId, null);

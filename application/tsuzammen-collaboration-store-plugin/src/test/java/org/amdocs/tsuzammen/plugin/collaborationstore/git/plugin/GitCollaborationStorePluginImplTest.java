@@ -16,15 +16,16 @@
 
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin;
 
+import org.amdocs.tsuzammen.commons.datatypes.Id;
 import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
 import org.amdocs.tsuzammen.commons.datatypes.UserInfo;
 import org.amdocs.tsuzammen.commons.datatypes.impl.item.EntityData;
 import org.amdocs.tsuzammen.commons.datatypes.item.Info;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.mocks.GitSourceControlDaoEmptyImpl;
-import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
@@ -39,10 +40,13 @@ public class GitCollaborationStorePluginImplTest {
 
   private GitCollaborationStorePluginImpl gitCollaborationStorePlugin = spy(new
       GitCollaborationStorePluginImpl());
-
   private GitSourceControlDaoEmptyImpl gitSourceControlDaoMock =
       spy(new GitSourceControlDaoEmptyImpl());
-  public static final UserInfo USER = new UserInfo("GitCollaborationStorePluginImplTest_user");
+
+  private static final UserInfo USER = new UserInfo("GitCollaborationStorePluginImplTest_user");
+  private static final Id ITEM_ID = new Id();
+  private static final Id VERSION_ID = new Id();
+  private static final Id ELEMENT_ID = new Id();
 
   @BeforeClass
   public void init() {
@@ -54,69 +58,51 @@ public class GitCollaborationStorePluginImplTest {
             any(), any(), any());
   }
 
-  @org.testng.annotations.Test
+  @Test
   public void testCreateItem() throws Exception {
     SessionContext context = createSessionContext(USER, "test");
-    gitCollaborationStorePlugin.createItem(context, "itemID_0001", null);
+    gitCollaborationStorePlugin.createItem(context, ITEM_ID, null);
 
     verify(gitSourceControlDaoMock).clone(context, "C:/_dev/Collaboration/git/test/public/BP",
-        "C:/_dev/Collaboration/git/test/public\\itemID_0001", "main");
+        "C:/_dev/Collaboration/git/test/public\\" + ITEM_ID.getValue().toString(), "main");
   }
 
-  @org.testng.annotations.Test
+  @Test
   public void testDeleteItem() throws Exception {
 
   }
 
-  @org.testng.annotations.Test
+  @Test
   public void testCreateItemVersion() throws Exception {
 
     SessionContext context = createSessionContext(USER, "test");
 
 
     Info versionInfo = new Info();
-    versionInfo.addProperty("prop","val");
-    gitCollaborationStorePlugin.createItemVersion(context, "itemID_0001", null, "itemID_0001_0001",
+    versionInfo.addProperty("prop", "val");
+
+    gitCollaborationStorePlugin.createItemVersion(context, ITEM_ID, null, VERSION_ID,
         versionInfo);
 
     verify(gitCollaborationStorePlugin).createItemVersionInt(context, null, "main",
-        "itemID_0001_0001",
-        versionInfo);
+        VERSION_ID.getValue().toString(), versionInfo);
 
   }
 
-  @org.testng.annotations.Test
-  public void testCreateItemVersionEntity() throws Exception {
+  @Test
+  public void testCreateEntity() throws Exception {
     SessionContext context = createSessionContext(USER, "test");
     URI nameSpace = new URI("content_0001");
     EntityData entityData = new EntityData();
+    entityData.setElementId(ELEMENT_ID);
     entityData.setInfo(new Info());
     entityData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
-    gitCollaborationStorePlugin.createItemVersionEntity(context, "itemID_0001",
-        "itemID_0001_0001", nameSpace,"itemID_0001_0001_0001",entityData);
+    gitCollaborationStorePlugin.createEntity(context, ITEM_ID,
+        VERSION_ID, nameSpace, entityData);
     verify(gitCollaborationStorePlugin).updateEntityData(context, null,
         "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user" +
-            "\\itemID_0001\\content_0001\\itemID_0001_0001_0001",
-       entityData);
-    verify(gitSourceControlDaoMock).commit(context, null,
-        "Save Item Version");
-
-
-  }
-
-  @org.testng.annotations.Test
-  public void testSaveItemVersionEntity() throws Exception {
-
-    SessionContext context = createSessionContext(USER, "test");
-    URI nameSpace = new URI("content_0001");
-    EntityData entityData = new EntityData();
-    entityData.setInfo(new Info());
-    entityData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
-    gitCollaborationStorePlugin.saveItemVersionEntity(context, "itemID_0001",
-        "itemID_0001_0001", nameSpace,"itemID_0001_0001_0001",entityData);
-    verify(gitCollaborationStorePlugin).updateEntityData(context, null,
-        "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user" +
-            "\\itemID_0001\\content_0001\\itemID_0001_0001_0001",
+            "\\" + ITEM_ID.getValue().toString() + "\\content_0001\\" + entityData.getElementId()
+            .getValue().toString(),
         entityData);
     verify(gitSourceControlDaoMock).commit(context, null,
         "Save Item Version");
@@ -124,59 +110,80 @@ public class GitCollaborationStorePluginImplTest {
 
   }
 
-  @org.testng.annotations.Test
-  public void testDeleteItemVersionEntity() throws Exception {
+  @Test
+  public void testSaveEntity() throws Exception {
+
     SessionContext context = createSessionContext(USER, "test");
     URI nameSpace = new URI("content_0001");
-    gitCollaborationStorePlugin.deleteItemVersionEntity(context, "itemID_0001",
-        "itemID_0001_0001", nameSpace,"itemID_0001_0001_0001");
+    EntityData entityData = new EntityData();
+    entityData.setElementId(ELEMENT_ID);
+    entityData.setInfo(new Info());
+    entityData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
+    gitCollaborationStorePlugin.saveEntity(context, ITEM_ID,
+        VERSION_ID, nameSpace, entityData);
+    verify(gitCollaborationStorePlugin).updateEntityData(context, null,
+        "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user" +
+            "\\" + ITEM_ID.getValue().toString() + "\\content_0001\\" + entityData.getElementId()
+            .getValue().toString(),
+        entityData);
+    verify(gitSourceControlDaoMock).commit(context, null,
+        "Save Item Version");
+
+
+  }
+
+  @Test
+  public void testDeleteEntity() throws Exception {
+    SessionContext context = createSessionContext(USER, "test");
+    URI nameSpace = new URI("content_0001");
+    gitCollaborationStorePlugin.deleteEntity(context, ITEM_ID,
+        VERSION_ID, nameSpace, ELEMENT_ID);
 
     verify(gitSourceControlDaoMock).delete(context, null,
-        "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user\\itemID_0001\\content_0001\\itemID_0001_0001_0001");
+        "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user" +
+            "\\" + ITEM_ID.getValue().toString() + "\\content_0001\\" +
+            ELEMENT_ID.getValue().toString());
     verify(gitSourceControlDaoMock).commit(context, null,
         "Delete Item Version");
   }
 
-  @org.testng.annotations.Test
+  @Test
   public void testCommitItemVersionEntities() throws Exception {
 
   }
 
-  @org.testng.annotations.Test
+  @Test
   public void testDeleteItemVersion() throws Exception {
 
   }
 
-  @org.testng.annotations.Test
+  @Test
   public void testPublishItemVersion() throws Exception {
     SessionContext context = createSessionContext(USER, "test");
 
-    gitCollaborationStorePlugin.publishItemVersion(context, "itemID_0001",
-        "itemID_0001_0001","publish!");
+    gitCollaborationStorePlugin.publishItemVersion(context, ITEM_ID,
+        VERSION_ID, "publish!");
 
-    verify(gitSourceControlDaoMock).publish(context, null,
-        "itemID_0001_0001");
+    verify(gitSourceControlDaoMock).publish(context, null, VERSION_ID.getValue().toString());
     /*verify(gitSourceControlDaoMock).commit(context, null,
         "publish!");*/
 
   }
 
-  @org.testng.annotations.Test
+  @Test
   public void testSyncItemVersion() throws Exception {
     SessionContext context = createSessionContext(USER, "test");
 
-    gitCollaborationStorePlugin.syncItemVersion(context, "itemID_0001",
-        "itemID_0001_0001");
+    gitCollaborationStorePlugin.syncItemVersion(context, ITEM_ID, VERSION_ID);
 
     verify(gitSourceControlDaoMock).sync(context, null,
-        "itemID_0001_0001");
+        VERSION_ID.getValue().toString());
   }
 
-  @org.testng.annotations.Test
+  @Test
   public void testGetItemVersion() throws Exception {
 
   }
-
 
 
   static SessionContext createSessionContext(UserInfo user, String tenant) {
