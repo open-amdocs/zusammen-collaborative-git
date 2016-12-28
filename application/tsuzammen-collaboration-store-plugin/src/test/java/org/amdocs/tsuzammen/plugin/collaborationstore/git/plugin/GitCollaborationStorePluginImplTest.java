@@ -33,6 +33,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -109,12 +110,12 @@ public class GitCollaborationStorePluginImplTest {
     CollaborationNamespace collaborationNamespace = gitCollaborationStorePlugin
         .createElement(context, elementContext, parentNamespace, elementData);
 
-    Assert.assertEquals(collaborationNamespace.getValue(), ELEMENT_ID.toString());
+    Assert.assertEquals(collaborationNamespace.getValue(), File.separator + ELEMENT_ID.toString());
 
     verify(gitCollaborationStorePlugin).updateElementData(context, null,
         "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user"
             + "\\" + ITEM_ID.toString()
-            + "\\" + ELEMENT_ID.toString(),
+            + "\\\\" + ELEMENT_ID.toString(),
         elementData);
     verify(gitSourceControlDaoMock).commit(context, null, "Save Item Version");
   }
