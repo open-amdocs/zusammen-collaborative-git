@@ -22,6 +22,7 @@ import org.amdocs.tsuzammen.commons.datatypes.Namespace;
 import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
 import org.amdocs.tsuzammen.commons.datatypes.UserInfo;
 import org.amdocs.tsuzammen.commons.datatypes.impl.item.ElementData;
+import org.amdocs.tsuzammen.commons.datatypes.item.ElementContext;
 import org.amdocs.tsuzammen.commons.datatypes.item.ElementId;
 import org.amdocs.tsuzammen.commons.datatypes.item.Info;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.mocks.GitSourceControlDaoEmptyImpl;
@@ -93,16 +94,20 @@ public class GitCollaborationStorePluginImplTest {
   }
 
   @Test
-  public void testCreateEntity() throws Exception {
+  public void testCreateElement() throws Exception {
     SessionContext context = createSessionContext(USER, "test");
 
-    ElementData entityData = new ElementData();
-    entityData.setElementId(new ElementId(ELEMENT_ID, new Info()));
-    entityData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
+    ElementData elementData = new ElementData();
+    elementData.setElementId(new ElementId(ELEMENT_ID, new Info()));
+    elementData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
     Namespace parentNamespace = new Namespace();
+    
+    ElementContext elementContext = new ElementContext();
+    elementContext.setItemId(ITEM_ID);
+    elementContext.setVersionId(VERSION_ID);
 
     CollaborationNamespace collaborationNamespace = gitCollaborationStorePlugin
-        .createEntity(context, ITEM_ID, VERSION_ID, parentNamespace, entityData);
+        .createElement(context, elementContext, parentNamespace, elementData);
 
     Assert.assertEquals(collaborationNamespace.getValue(), ELEMENT_ID.toString());
 
@@ -110,40 +115,48 @@ public class GitCollaborationStorePluginImplTest {
         "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user"
             + "\\" + ITEM_ID.toString()
             + "\\" + ELEMENT_ID.toString(),
-        entityData);
+        elementData);
     verify(gitSourceControlDaoMock).commit(context, null, "Save Item Version");
   }
 
   @Test
-  public void testSaveEntity() throws Exception {
+  public void testSaveElement() throws Exception {
     SessionContext context = createSessionContext(USER, "test");
 
-    ElementData entityData = new ElementData();
-    entityData.setElementId(new ElementId(ELEMENT_ID, new Info()));
-    entityData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
+    ElementData elementData = new ElementData();
+    elementData.setElementId(new ElementId(ELEMENT_ID, new Info()));
+    elementData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
     CollaborationNamespace collaborationNamespace =
         new CollaborationNamespace(ELEMENT_ID.toString());
 
+    ElementContext elementContext = new ElementContext();
+    elementContext.setItemId(ITEM_ID);
+    elementContext.setVersionId(VERSION_ID);
+
     gitCollaborationStorePlugin
-        .saveEntity(context, ITEM_ID, VERSION_ID, collaborationNamespace, entityData);
+        .saveElement(context, elementContext, collaborationNamespace, elementData);
 
     verify(gitCollaborationStorePlugin).updateElementData(context, null,
         "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user"
             + "\\" + ITEM_ID.toString()
             + "\\" + ELEMENT_ID.toString(),
-        entityData);
+        elementData);
     verify(gitSourceControlDaoMock).commit(context, null, "Save Item Version");
   }
 
   @Test
-  public void testDeleteEntity() throws Exception {
+  public void testDeleteElement() throws Exception {
     SessionContext context = createSessionContext(USER, "test");
 
     CollaborationNamespace collaborationNamespace =
         new CollaborationNamespace(ELEMENT_ID.toString());
 
+    ElementContext elementContext = new ElementContext();
+    elementContext.setItemId(ITEM_ID);
+    elementContext.setVersionId(VERSION_ID);
+
     gitCollaborationStorePlugin
-        .deleteEntity(context, ITEM_ID, VERSION_ID, collaborationNamespace, ELEMENT_ID);
+        .deleteElement(context, elementContext, collaborationNamespace, ELEMENT_ID);
 
     verify(gitSourceControlDaoMock).delete(context, null,
         "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user"
