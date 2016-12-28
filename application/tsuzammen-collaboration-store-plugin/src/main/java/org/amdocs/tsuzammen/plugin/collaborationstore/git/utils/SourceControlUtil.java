@@ -19,7 +19,6 @@ package org.amdocs.tsuzammen.plugin.collaborationstore.git.utils;
 
 import org.amdocs.tsuzammen.commons.datatypes.Id;
 import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
-import org.amdocs.tsuzammen.commons.datatypes.item.Entity;
 import org.amdocs.tsuzammen.utils.common.CommonMethods;
 import org.eclipse.jgit.api.Git;
 
@@ -57,12 +56,12 @@ public class SourceControlUtil {
     return sb.toString();
   }
 
-  public static boolean isEmpty(Entity entity) {
-    return (entity.getElementId() != null &&
-        entity.getData() == null &&
-        entity.getInfo() == null &&
-        entity.getRelations() == null &&
-        entity.getContents() == null &&
-        entity.getVisualization() == null);
-  }
+/*  public static boolean isEmpty(Element element) {
+    return (element.getElementId() != null &&
+        element.getData() == null &&
+        element.getInfo() == null &&
+        element.getRelations() == null &&
+        element.getContents() == null &&
+        element.getVisualization() == null);
+  }*/
 }
