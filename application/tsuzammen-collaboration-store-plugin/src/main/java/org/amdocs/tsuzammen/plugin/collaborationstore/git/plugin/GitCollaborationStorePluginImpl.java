@@ -22,6 +22,7 @@ import org.amdocs.tsuzammen.commons.datatypes.Id;
 import org.amdocs.tsuzammen.commons.datatypes.Namespace;
 import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
 import org.amdocs.tsuzammen.commons.datatypes.impl.item.ElementData;
+import org.amdocs.tsuzammen.commons.datatypes.item.ElementContext;
 import org.amdocs.tsuzammen.commons.datatypes.item.Info;
 import org.amdocs.tsuzammen.commons.datatypes.item.ItemVersion;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
@@ -126,14 +127,14 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
 
   @Override
-  public CollaborationNamespace createEntity(SessionContext context, Id itemId, Id versionId,
-                                             Namespace parentNamespace, ElementData elementData) {
+  public CollaborationNamespace createElement(SessionContext context, ElementContext elementContext,
+                                              Namespace parentNamespace, ElementData elementData) {
     String repositoryPath = SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH,
-        itemId);
+        elementContext.getItemId());
     repositoryPath = resolveTenantPath(context, repositoryPath);
     GitSourceControlDao dao = getSourceControlDao(context);
     Git git = dao.openRepository(context, repositoryPath);
-    dao.checkoutBranch(context, git, versionId.getValue().toString());
+    dao.checkoutBranch(context, git, elementContext.getVersionId().toString());
 
     String elementPath = getNamespacePath(parentNamespace, elementData.getElementId().getId());
     String fullPath = repositoryPath + File.separator + elementPath;
@@ -149,34 +150,34 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
 
   @Override
-  public void saveEntity(SessionContext context, Id itemId, Id versionId,
-                         CollaborationNamespace collaborationNamespace, ElementData elementData) {
+  public void saveElement(SessionContext context, ElementContext elementContext,
+                          CollaborationNamespace collaborationNamespace, ElementData elementData) {
     GitSourceControlDao dao = getSourceControlDao(context);
     String elementPath = collaborationNamespace.getValue();
-    String repositoryPath = SourceControlUtil.getPrivateRepositoryPath(
-        context,
+    String repositoryPath = SourceControlUtil.getPrivateRepositoryPath(context,
         PRIVATE_PATH.replace(TENANT, context.getTenant()),
-        itemId);
+        elementContext.getItemId());
     String fullPath = repositoryPath + File.separator + elementPath;
     Git git = dao.openRepository(context, repositoryPath);
-    dao.checkoutBranch(context, git, versionId.getValue().toString());
+    dao.checkoutBranch(context, git, elementContext.getVersionId().toString());
     updateElementData(context, git, fullPath, elementData);
     dao.commit(context, git, SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
   }
 
   @Override
-  public void deleteEntity(SessionContext context, Id itemId, Id versionId,
-                           CollaborationNamespace collaborationNamespace, Id elementId) {
+  public void deleteElement(SessionContext context, ElementContext elementContext,
+                            CollaborationNamespace collaborationNamespace, Id elementId) {
 
     GitSourceControlDao dao = getSourceControlDao(context);
     String elementPath = collaborationNamespace.getValue();
     String repositoryPath =
-        SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH, itemId);
+        SourceControlUtil
+            .getPrivateRepositoryPath(context, PRIVATE_PATH, elementContext.getItemId());
     repositoryPath = resolveTenantPath(context, repositoryPath);
     String fullPath = repositoryPath + File.separator + elementPath;
     Git git = dao.openRepository(context, repositoryPath);
-    dao.checkoutBranch(context, git, versionId.getValue().toString());
+    dao.checkoutBranch(context, git, elementContext.getVersionId().toString());
     dao.delete(context, git, fullPath);
     dao.commit(context, git, DELETE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
@@ -184,7 +185,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public void commitEntities(SessionContext sessionContext, Id itemId, Id versionId,
+  public void commitEntities(SessionContext sessionContext, ElementContext elementContext,
                              String message) {
 
   }
@@ -238,8 +239,8 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public ElementData getEntity(SessionContext context, Id itemId, Id versionId,
-                               CollaborationNamespace collaborationNamespace, Id elementId) {
+  public ElementData getElement(SessionContext context, ElementContext elementContext,
+                                CollaborationNamespace collaborationNamespace, Id elementId) {
     return null;
   }
 
