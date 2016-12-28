@@ -289,6 +289,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   protected String getNamespacePath(Namespace namespace, Id elementId) {
+    if(namespace.getValue() == null || "".equals(namespace.getValue())) return elementId.toString();
     return namespace.getValue() + File.separator + elementId.toString();
   }
 
