@@ -184,11 +184,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   }
 
-  @Override
-  public void commitEntities(SessionContext sessionContext, ElementContext elementContext,
-                             String message) {
 
-  }
 
   @Override
   public void deleteItemVersion(SessionContext sessionContext, Id itemId, Id versionId) {
@@ -246,8 +242,8 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   protected void updateElementData(SessionContext context, Git git, String elementPath, ElementData
       elementData) {
-    GitSourceControlDao dao = getSourceControlDao(context);
-    File file2Add;
+    addFileContent(context, git,
+        elementPath, PluginConstants.IMPL_FILE_NAME, elementData.getImplClass().getName());
     if (elementData.getRelations() != null) {
       addFileContent(context, git,
           elementPath, PluginConstants.RELATIONS_FILE_NAME, elementData.getRelations());
