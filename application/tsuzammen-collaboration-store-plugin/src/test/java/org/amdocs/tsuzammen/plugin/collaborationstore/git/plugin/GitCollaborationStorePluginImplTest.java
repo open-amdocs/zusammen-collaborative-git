@@ -33,6 +33,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
