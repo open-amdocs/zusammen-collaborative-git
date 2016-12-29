@@ -19,10 +19,13 @@ package org.amdocs.tsuzammen.plugin.collaborationstore.git;
 
 import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.transport.PushResult;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
 public interface GitSourceControlDao {
@@ -33,7 +36,6 @@ public interface GitSourceControlDao {
 
   void checkoutBranch(SessionContext context, Git git, String branch);
 
-
   Git openRepository(SessionContext context, String repositoryPath);
 
   List<File> add(SessionContext context, Git git, File... files);
@@ -42,9 +44,13 @@ public interface GitSourceControlDao {
 
   void commit(SessionContext context, Git git, String message);
 
-  void publish(SessionContext context, Git git, String branch);
+  void resetMerge(SessionContext context, Git git);
+
+  Collection<PushResult> publish(SessionContext context, Git git, String branch);
 
   PullResult sync(SessionContext context, Git git, String branchId);
+
+  MergeResult merge(SessionContext context, Git git, String branchId, MergeCommand.FastForwardMode mode);
 
   void close(SessionContext context, Git git);
 
