@@ -19,10 +19,13 @@ package org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.mocks;
 import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.transport.PushResult;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
 public class GitSourceControlDaoEmptyImpl implements GitSourceControlDao {
@@ -63,12 +66,23 @@ public class GitSourceControlDaoEmptyImpl implements GitSourceControlDao {
   }
 
   @Override
-  public void publish(SessionContext context, Git git, String branch) {
+  public void resetMerge(SessionContext context, Git git) {
 
   }
 
   @Override
+  public Collection<PushResult> publish(SessionContext context, Git git, String branch) {
+    return null;
+  }
+
+  @Override
   public PullResult sync(SessionContext context, Git git, String branchId) {
+    return null;
+  }
+
+  @Override
+  public MergeResult merge(SessionContext context, Git git, String branchId,
+                           MergeCommand.FastForwardMode mode) {
     return null;
   }
 
