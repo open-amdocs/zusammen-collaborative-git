@@ -100,6 +100,7 @@ public class GitCollaborationStorePluginImplTest {
     elementData.setId(ELEMENT_ID);
     elementData.setInfo(new Info());
     elementData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
+    elementData.setElementImplClass(elementData.getClass());
     Namespace parentNamespace = new Namespace();
 
     ElementContext elementContext = new ElementContext();
@@ -129,7 +130,7 @@ public class GitCollaborationStorePluginImplTest {
     elementData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
     CollaborationNamespace collaborationNamespace =
         new CollaborationNamespace(ELEMENT_ID.toString());
-
+    elementData.setElementImplClass(elementData.getClass());
     ElementContext elementContext = new ElementContext();
     elementContext.setItemId(ITEM_ID);
     elementContext.setVersionId(VERSION_ID);
