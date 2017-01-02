@@ -22,6 +22,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.transport.PushResult;
 
 import java.io.File;
@@ -59,6 +60,8 @@ public interface GitSourceControlDao {
   PullResult inComing(SessionContext context, Git git, String branch);
 
   Iterable<PushResult> outGoing(SessionContext context, Git git, String branch);
+
+  Status status(SessionContext context,Git git);
 
 
 }

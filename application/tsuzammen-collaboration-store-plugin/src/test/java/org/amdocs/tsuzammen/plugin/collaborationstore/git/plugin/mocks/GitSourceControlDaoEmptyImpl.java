@@ -22,6 +22,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.transport.PushResult;
 
 import java.io.File;
@@ -105,4 +106,7 @@ public class GitSourceControlDaoEmptyImpl implements GitSourceControlDao {
   public Iterable<PushResult> outGoing(SessionContext context, Git git, String branch) {
     return null;
   }
+
+  @Override
+  public Status status(SessionContext context, Git git){return null;}
 }

@@ -19,13 +19,22 @@ package org.amdocs.tsuzammen.plugin.collaborationstore.git.utils;
 
 import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
+import org.amdocs.tsuzammen.datatypes.collaboration.Conflict;
+import org.amdocs.tsuzammen.datatypes.collaboration.SyncResult;
 import org.amdocs.tsuzammen.utils.common.CommonMethods;
+import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PullResult;
 
 import java.io.File;
+import java.io.InputStream;
+import java.util.Set;
 
 public class SourceControlUtil {
 
+  private static final String HEADER_END="<<<<<<<";
+  private static final String TRAILER_START=">>>>>>>";
+  private static final String SWITCH_FILE="=======";
 
   private static String convertNamespaceToPath(String namespace) {
     String[] pathArray = namespace.split(".");
@@ -56,12 +65,51 @@ public class SourceControlUtil {
     return sb.toString();
   }
 
-/*  public static boolean isEmpty(Element element) {
-    return (element.getElementId() != null &&
-        element.getData() == null &&
-        element.getInfo() == null &&
-        element.getRelations() == null &&
-        element.getContents() == null &&
-        element.getVisualization() == null);
-  }*/
+  public static SyncResult handleSyncResult(String repositoryPath, PullResult syncResult) {
+    SyncResult result = new SyncResult();
+    result.setResultStatus(syncResult.isSuccessful());
+    if(!syncResult.isSuccessful()) {
+      Set<String> conflictFiles = syncResult.getMergeResult().getConflicts().keySet();
+      conflictFiles.forEach(file->result.addConflict(handleFileConflict(repositoryPath,file)));
+    }
+    return result;
+  }
+
+  private static Conflict handleFileConflict(String repositoryPath, String file) {
+
+    InputStream conflictFileIS = FileUtils.getFileInputStream(repositoryPath+File.separator+file);
+    String mergedFile = new String(FileUtils.toByteArray(conflictFileIS));
+    String[] lines = mergedFile.split(File.separator);
+    StringBuffer localSB = new StringBuffer();
+    StringBuffer remoteSB = new StringBuffer();
+    StringBuffer localConflictSB = new StringBuffer();
+    StringBuffer remoteConflictSB = new StringBuffer();
+    boolean headerEnd = false; //until <<<<<<<
+    boolean trailerStart = false; // from >>>>>>>
+    boolean switchFile = false; // from =======
+    for(String line:lines){
+      if(line.startsWith(HEADER_END)) headerEnd=true;
+      if(line.startsWith(TRAILER_START)) trailerStart=true;
+      if(line.startsWith(SWITCH_FILE)) switchFile=true;
+      if( !switchFile || trailerStart){
+        localSB.append(line).append(System.lineSeparator());
+      }
+      if(switchFile || trailerStart){
+        remoteSB.append(line).append(System.lineSeparator());
+      }
+
+      if (headerEnd && !switchFile && !trailerStart ){
+        localConflictSB.append(line).append(System.lineSeparator());
+      }
+      if (headerEnd && switchFile && !trailerStart){
+        remoteConflictSB.append(line).append(System.lineSeparator());
+      }
+    }
+    Conflict conflict = new Conflict();
+    conflict.setLocal(localSB.toString().getBytes());
+    conflict.setRemote(remoteSB.toString().getBytes());
+    conflict.setLocalConflict(localConflictSB.toString().getBytes());
+    conflict.setRemoteConflict(remoteConflictSB.toString().getBytes());
+    return conflict;
+  }
 }

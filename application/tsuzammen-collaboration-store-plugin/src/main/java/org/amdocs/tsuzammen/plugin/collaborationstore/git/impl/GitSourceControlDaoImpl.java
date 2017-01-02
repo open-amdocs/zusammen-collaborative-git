@@ -33,6 +33,7 @@ import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.RmCommand;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.transport.PushResult;
@@ -255,5 +256,13 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     }
   }
 
+  @Override
+  public Status status(SessionContext context, Git git){
+    try {
+      return git.status().call();
+    } catch (GitAPIException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
 }
