@@ -17,8 +17,8 @@
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.utils;
 
 
-import org.amdocs.tsuzammen.commons.datatypes.Id;
-import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
+import org.amdocs.tsuzammen.datatypes.Id;
+import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.utils.common.CommonMethods;
 import org.eclipse.jgit.api.Git;
 

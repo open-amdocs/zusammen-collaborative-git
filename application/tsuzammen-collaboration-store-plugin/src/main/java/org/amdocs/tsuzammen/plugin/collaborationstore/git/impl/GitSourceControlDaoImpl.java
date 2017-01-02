@@ -17,7 +17,7 @@
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.impl;
 
 
-import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
+import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.AddCommand;

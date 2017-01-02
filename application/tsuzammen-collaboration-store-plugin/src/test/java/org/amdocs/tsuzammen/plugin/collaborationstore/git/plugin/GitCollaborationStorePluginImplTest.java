@@ -16,16 +16,15 @@
 
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin;
 
-import org.amdocs.tsuzammen.commons.datatypes.CollaborationNamespace;
-import org.amdocs.tsuzammen.commons.datatypes.Id;
-import org.amdocs.tsuzammen.commons.datatypes.Namespace;
-import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
-import org.amdocs.tsuzammen.commons.datatypes.UserInfo;
-import org.amdocs.tsuzammen.commons.datatypes.impl.item.ElementData;
-import org.amdocs.tsuzammen.commons.datatypes.item.ElementContext;
-import org.amdocs.tsuzammen.commons.datatypes.item.ElementId;
-import org.amdocs.tsuzammen.commons.datatypes.item.Info;
+import org.amdocs.tsuzammen.datatypes.CollaborationNamespace;
+import org.amdocs.tsuzammen.datatypes.Id;
+import org.amdocs.tsuzammen.datatypes.Namespace;
+import org.amdocs.tsuzammen.datatypes.SessionContext;
+import org.amdocs.tsuzammen.datatypes.UserInfo;
+import org.amdocs.tsuzammen.datatypes.item.ElementContext;
+import org.amdocs.tsuzammen.datatypes.item.Info;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.mocks.GitSourceControlDaoEmptyImpl;
+import org.amdocs.tsuzammen.sdk.types.ElementData;
 import org.eclipse.jgit.api.Git;
 import org.mockito.Mockito;
 import org.testng.Assert;
@@ -33,7 +32,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -99,10 +97,11 @@ public class GitCollaborationStorePluginImplTest {
     SessionContext context = createSessionContext(USER, "test");
 
     ElementData elementData = new ElementData();
-    elementData.setElementId(new ElementId(ELEMENT_ID, new Info()));
+    elementData.setId(ELEMENT_ID);
+    elementData.setInfo(new Info());
     elementData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
     Namespace parentNamespace = new Namespace();
-    
+
     ElementContext elementContext = new ElementContext();
     elementContext.setItemId(ITEM_ID);
     elementContext.setVersionId(VERSION_ID);
@@ -125,7 +124,8 @@ public class GitCollaborationStorePluginImplTest {
     SessionContext context = createSessionContext(USER, "test");
 
     ElementData elementData = new ElementData();
-    elementData.setElementId(new ElementId(ELEMENT_ID, new Info()));
+    elementData.setId(ELEMENT_ID);
+    elementData.setInfo(new Info());
     elementData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
     CollaborationNamespace collaborationNamespace =
         new CollaborationNamespace(ELEMENT_ID.toString());

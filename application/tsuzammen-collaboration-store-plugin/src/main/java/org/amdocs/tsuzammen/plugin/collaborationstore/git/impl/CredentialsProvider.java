@@ -17,7 +17,7 @@
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.impl;
 
 import org.amdocs.tsuzammen.commons.configuration.impl.ConfigurationAccessor;
-import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
+import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.sdk.utils.SdkConstants;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.transport.CredentialItem;

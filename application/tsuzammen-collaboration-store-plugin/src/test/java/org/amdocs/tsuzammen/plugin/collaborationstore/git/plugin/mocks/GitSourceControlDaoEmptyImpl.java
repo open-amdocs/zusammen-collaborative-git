@@ -16,7 +16,7 @@
 
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.mocks;
 
-import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
+import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;

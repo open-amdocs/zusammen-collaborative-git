@@ -17,19 +17,19 @@
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin;
 
 import org.amdocs.tsuzammen.commons.configuration.impl.ConfigurationAccessor;
-import org.amdocs.tsuzammen.commons.datatypes.CollaborationNamespace;
-import org.amdocs.tsuzammen.commons.datatypes.Id;
-import org.amdocs.tsuzammen.commons.datatypes.Namespace;
-import org.amdocs.tsuzammen.commons.datatypes.SessionContext;
-import org.amdocs.tsuzammen.commons.datatypes.impl.item.ElementData;
-import org.amdocs.tsuzammen.commons.datatypes.item.ElementContext;
-import org.amdocs.tsuzammen.commons.datatypes.item.Info;
-import org.amdocs.tsuzammen.commons.datatypes.item.ItemVersion;
+import org.amdocs.tsuzammen.datatypes.CollaborationNamespace;
+import org.amdocs.tsuzammen.datatypes.Id;
+import org.amdocs.tsuzammen.datatypes.Namespace;
+import org.amdocs.tsuzammen.datatypes.SessionContext;
+import org.amdocs.tsuzammen.datatypes.item.ElementContext;
+import org.amdocs.tsuzammen.datatypes.item.Info;
+import org.amdocs.tsuzammen.datatypes.item.ItemVersion;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.SourceControlDaoFactory;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.SourceControlUtil;
 import org.amdocs.tsuzammen.sdk.CollaborationStore;
+import org.amdocs.tsuzammen.sdk.types.ElementData;
 import org.amdocs.tsuzammen.sdk.utils.SdkConstants;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.Git;
@@ -136,7 +136,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     Git git = dao.openRepository(context, repositoryPath);
     dao.checkoutBranch(context, git, elementContext.getVersionId().toString());
 
-    String elementPath = getNamespacePath(parentNamespace, elementData.getElementId().getId());
+    String elementPath = getNamespacePath(parentNamespace, elementData.getId());
     String fullPath = repositoryPath + File.separator + elementPath;
 
     File elementPathFile = new File(fullPath);
@@ -243,7 +243,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   protected void updateElementData(SessionContext context, Git git, String elementPath, ElementData
       elementData) {
     addFileContent(context, git,
-        elementPath, PluginConstants.IMPL_FILE_NAME, elementData.getImplClass().getName());
+        elementPath, PluginConstants.IMPL_FILE_NAME, elementData.getElementImplClass().getName());
     if (elementData.getRelations() != null) {
       addFileContent(context, git,
           elementPath, PluginConstants.RELATIONS_FILE_NAME, elementData.getRelations());
@@ -258,7 +258,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
           elementPath, PluginConstants.DATA_FILE_NAME, elementData.getData());
     }
 
-    Info info = elementData.getElementId().getInfo();
+    Info info = elementData.getInfo();
     if (info != null && info.getProperties() != null && !info.getProperties().isEmpty()) {
       addFileContent(context, git,
           elementPath, PluginConstants.INFO_FILE_NAME, info);
