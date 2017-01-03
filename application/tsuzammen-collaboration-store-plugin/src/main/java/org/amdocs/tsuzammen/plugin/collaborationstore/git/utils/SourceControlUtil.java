@@ -20,6 +20,7 @@ package org.amdocs.tsuzammen.plugin.collaborationstore.git.utils;
 import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.datatypes.collaboration.Conflict;
+import org.amdocs.tsuzammen.datatypes.collaboration.FileConflicts;
 import org.amdocs.tsuzammen.datatypes.collaboration.SyncResult;
 import org.amdocs.tsuzammen.utils.common.CommonMethods;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
@@ -28,6 +29,8 @@ import org.eclipse.jgit.api.PullResult;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 
 public class SourceControlUtil {
@@ -67,7 +70,6 @@ public class SourceControlUtil {
 
   public static SyncResult handleSyncResult(String repositoryPath, PullResult syncResult) {
     SyncResult result = new SyncResult();
-    result.setResultStatus(syncResult.isSuccessful());
     if(!syncResult.isSuccessful()) {
       Set<String> conflictFiles = syncResult.getMergeResult().getConflicts().keySet();
       conflictFiles.forEach(file->result.addConflict(handleFileConflict(repositoryPath,file)));
@@ -75,7 +77,7 @@ public class SourceControlUtil {
     return result;
   }
 
-  private static Conflict handleFileConflict(String repositoryPath, String file) {
+  private static FileConflicts handleFileConflict(String repositoryPath, String file) {
 
     InputStream conflictFileIS = FileUtils.getFileInputStream(repositoryPath+File.separator+file);
     String mergedFile = new String(FileUtils.toByteArray(conflictFileIS));
@@ -105,11 +107,15 @@ public class SourceControlUtil {
         remoteConflictSB.append(line).append(System.lineSeparator());
       }
     }
+    FileConflicts fileConflicts = new FileConflicts();
     Conflict conflict = new Conflict();
-    conflict.setLocal(localSB.toString().getBytes());
-    conflict.setRemote(remoteSB.toString().getBytes());
+    fileConflicts.setLocal(localSB.toString().getBytes());
+    fileConflicts.setRemote(remoteSB.toString().getBytes());
+    Collection<Conflict> conflictList = new ArrayList<>();
+    conflictList.add(conflict);
+    fileConflicts.setConflicts(conflictList);
     conflict.setLocalConflict(localConflictSB.toString().getBytes());
     conflict.setRemoteConflict(remoteConflictSB.toString().getBytes());
-    return conflict;
+    return fileConflicts;
   }
 }

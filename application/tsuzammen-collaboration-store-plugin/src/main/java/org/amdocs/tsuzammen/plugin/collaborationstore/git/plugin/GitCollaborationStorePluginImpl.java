@@ -229,7 +229,6 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
           SourceControlUtil.getPublicRepositoryPath(context, publicPath, itemId),
           repositoryPath, branchId);
       result = new SyncResult();
-      result.setResultStatus(true);
     }
     dao.checkoutBranch(context, git, branchId);
     dao.close(context, git);
