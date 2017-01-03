@@ -222,7 +222,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     if (FileUtils.exists(repositoryPath)) {
       git = dao.openRepository(context, repositoryPath);
       PullResult syncResult = dao.sync(context, git, branchId);
-      result = SourceControlUtil.handleSyncResult(repositoryPath,syncResult);
+      result = SourceControlUtil.handleSyncResult(git,syncResult);
     } else {
       String publicPath = resolveTenantPath(context, PUBLIC_PATH);
       git = dao.clone(context,
@@ -310,7 +310,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     } else {
       FileUtils.writeFile(path, ITEM_VERSION_INFO_FILE_NAME, fileContent);
     }
-    getSourceControlDao(context).add(context, git, new File(path + File.separator + fileName));
+    getSourceControlDao(context).add(context, git, path + File.separator + fileName);
   }
 
   private String resolveTenantPath(SessionContext context, String path) {

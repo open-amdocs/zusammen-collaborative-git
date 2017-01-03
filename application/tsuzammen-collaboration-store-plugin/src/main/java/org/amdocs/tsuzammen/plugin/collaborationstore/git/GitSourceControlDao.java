@@ -39,7 +39,7 @@ public interface GitSourceControlDao {
 
   Git openRepository(SessionContext context, String repositoryPath);
 
-  List<File> add(SessionContext context, Git git, File... files);
+  List<String> add(SessionContext context, Git git, String... files);
 
   void delete(SessionContext context, Git git, String... files);
 

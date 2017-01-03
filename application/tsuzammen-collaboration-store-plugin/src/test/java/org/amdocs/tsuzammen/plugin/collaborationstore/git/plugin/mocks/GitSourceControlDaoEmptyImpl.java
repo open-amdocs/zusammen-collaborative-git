@@ -52,7 +52,7 @@ public class GitSourceControlDaoEmptyImpl implements GitSourceControlDao {
   }
 
   @Override
-  public List<File> add(SessionContext context, Git git, File... files) {
+  public List<String> add(SessionContext context, Git git, String... files) {
     return null;
   }
 

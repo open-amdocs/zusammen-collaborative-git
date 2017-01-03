@@ -36,6 +36,7 @@ import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 
@@ -113,12 +114,12 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public List<File> add(SessionContext context, Git git, File... files) {
+  public List<String> add(SessionContext context, Git git, String... files) {
     AddCommand command = git.add();
-    List<File> filesAdded = new ArrayList<>();
+    List<String> filesAdded = new ArrayList<>();
     try {
-      for (File file : files) {
-        command.addFilepattern(file.getName());
+      for (String file : files) {
+        command.addFilepattern(file);
 
         command.call();
         filesAdded.add(file);
@@ -192,6 +193,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     PullCommand command = git.pull();
     try {
       command.setRemoteBranchName(branchId);
+      command.setStrategy(MergeStrategy.RESOLVE);
       return command.call();
     } catch (GitAPIException e) {
       throw new RuntimeException(e);

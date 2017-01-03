@@ -68,20 +68,24 @@ public class SourceControlUtil {
     return sb.toString();
   }
 
-  public static SyncResult handleSyncResult(String repositoryPath, PullResult syncResult) {
+  public static SyncResult handleSyncResult(Git git , PullResult syncResult) {
     SyncResult result = new SyncResult();
     if(!syncResult.isSuccessful()) {
       Set<String> conflictFiles = syncResult.getMergeResult().getConflicts().keySet();
-      conflictFiles.forEach(file->result.addConflict(handleFileConflict(repositoryPath,file)));
+      conflictFiles.forEach(file->result.addConflict(handleFileConflict(git.getRepository()
+              .getWorkTree().getPath(),file)));
     }
     return result;
   }
 
   private static FileConflicts handleFileConflict(String repositoryPath, String file) {
 
+
+
+
     InputStream conflictFileIS = FileUtils.getFileInputStream(repositoryPath+File.separator+file);
     String mergedFile = new String(FileUtils.toByteArray(conflictFileIS));
-    String[] lines = mergedFile.split(File.separator);
+    String[] lines = mergedFile.split("\\r\\n|\\r|\\n");
     StringBuffer localSB = new StringBuffer();
     StringBuffer remoteSB = new StringBuffer();
     StringBuffer localConflictSB = new StringBuffer();
@@ -90,13 +94,22 @@ public class SourceControlUtil {
     boolean trailerStart = false; // from >>>>>>>
     boolean switchFile = false; // from =======
     for(String line:lines){
-      if(line.startsWith(HEADER_END)) headerEnd=true;
-      if(line.startsWith(TRAILER_START)) trailerStart=true;
-      if(line.startsWith(SWITCH_FILE)) switchFile=true;
+      if(line.startsWith(HEADER_END)) {
+        headerEnd=true;
+        continue;
+      }
+      if(line.startsWith(TRAILER_START)) {
+        trailerStart=true;
+        continue;
+      }
+      if(line.startsWith(SWITCH_FILE)) {
+        switchFile=true;
+        continue;
+      }
       if( !switchFile || trailerStart){
         localSB.append(line).append(System.lineSeparator());
       }
-      if(switchFile || trailerStart){
+      if(switchFile || trailerStart || !headerEnd){
         remoteSB.append(line).append(System.lineSeparator());
       }
 
@@ -109,6 +122,7 @@ public class SourceControlUtil {
     }
     FileConflicts fileConflicts = new FileConflicts();
     Conflict conflict = new Conflict();
+    fileConflicts.setFileName(file);
     fileConflicts.setLocal(localSB.toString().getBytes());
     fileConflicts.setRemote(remoteSB.toString().getBytes());
     Collection<Conflict> conflictList = new ArrayList<>();
