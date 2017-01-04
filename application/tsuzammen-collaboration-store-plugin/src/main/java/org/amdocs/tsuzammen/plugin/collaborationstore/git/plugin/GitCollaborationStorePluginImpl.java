@@ -21,8 +21,9 @@ import org.amdocs.tsuzammen.datatypes.CollaborationNamespace;
 import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.Namespace;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
+import org.amdocs.tsuzammen.datatypes.collaboration.MergeResponse;
 import org.amdocs.tsuzammen.datatypes.collaboration.PublishResult;
-import org.amdocs.tsuzammen.datatypes.collaboration.SyncResult;
+import org.amdocs.tsuzammen.datatypes.collaboration.SyncResponse;
 import org.amdocs.tsuzammen.datatypes.item.ElementContext;
 import org.amdocs.tsuzammen.datatypes.item.Info;
 import org.amdocs.tsuzammen.datatypes.item.ItemVersion;
@@ -35,7 +36,10 @@ import org.amdocs.tsuzammen.sdk.types.ElementData;
 import org.amdocs.tsuzammen.sdk.utils.SdkConstants;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.transport.FetchResult;
 
 import java.io.File;
 import java.io.InputStream;
@@ -187,8 +191,6 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   }
 
-
-
   @Override
   public void deleteItemVersion(SessionContext sessionContext, Id itemId, Id versionId) {
     /*todo*/
@@ -211,29 +213,58 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public SyncResult syncItemVersion(SessionContext context, Id itemId, Id versionId) {
-    SyncResult result;
+  public SyncResponse syncItemVersion(SessionContext context, Id itemId, Id versionId) {
+    SyncResponse result;
     GitSourceControlDao dao = getSourceControlDao(context);
     String repositoryPath =
         SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH, itemId);
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git;
-    String branchId = versionId.getValue().toString();
+    String branch = versionId.getValue().toString();
     if (FileUtils.exists(repositoryPath)) {
       git = dao.openRepository(context, repositoryPath);
-      PullResult syncResult = dao.sync(context, git, branchId);
-      result = SourceControlUtil.handleSyncResult(git,syncResult);
+      dao.checkoutBranch(context, git, branch);
+      PullResult syncResult = dao.sync(context, git, branch);
+      result = SourceControlUtil.handleSyncResponse(git,syncResult);
     } else {
       String publicPath = resolveTenantPath(context, PUBLIC_PATH);
       git = dao.clone(context,
           SourceControlUtil.getPublicRepositoryPath(context, publicPath, itemId),
-          repositoryPath, branchId);
-      result = new SyncResult();
+          repositoryPath, branch);
+      result = new SyncResponse();
     }
-    dao.checkoutBranch(context, git, branchId);
     dao.close(context, git);
     return result;
   }
+
+  @Override
+  public MergeResponse mergeItemVersion(SessionContext context, Id itemId, Id versionId, Id
+      sourceVersionId) {
+    MergeResponse result;
+    GitSourceControlDao dao = getSourceControlDao(context);
+    String repositoryPath =
+        SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH, itemId);
+    repositoryPath = resolveTenantPath(context, repositoryPath);
+    Git git;
+    String branch = versionId.getValue().toString();
+    String sourceBranch = sourceVersionId.getValue().toString();
+    if (FileUtils.exists(repositoryPath)) {
+      git = dao.openRepository(context, repositoryPath);
+      dao.checkoutBranch(context,git,branch);
+      MergeResult mergeResult = dao.merge(context, git, sourceBranch, MergeCommand.FastForwardMode.FF);
+      result = SourceControlUtil.handleMergeResponse(git,mergeResult);
+    } else {
+      String publicPath = resolveTenantPath(context, PUBLIC_PATH);
+      git = dao.clone(context,
+          SourceControlUtil.getPublicRepositoryPath(context, publicPath, itemId),
+          repositoryPath, branch);
+      result = new MergeResponse();
+    }
+    dao.checkoutBranch(context, git, branch);
+    dao.close(context, git);
+    return result;
+  }
+
 
   @Override
   public ItemVersion getItemVersion(SessionContext sessionContext, Id itemId, Id versionId,

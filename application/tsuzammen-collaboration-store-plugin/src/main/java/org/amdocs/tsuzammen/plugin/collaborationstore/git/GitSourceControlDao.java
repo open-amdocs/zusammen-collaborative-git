@@ -23,9 +23,10 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public interface GitSourceControlDao {
 
   void delete(SessionContext context, Git git, String... files);
 
-  void commit(SessionContext context, Git git, String message);
+  RevCommit commit(SessionContext context, Git git, String message);
 
   void resetMerge(SessionContext context, Git git);
 
@@ -55,7 +56,7 @@ public interface GitSourceControlDao {
 
   void close(SessionContext context, Git git);
 
-  void fetch(SessionContext contaxt, Git git, String branch);
+  FetchResult fetch(SessionContext contaxt, Git git, String branch);
 
   PullResult inComing(SessionContext context, Git git, String branch);
 

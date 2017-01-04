@@ -24,6 +24,7 @@ import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
@@ -36,7 +37,10 @@ import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.merge.MergeStrategy;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 
@@ -46,6 +50,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
+import static org.eclipse.jgit.lib.ConfigConstants.CONFIG_BRANCH_SECTION;
+import static org.eclipse.jgit.lib.ConfigConstants.CONFIG_REMOTE_SECTION;
 
 public class GitSourceControlDaoImpl implements GitSourceControlDao {
   @Override
@@ -74,21 +81,33 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   @Override
   public void createBranch(SessionContext context, Git git, String baseBranch, String branch) {
 
-    checkoutBranch(context, git, baseBranch);
-    CheckoutCommand command = git.checkout();
-    //CreateBranchCommand command = git.branchCreate();
+    if(baseBranch!= null) checkoutBranch(context, git, baseBranch);
+    //CheckoutCommand command = git.checkout();
+    CreateBranchCommand command = git.branchCreate();
 
     try {
-      command.setCreateBranch(true);
+      //command.setCreateBranch(true);
       command.setName(branch);
       command.call();
-    } catch (GitAPIException e) {
-      e.printStackTrace();
+/*
+      StoredConfig config = git.getRepository().getConfig();
+      config.setString( CONFIG_BRANCH_SECTION, branch, baseBranch, baseBranch );
+      config.setString( CONFIG_BRANCH_SECTION, "branch", "merge",
+          "refs/heads/"+baseBranch );
+*/
+      /*config.setString( CONFIG_REMOTE_SECTION, baseBranch, "url", git.getRepository().get );
+      config.setString( CONFIG_REMOTE_SECTION, "remote-alias-name", "fetch", "ref-spec" );
+      config.save();*/
+    } catch (GitAPIException /*| IOException*/ e) {
+      throw new RuntimeException(e);
     }
+
+
   }
 
   @Override
   public void checkoutBranch(SessionContext context, Git git, String branch) {
+    if(branch == null) branch="master";
     try {
       if (branch.equals(git.getRepository().getBranch())) {
         return;
@@ -148,12 +167,12 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public void commit(SessionContext context, Git git, String message) {
+  public RevCommit commit(SessionContext context, Git git, String message) {
     CommitCommand command = git.commit();
 
     try {
       command.setMessage(message);
-      command.call();
+      return command.call();
     } catch (GitAPIException e) {
       throw new RuntimeException(e);
     }
@@ -176,7 +195,9 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     Collection<PushResult> results = new ArrayList<>();
     PushCommand command = git.push();
     try {
-      command.setRefSpecs(new RefSpec(branchId));
+      RefSpec refSpec = new RefSpec(branchId);
+
+      command.setRefSpecs(refSpec);
       Iterable<PushResult> pushResults = command.call();
       for(PushResult result:pushResults){
         results.add(result);
@@ -190,14 +211,18 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   @Override
   public PullResult sync(SessionContext context, Git git, String branchId) {
 
+
     PullCommand command = git.pull();
+
     try {
       command.setRemoteBranchName(branchId);
+      command.setRebase(true);
       command.setStrategy(MergeStrategy.RESOLVE);
       return command.call();
     } catch (GitAPIException e) {
       throw new RuntimeException(e);
     }
+
   }
 
   @Override
@@ -218,13 +243,14 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public void fetch(SessionContext contaxt, Git git, String branch) {
+  public FetchResult fetch(SessionContext contaxt, Git git, String branch) {
     FetchCommand command = git.fetch();
     try {
       if (branch != null) {
         command.setRefSpecs(new RefSpec(branch));
+
       }
-      command.call();
+      return command.call();
     } catch (GitAPIException e) {
       throw new RuntimeException(e);
     }
@@ -235,9 +261,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     PullCommand command = git.pull();
     FetchCommand fetchCommand = git.fetch();
     PushCommand pushCommand = git.push();
-
+    //fetchCommand.setRemote("origin").setDryRun(true).call().getTrackingRefUpdate(git
+    //    .getRepository().getBranch()).getResult().
     try {
-
+      command.setRemoteBranchName(branch);
       return command.call();
 
     } catch (GitAPIException e) {

@@ -21,16 +21,20 @@ import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.datatypes.collaboration.Conflict;
 import org.amdocs.tsuzammen.datatypes.collaboration.FileConflicts;
-import org.amdocs.tsuzammen.datatypes.collaboration.SyncResult;
+import org.amdocs.tsuzammen.datatypes.collaboration.MergeResponse;
+import org.amdocs.tsuzammen.datatypes.collaboration.SyncResponse;
 import org.amdocs.tsuzammen.utils.common.CommonMethods;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.transport.FetchResult;
 
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 public class SourceControlUtil {
@@ -68,15 +72,47 @@ public class SourceControlUtil {
     return sb.toString();
   }
 
-  public static SyncResult handleSyncResult(Git git , PullResult syncResult) {
-    SyncResult result = new SyncResult();
-    if(!syncResult.isSuccessful()) {
-      Set<String> conflictFiles = syncResult.getMergeResult().getConflicts().keySet();
-      conflictFiles.forEach(file->result.addConflict(handleFileConflict(git.getRepository()
-              .getWorkTree().getPath(),file)));
+  public static SyncResponse handleSyncResponse(Git git , PullResult pullResult) {
+    SyncResponse result = new SyncResponse();
+
+    if(pullResult!= null && !pullResult.isSuccessful()) {
+      if(pullResult.getMergeResult() !=null ) {
+        Set<String> conflictFiles = pullResult.getMergeResult().getConflicts().keySet();
+        conflictFiles.forEach(file->result.addConflict(handleFileConflict(git.getRepository()
+            .getWorkTree().getPath(),file)));
+      }else if(pullResult.getRebaseResult()!= null){
+        Collection<String> conf = pullResult.getRebaseResult().getConflicts();
+
+      }
+
+
     }
     return result;
   }
+
+  public static MergeResponse handleMergeResponse(Git git , MergeResult mergeResult) {
+    MergeResponse result = new MergeResponse();
+
+    if(!isMergeSuccesses(mergeResult)){
+      if(mergeResult !=null ) {
+        Set<String> conflictFiles = mergeResult.getConflicts().keySet();
+        conflictFiles.forEach(file->result.addConflict(handleFileConflict(git
+            .getRepository()
+            .getWorkTree().getPath(),file)));
+      }
+
+
+    }
+    return result;
+  }
+
+  private static boolean isMergeSuccesses(MergeResult mergeResult) {
+    return !mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.ALREADY_UP_TO_DATE) &&
+        !mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.MERGED) &&
+        !mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.MERGED_NOT_COMMITTED) &&
+        !mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.FAST_FORWARD);
+  }
+
 
   private static FileConflicts handleFileConflict(String repositoryPath, String file) {
 
@@ -132,4 +168,10 @@ public class SourceControlUtil {
     conflict.setRemoteConflict(remoteConflictSB.toString().getBytes());
     return fileConflicts;
   }
+
+  public static SyncResponse handleFetchResult(Git git, FetchResult fetchResult) {
+    return null;
+  }
+
+
 }

@@ -23,9 +23,10 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
@@ -62,8 +63,9 @@ public class GitSourceControlDaoEmptyImpl implements GitSourceControlDao {
   }
 
   @Override
-  public void commit(SessionContext context, Git git, String message) {
+  public RevCommit commit(SessionContext context, Git git, String message) {
 
+    return null;
   }
 
   @Override
@@ -80,7 +82,6 @@ public class GitSourceControlDaoEmptyImpl implements GitSourceControlDao {
   public PullResult sync(SessionContext context, Git git, String branchId) {
     return null;
   }
-
   @Override
   public MergeResult merge(SessionContext context, Git git, String branchId,
                            MergeCommand.FastForwardMode mode) {
@@ -93,7 +94,7 @@ public class GitSourceControlDaoEmptyImpl implements GitSourceControlDao {
   }
 
   @Override
-  public void fetch(SessionContext contaxt, Git git, String branch) {
+  public FetchResult fetch(SessionContext contaxt, Git git, String branch) { return null;
 
   }
 
