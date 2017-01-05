@@ -157,7 +157,7 @@ public class GitCollaborationStorePluginImplTest {
     elementContext.setVersionId(VERSION_ID);
 
     gitCollaborationStorePlugin
-        .deleteElement(context, elementContext, namespace, ELEMENT_ID);
+        .deleteElement(context, elementContext, namespace, null);
 
     verify(gitSourceControlDaoMock).delete(context, null,
         "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user"

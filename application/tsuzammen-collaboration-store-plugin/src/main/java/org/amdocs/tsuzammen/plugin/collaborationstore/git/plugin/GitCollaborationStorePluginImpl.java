@@ -173,7 +173,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   @Override
   public void deleteElement(SessionContext context, ElementContext elementContext,
-                            Namespace namespace, Id id) {
+                            Namespace namespace, ElementData elementData) {
     GitSourceControlDao dao = getSourceControlDao(context);
     String elementPath = namespace.getValue();
     String repositoryPath =
