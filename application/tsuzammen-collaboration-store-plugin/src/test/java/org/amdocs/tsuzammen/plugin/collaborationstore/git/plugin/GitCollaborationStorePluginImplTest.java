@@ -16,7 +16,6 @@
 
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin;
 
-import org.amdocs.tsuzammen.datatypes.CollaborationNamespace;
 import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.Namespace;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
@@ -27,7 +26,6 @@ import org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.mocks.GitSource
 import org.amdocs.tsuzammen.sdk.types.ElementData;
 import org.eclipse.jgit.api.Git;
 import org.mockito.Mockito;
-import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -101,16 +99,14 @@ public class GitCollaborationStorePluginImplTest {
     elementData.setInfo(new Info());
     elementData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
     elementData.setElementImplClass(elementData.getClass());
-    Namespace parentNamespace = new Namespace();
-
+    Namespace namespace = new Namespace();
+    namespace.setValue(ELEMENT_ID.toString());
     ElementContext elementContext = new ElementContext();
     elementContext.setItemId(ITEM_ID);
     elementContext.setVersionId(VERSION_ID);
 
-    CollaborationNamespace collaborationNamespace = gitCollaborationStorePlugin
-        .createElement(context, elementContext, parentNamespace, elementData);
-
-    Assert.assertEquals(collaborationNamespace.getValue(), ELEMENT_ID.toString());
+    gitCollaborationStorePlugin
+        .createElement(context, elementContext, namespace, elementData);
 
     verify(gitCollaborationStorePlugin).updateElementData(context, null,
         "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user"
@@ -128,15 +124,17 @@ public class GitCollaborationStorePluginImplTest {
     elementData.setId(ELEMENT_ID);
     elementData.setInfo(new Info());
     elementData.setData(new ByteArrayInputStream("00000000000011111111111111111111".getBytes()));
-    CollaborationNamespace collaborationNamespace =
-        new CollaborationNamespace(ELEMENT_ID.toString());
+
+    ELEMENT_ID.toString();
     elementData.setElementImplClass(elementData.getClass());
     ElementContext elementContext = new ElementContext();
     elementContext.setItemId(ITEM_ID);
     elementContext.setVersionId(VERSION_ID);
 
+    Namespace nameSpace = new Namespace();
+    nameSpace.setValue(ELEMENT_ID.toString());
     gitCollaborationStorePlugin
-        .saveElement(context, elementContext, collaborationNamespace, elementData);
+        .saveElement(context, elementContext, nameSpace, elementData);
 
     verify(gitCollaborationStorePlugin).updateElementData(context, null,
         "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user"
@@ -150,15 +148,16 @@ public class GitCollaborationStorePluginImplTest {
   public void testDeleteElement() throws Exception {
     SessionContext context = createSessionContext(USER, "test");
 
-    CollaborationNamespace collaborationNamespace =
-        new CollaborationNamespace(ELEMENT_ID.toString());
+    Namespace namespace =
+        new Namespace();
+    namespace.setValue(ELEMENT_ID.toString());
 
     ElementContext elementContext = new ElementContext();
     elementContext.setItemId(ITEM_ID);
     elementContext.setVersionId(VERSION_ID);
 
     gitCollaborationStorePlugin
-        .deleteElement(context, elementContext, collaborationNamespace, ELEMENT_ID);
+        .deleteElement(context, elementContext, namespace, ELEMENT_ID);
 
     verify(gitSourceControlDaoMock).delete(context, null,
         "C:/_dev/Collaboration/git/test/private\\users\\GitCollaborationStorePluginImplTest_user"

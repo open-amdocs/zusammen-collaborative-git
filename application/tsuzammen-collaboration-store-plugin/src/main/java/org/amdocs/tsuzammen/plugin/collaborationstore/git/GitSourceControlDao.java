@@ -23,6 +23,8 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
@@ -64,5 +66,7 @@ public interface GitSourceControlDao {
 
   Status status(SessionContext context,Git git);
 
+  Collection<DiffEntry> revisionDiff(SessionContext context, Git git, ObjectId from, ObjectId to);
 
+  ObjectId getHead(SessionContext context, Git git);
 }

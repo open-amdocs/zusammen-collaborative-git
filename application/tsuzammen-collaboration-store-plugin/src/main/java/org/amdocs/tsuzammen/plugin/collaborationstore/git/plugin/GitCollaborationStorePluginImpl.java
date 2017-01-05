@@ -17,10 +17,10 @@
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin;
 
 import org.amdocs.tsuzammen.commons.configuration.impl.ConfigurationAccessor;
-import org.amdocs.tsuzammen.datatypes.CollaborationNamespace;
 import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.Namespace;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
+import org.amdocs.tsuzammen.datatypes.collaboration.FileSyncInfo;
 import org.amdocs.tsuzammen.datatypes.collaboration.MergeResponse;
 import org.amdocs.tsuzammen.datatypes.collaboration.PublishResult;
 import org.amdocs.tsuzammen.datatypes.collaboration.SyncResponse;
@@ -39,10 +39,11 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
-import org.eclipse.jgit.transport.FetchResult;
+import org.eclipse.jgit.lib.ObjectId;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Collection;
 
 import static org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants.INFO_FILE_NAME;
 import static org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants.ITEM_VERSION_INFO_FILE_NAME;
@@ -132,10 +133,9 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     dao.close(context, git);
   }
 
-
   @Override
-  public CollaborationNamespace createElement(SessionContext context, ElementContext elementContext,
-                                              Namespace parentNamespace, ElementData elementData) {
+  public void createElement(SessionContext context, ElementContext elementContext,
+                                              Namespace namespace, ElementData elementData) {
     String repositoryPath = SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH,
         elementContext.getItemId());
     repositoryPath = resolveTenantPath(context, repositoryPath);
@@ -143,7 +143,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     Git git = dao.openRepository(context, repositoryPath);
     dao.checkoutBranch(context, git, elementContext.getVersionId().toString());
 
-    String elementPath = getNamespacePath(parentNamespace, elementData.getId());
+    String elementPath = namespace.getValue().replace(Namespace.NAMESPACE_DELIMITER,File.separator);
     String fullPath = repositoryPath + File.separator + elementPath;
 
     File elementPathFile = new File(fullPath);
@@ -152,15 +152,14 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     updateElementData(context, git, fullPath, elementData);
     dao.commit(context, git, SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
-    return new CollaborationNamespace(elementPath);
+    //return new CollaborationNamespace(elementPath);
   }
-
 
   @Override
   public void saveElement(SessionContext context, ElementContext elementContext,
-                          CollaborationNamespace collaborationNamespace, ElementData elementData) {
+                          Namespace namespace, ElementData elementData) {
     GitSourceControlDao dao = getSourceControlDao(context);
-    String elementPath = collaborationNamespace.getValue();
+    String elementPath = namespace.getValue();
     String repositoryPath = SourceControlUtil.getPrivateRepositoryPath(context,
         PRIVATE_PATH.replace(TENANT, context.getTenant()),
         elementContext.getItemId());
@@ -174,13 +173,11 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   @Override
   public void deleteElement(SessionContext context, ElementContext elementContext,
-                            CollaborationNamespace collaborationNamespace, Id elementId) {
-
+                            Namespace namespace, Id id) {
     GitSourceControlDao dao = getSourceControlDao(context);
-    String elementPath = collaborationNamespace.getValue();
+    String elementPath = namespace.getValue();
     String repositoryPath =
-        SourceControlUtil
-            .getPrivateRepositoryPath(context, PRIVATE_PATH, elementContext.getItemId());
+        SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH, elementContext.getItemId());
     repositoryPath = resolveTenantPath(context, repositoryPath);
     String fullPath = repositoryPath + File.separator + elementPath;
     Git git = dao.openRepository(context, repositoryPath);
@@ -188,7 +185,6 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     dao.delete(context, git, fullPath);
     dao.commit(context, git, DELETE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
-
   }
 
   @Override
@@ -221,9 +217,11 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git;
     String branch = versionId.getValue().toString();
+    ObjectId oldId= null;
     if (FileUtils.exists(repositoryPath)) {
       git = dao.openRepository(context, repositoryPath);
       dao.checkoutBranch(context, git, branch);
+      oldId = dao.getHead(context,git);
       PullResult syncResult = dao.sync(context, git, branch);
       result = SourceControlUtil.handleSyncResponse(git,syncResult);
     } else {
@@ -233,6 +231,9 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
           repositoryPath, branch);
       result = new SyncResponse();
     }
+    Collection<FileSyncInfo> fileSyncInfoCollection = SourceControlUtil.handleSyncFileDiff
+        (context,dao,git,oldId);
+    result.setFileSyncInfoCollection(fileSyncInfoCollection);
     dao.close(context, git);
     return result;
   }
@@ -273,8 +274,8 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public ElementData getElement(SessionContext context, ElementContext elementContext,
-                                CollaborationNamespace collaborationNamespace, Id elementId) {
+  public ElementData getElement(SessionContext sessionContext, ElementContext elementContext,
+                                Namespace namespace, Id id) {
     return null;
   }
 
@@ -324,7 +325,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   protected String getNamespacePath(Namespace namespace, Id elementId) {
     if(namespace.getValue() == null || "".equals(namespace.getValue())) return elementId.toString();
-    return namespace.getValue() + File.separator + elementId.toString();
+    return namespace.getValue() + Namespace.NAMESPACE_DELIMITER + elementId.toString();
   }
 
   protected GitSourceControlDao getSourceControlDao(SessionContext context) {
@@ -348,5 +349,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     String tenant = context.getTenant() != null ? context.getTenant() : "tsuzammen";
     return path.replace(TENANT, tenant);
   }
+
+
 
 }

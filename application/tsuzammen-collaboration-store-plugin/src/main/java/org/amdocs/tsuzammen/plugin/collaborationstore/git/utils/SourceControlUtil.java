@@ -21,13 +21,19 @@ import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.datatypes.collaboration.Conflict;
 import org.amdocs.tsuzammen.datatypes.collaboration.FileConflicts;
+import org.amdocs.tsuzammen.datatypes.collaboration.FileSyncInfo;
 import org.amdocs.tsuzammen.datatypes.collaboration.MergeResponse;
 import org.amdocs.tsuzammen.datatypes.collaboration.SyncResponse;
+import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
+import org.amdocs.tsuzammen.plugin.collaborationstore.git.SourceControlDaoFactory;
 import org.amdocs.tsuzammen.utils.common.CommonMethods;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.FetchResult;
 
 import java.io.File;
@@ -169,9 +175,28 @@ public class SourceControlUtil {
     return fileConflicts;
   }
 
-  public static SyncResponse handleFetchResult(Git git, FetchResult fetchResult) {
-    return null;
+  public static Collection<FileSyncInfo> handleSyncFileDiff(SessionContext context,
+                                                            GitSourceControlDao dao, Git git,
+                                                            ObjectId from) {
+    ObjectId newId = dao.getHead(context,git);
+    Collection<DiffEntry> diffs = dao.revisionDiff(context,git,from,newId);
+
+    Collection<FileSyncInfo> fileSyncInfos = new ArrayList<>();
+    if(diffs != null) {
+      diffs.stream().forEach(diff -> fileSyncInfos.add(convertDiffEntityToFilesyncInfo(diff)));
+    }
+    return fileSyncInfos;
+  }
+
+  private static FileSyncInfo convertDiffEntityToFilesyncInfo(DiffEntry diff) {
+    FileSyncInfo fileSyncInfo = new FileSyncInfo();
+    fileSyncInfo.setFileName(diff.getNewPath());
+    fileSyncInfo.setAction(diff.getChangeType().name());
+    return fileSyncInfo;
   }
 
 
+  private static GitSourceControlDao getSourceControlDao(SessionContext context) {
+    return SourceControlDaoFactory.getInstance().createInterface(context);
+  }
 }

@@ -19,6 +19,7 @@ package org.amdocs.tsuzammen.plugin.collaborationstore.git.impl;
 
 import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
+import org.amdocs.tsuzammen.plugin.collaborationstore.git.commands.RevisionDiffCommand;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -36,8 +37,10 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.FetchResult;
@@ -50,9 +53,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
-import static org.eclipse.jgit.lib.ConfigConstants.CONFIG_BRANCH_SECTION;
-import static org.eclipse.jgit.lib.ConfigConstants.CONFIG_REMOTE_SECTION;
 
 public class GitSourceControlDaoImpl implements GitSourceControlDao {
   @Override
@@ -219,6 +219,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       command.setRebase(true);
       command.setStrategy(MergeStrategy.RESOLVE);
       return command.call();
+
     } catch (GitAPIException e) {
       throw new RuntimeException(e);
     }
@@ -293,5 +294,33 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       throw new RuntimeException(e);
     }
   }
+
+  @Override
+  public Collection<DiffEntry> revisionDiff(SessionContext context, Git git, ObjectId from, ObjectId to) {
+
+    RevisionDiffCommand command = RevisionDiffCommand.init(git);
+    try {
+      command.from(from);
+      command.to(to);
+      return command.call();
+
+    } catch (GitAPIException e) {
+      throw new RuntimeException(e);
+    }
+
+
+
+  }
+
+  @Override
+  public ObjectId getHead(SessionContext context, Git git) {
+    try {
+      return git.getRepository().resolve(Constants.HEAD);
+
+    }catch (IOException e){
+      throw new RuntimeException(e);
+    }
+  }
+
 
 }
