@@ -10,7 +10,7 @@
           "public.url": "C:/_dev/Collaboration/git/{tenant}/public",
           "git.username": "",
           "git.password": "",
-          "main":"main"
+          "master.branch":"main"
         }
       }
     }

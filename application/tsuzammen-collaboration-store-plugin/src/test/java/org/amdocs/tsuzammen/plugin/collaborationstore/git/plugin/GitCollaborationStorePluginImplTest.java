@@ -55,6 +55,14 @@ public class GitCollaborationStorePluginImplTest {
         .thenReturn(gitSourceControlDaoMock);
 
     Mockito.doNothing().when(gitCollaborationStorePlugin)
+        .updateElementData(any(), any(Git.class),
+            any(), any(ElementData.class));
+
+    Mockito.doNothing().when(gitCollaborationStorePlugin)
+        .addFileContent(any(), any(Git.class),
+            any(), any(),any());
+
+    Mockito.doNothing().when(gitCollaborationStorePlugin)
         .createItemVersionInt(any(), any(Git.class),
             any(), any(), any());
   }

@@ -21,9 +21,7 @@ public class PluginConstants {
   public static final String PUBLIC_URL = "public.url";
   public static final String BP_PATH = "blueprint.path";
   public static final String PRIVATE_PATH = "private.path";
-  public static final String MASTER_BRANCH = "master";
-  public static final String MAIN_BRANCH = "main";
-
+  public static final String MASTER_BRANCH = "master.branch";
 
   //file names
   public static final String ITEM_VERSION_INFO_FILE_NAME = "itemVersionInfo.json";
@@ -32,5 +30,6 @@ public class PluginConstants {
   public static final String VISUALIZATION_FILE_NAME = "visualization.json";
   public static final String IMPL_FILE_NAME = "impl.json";
   public static final String DATA_FILE_NAME = "data";
-  public static final String INITIAL_BRANCH = "main";
+  //public static final String INITIAL_BRANCH = "main";
+  public static final String SEARCH_DATA_FILE_NAME = "search";
 }

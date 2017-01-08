@@ -19,6 +19,7 @@ package org.amdocs.tsuzammen.plugin.collaborationstore.git.utils;
 
 import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
+import org.amdocs.tsuzammen.datatypes.collaboration.ChangeType;
 import org.amdocs.tsuzammen.datatypes.collaboration.Conflict;
 import org.amdocs.tsuzammen.datatypes.collaboration.FileConflicts;
 import org.amdocs.tsuzammen.datatypes.collaboration.FileSyncInfo;
@@ -191,7 +192,7 @@ public class SourceControlUtil {
   private static FileSyncInfo convertDiffEntityToFilesyncInfo(DiffEntry diff) {
     FileSyncInfo fileSyncInfo = new FileSyncInfo();
     fileSyncInfo.setFileName(diff.getNewPath());
-    fileSyncInfo.setAction(diff.getChangeType().name());
+    fileSyncInfo.setAction(ChangeType.valueOf(diff.getChangeType().name()));
     return fileSyncInfo;
   }
 
