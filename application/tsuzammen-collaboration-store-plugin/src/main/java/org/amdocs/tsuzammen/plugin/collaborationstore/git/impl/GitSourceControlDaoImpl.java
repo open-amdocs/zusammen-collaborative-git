@@ -20,6 +20,7 @@ package org.amdocs.tsuzammen.plugin.collaborationstore.git.impl;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.commands.RevisionDiffCommand;
+import org.amdocs.tsuzammen.utils.common.CommonMethods;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -53,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 public class GitSourceControlDaoImpl implements GitSourceControlDao {
   @Override
@@ -216,7 +218,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
 
     try {
       command.setRemoteBranchName(branchId);
-      command.setRebase(true);
+      //command.setRebase(true);
       command.setStrategy(MergeStrategy.RESOLVE);
       return command.call();
 

@@ -20,10 +20,8 @@ import org.amdocs.tsuzammen.commons.configuration.impl.ConfigurationAccessor;
 import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.Namespace;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
-import org.amdocs.tsuzammen.datatypes.collaboration.FileSyncInfo;
 import org.amdocs.tsuzammen.datatypes.collaboration.MergeResponse;
 import org.amdocs.tsuzammen.datatypes.collaboration.PublishResult;
-import org.amdocs.tsuzammen.datatypes.collaboration.SyncResponse;
 import org.amdocs.tsuzammen.datatypes.item.ElementContext;
 import org.amdocs.tsuzammen.datatypes.item.Info;
 import org.amdocs.tsuzammen.datatypes.item.ItemVersion;
@@ -33,7 +31,9 @@ import org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.ElementDataUtil;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.SourceControlUtil;
 import org.amdocs.tsuzammen.sdk.CollaborationStore;
+import org.amdocs.tsuzammen.sdk.types.ChangedElementData;
 import org.amdocs.tsuzammen.sdk.types.ElementData;
+import org.amdocs.tsuzammen.sdk.types.SyncResult;
 import org.amdocs.tsuzammen.sdk.utils.SdkConstants;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.Git;
@@ -113,7 +113,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git = dao.openRepository(context, repositoryPath);
     createItemVersionInt(context, git, baseBranchId, versionId.getValue().toString(), versionInfo);
-    boolean commitRequired = storeItemVersionInfo(context, git,itemId, versionInfo);
+    boolean commitRequired = storeItemVersionInfo(context, git, itemId, versionInfo);
     if (commitRequired) {
       dao.commit(context, git, SAVE_ITEM_VERSION_MESSAGE);
     }
@@ -214,8 +214,8 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public SyncResponse syncItemVersion(SessionContext context, Id itemId, Id versionId) {
-    SyncResponse result;
+  public SyncResult syncItemVersion(SessionContext context, Id itemId, Id versionId) {
+    SyncResult result;
     GitSourceControlDao dao = getSourceControlDao(context);
     String repositoryPath =
         SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH, itemId);
@@ -228,25 +228,27 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       dao.checkoutBranch(context, git, branch);
       oldId = dao.getHead(context, git);
       PullResult syncResult = dao.sync(context, git, branch);
-      result = SourceControlUtil.handleSyncResponse(git, syncResult);
+      result = SourceControlUtil.handleSyncResponse(context, git, syncResult);
     } else {
       String publicPath = resolveTenantPath(context, PUBLIC_PATH);
       git = dao.clone(context,
           SourceControlUtil.getPublicRepositoryPath(context, publicPath, itemId),
           repositoryPath, branch);
-      result = new SyncResponse();
+      result = new SyncResult();
     }
-    Collection<FileSyncInfo> fileSyncInfoCollection = SourceControlUtil.handleSyncFileDiff
-        (context, dao, git, oldId);
-    result.setFileSyncInfoCollection(fileSyncInfoCollection);
+    Collection<ChangedElementData> changedElementDataCollection = SourceControlUtil
+        .handleSyncFileDiff
+            (context, dao, git, itemId, versionId, oldId);
+
+    result.setChangedElementDataCollection(changedElementDataCollection);
     dao.close(context, git);
     return result;
   }
 
   @Override
-  public MergeResponse mergeItemVersion(SessionContext context, Id itemId, Id versionId, Id
+  public SyncResult mergeItemVersion(SessionContext context, Id itemId, Id versionId, Id
       sourceVersionId) {
-    MergeResponse result;
+    SyncResult result;
     GitSourceControlDao dao = getSourceControlDao(context);
     String repositoryPath =
         SourceControlUtil.getPrivateRepositoryPath(context, PRIVATE_PATH, itemId);
@@ -254,20 +256,28 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     Git git;
     String branch = versionId.getValue().toString();
     String sourceBranch = sourceVersionId.getValue().toString();
+    ObjectId oldId = null;
     if (FileUtils.exists(repositoryPath)) {
       git = dao.openRepository(context, repositoryPath);
       dao.checkoutBranch(context, git, branch);
+      oldId = dao.getHead(context, git);
       MergeResult mergeResult =
           dao.merge(context, git, sourceBranch, MergeCommand.FastForwardMode.FF);
-      result = SourceControlUtil.handleMergeResponse(git, mergeResult);
+      result = SourceControlUtil.handleMergeResponse(context,git, mergeResult);
     } else {
       String publicPath = resolveTenantPath(context, PUBLIC_PATH);
       git = dao.clone(context,
           SourceControlUtil.getPublicRepositoryPath(context, publicPath, itemId),
           repositoryPath, branch);
-      result = new MergeResponse();
+      result = new SyncResult();
     }
-    dao.checkoutBranch(context, git, branch);
+
+    Collection<ChangedElementData> changedElementDataCollection = SourceControlUtil
+        .handleSyncFileDiff
+            (context, dao, git, itemId, versionId, oldId);
+
+    result.setChangedElementDataCollection(changedElementDataCollection);
+
     dao.close(context, git);
     return result;
   }
@@ -338,8 +348,8 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   public void addFileContent(SessionContext context, Git git, String path,
-                              String fileName, Object fileContent) {
-    ElementDataUtil.init().addFileContent(context,git,path,fileName,fileContent);
+                             String fileName, Object fileContent) {
+    ElementDataUtil.init().addFileContent(context, git, path, fileName, fileContent);
   }
 
 
