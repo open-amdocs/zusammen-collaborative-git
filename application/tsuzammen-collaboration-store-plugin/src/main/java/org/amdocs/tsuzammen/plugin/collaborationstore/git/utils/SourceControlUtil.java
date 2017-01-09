@@ -21,16 +21,14 @@ import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.datatypes.collaboration.ChangeType;
 import org.amdocs.tsuzammen.datatypes.collaboration.FileSyncInfo;
-import org.amdocs.tsuzammen.datatypes.collaboration.MergeResponse;
-import org.amdocs.tsuzammen.datatypes.item.ElementInfo;
 import org.amdocs.tsuzammen.datatypes.item.Info;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.SourceControlDaoFactory;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.types.LocalRemoteDataConflict;
-import org.amdocs.tsuzammen.sdk.types.ChangedElementData;
-import org.amdocs.tsuzammen.sdk.types.ElementConflicts;
+import org.amdocs.tsuzammen.sdk.types.CollaborationChangedElementData;
+import org.amdocs.tsuzammen.sdk.types.CollaborationElementDataConflicts;
 import org.amdocs.tsuzammen.sdk.types.ElementData;
-import org.amdocs.tsuzammen.sdk.types.SyncResult;
+import org.amdocs.tsuzammen.sdk.types.CollaborationSyncResult;
 import org.amdocs.tsuzammen.utils.common.CommonMethods;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.amdocs.tsuzammen.utils.fileutils.json.JsonUtil;
@@ -82,19 +80,19 @@ public class SourceControlUtil {
     return sb.toString();
   }
 
-  public static SyncResult handleSyncResponse(SessionContext context, Git git, PullResult
+  public static CollaborationSyncResult handleSyncResponse(SessionContext context, Git git, PullResult
       pullResult) {
 
     if (pullResult != null && !pullResult.isSuccessful()){
       return handleMergeResponse(context,git,pullResult.getMergeResult());
     }
-    return new SyncResult();
+    return new CollaborationSyncResult();
   }
 
-  public static SyncResult handleMergeResponse(SessionContext context,Git git, MergeResult
+  public static CollaborationSyncResult handleMergeResponse(SessionContext context,Git git, MergeResult
       mergeResult) {
 
-    SyncResult result = new SyncResult();
+    CollaborationSyncResult result = new CollaborationSyncResult();
     String elementId;
     Map<String, ElementData> elementDataMap = new HashMap<>();
     ElementData elementData;
@@ -125,8 +123,8 @@ public class SourceControlUtil {
   }
 
 
-  private static ElementConflicts handleElementConflict(ElementData elementData) {
-    ElementConflicts elementConflicts = new ElementConflicts();
+  private static CollaborationElementDataConflicts handleElementConflict(ElementData elementData) {
+    CollaborationElementDataConflicts elementConflicts = new CollaborationElementDataConflicts();
     elementConflicts.setLocalElementData(new ElementData());
     elementConflicts.setRemoteElementData(new ElementData());
 
@@ -190,25 +188,26 @@ public class SourceControlUtil {
     return localRemoteDataConflict;
   }
 
-  public static Collection<ChangedElementData> handleSyncFileDiff(SessionContext context,
-                                                                  GitSourceControlDao dao, Git git,
-                                                                  Id itemId, Id versionId,
-                                                                  ObjectId from) {
+  public static Collection<CollaborationChangedElementData> handleSyncFileDiff(SessionContext
+                                                                                  context,
+                                                                               GitSourceControlDao dao, Git git,
+                                                                               Id itemId, Id versionId,
+                                                                               ObjectId from) {
     ObjectId newId = dao.getHead(context, git);
     Collection<DiffEntry> diffs = dao.revisionDiff(context, git, from, newId);
-    Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
+    Collection<CollaborationChangedElementData> changedElementInfoCollection = new ArrayList<>();
 
     if (diffs != null) {
       Set<String> elementDataSet = new HashSet();
       String elementId;
       ElementData elementData;
-      ChangedElementData changedElementData;
+      CollaborationChangedElementData changedElementData;
       for (DiffEntry diff : diffs) {
         elementId = extractEelementIdFromFilePath(diff.getNewPath());
         if (!elementDataSet.contains(elementId)) {
           elementData = ElementDataUtil.init().uploadElementData(context, git, diff.getNewPath());
           elementDataSet.add(elementId);
-          changedElementData = new ChangedElementData();
+          changedElementData = new CollaborationChangedElementData();
           changedElementData.setChangeType(ChangeType.valueOf(diff.getChangeType().name()));
           changedElementData.setElementData(elementData);
           changedElementInfoCollection.add(changedElementData);
