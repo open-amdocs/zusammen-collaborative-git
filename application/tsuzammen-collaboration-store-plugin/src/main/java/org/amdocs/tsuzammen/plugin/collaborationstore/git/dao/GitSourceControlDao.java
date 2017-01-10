@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.amdocs.tsuzammen.plugin.collaborationstore.git;
+package org.amdocs.tsuzammen.plugin.collaborationstore.git.dao;
 
 
 import org.amdocs.tsuzammen.datatypes.SessionContext;

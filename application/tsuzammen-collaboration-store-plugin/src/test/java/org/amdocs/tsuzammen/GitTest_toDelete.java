@@ -21,7 +21,7 @@ import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.datatypes.UserInfo;
 import org.amdocs.tsuzammen.datatypes.item.Info;
-import org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.GitCollaborationStorePluginImpl;
+import org.amdocs.tsuzammen.plugin.collaborationstore.git.main.GitCollaborationStorePluginImpl;
 
 import java.util.ArrayList;
 import java.util.List;

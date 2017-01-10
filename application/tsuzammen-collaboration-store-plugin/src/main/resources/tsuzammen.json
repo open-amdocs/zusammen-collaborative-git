@@ -3,7 +3,8 @@
     "level": 1,
     "plugins": {
       "tsuzammen_collaborative_store": {
-        "implementationClass": "org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.GitCollaborationStorePluginImpl"
+        "implementationClass":
+        "org.amdocs.tsuzammen.plugin.collaborationstore.git.main.GitCollaborationStorePluginImpl"
       }
     }
   }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin;
+package org.amdocs.tsuzammen.plugin.collaborationstore.git.main;
 
 import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.Namespace;
@@ -22,7 +22,7 @@ import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.datatypes.UserInfo;
 import org.amdocs.tsuzammen.datatypes.item.ElementContext;
 import org.amdocs.tsuzammen.datatypes.item.Info;
-import org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.mocks.GitSourceControlDaoEmptyImpl;
+import org.amdocs.tsuzammen.plugin.collaborationstore.git.main.mocks.GitSourceControlDaoEmptyImpl;
 import org.amdocs.tsuzammen.sdk.types.ElementData;
 import org.eclipse.jgit.api.Git;
 import org.mockito.Mockito;

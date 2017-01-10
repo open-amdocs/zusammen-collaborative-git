@@ -22,18 +22,16 @@ import org.amdocs.tsuzammen.datatypes.SessionContext;
 import org.amdocs.tsuzammen.datatypes.item.ElementInfo;
 import org.amdocs.tsuzammen.datatypes.item.Info;
 import org.amdocs.tsuzammen.datatypes.item.Relation;
-import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
-import org.amdocs.tsuzammen.plugin.collaborationstore.git.SourceControlDaoFactory;
+import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
+import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.SourceControlDaoFactory;
 import org.amdocs.tsuzammen.sdk.types.ElementData;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.amdocs.tsuzammen.utils.fileutils.json.JsonUtil;
 import org.eclipse.jgit.api.Git;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 

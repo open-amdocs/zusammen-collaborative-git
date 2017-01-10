@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.amdocs.tsuzammen.plugin.collaborationstore.git.impl;
+package org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.util;
 
 import org.amdocs.tsuzammen.commons.configuration.impl.ConfigurationAccessor;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
@@ -24,7 +24,6 @@ import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.URIish;
 
 import java.util.BitSet;
-import java.util.Optional;
 
 
 public class CredentialsProvider {

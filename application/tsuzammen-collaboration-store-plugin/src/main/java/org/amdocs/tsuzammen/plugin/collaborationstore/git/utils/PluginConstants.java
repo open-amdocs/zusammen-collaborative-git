@@ -16,12 +16,15 @@
 
 package org.amdocs.tsuzammen.plugin.collaborationstore.git.utils;
 
+import org.amdocs.tsuzammen.commons.configuration.impl.ConfigurationAccessor;
+import org.amdocs.tsuzammen.sdk.utils.SdkConstants;
+
 public class PluginConstants {
-  public static final String PUBLIC_PATH = "public.path";
-  public static final String PUBLIC_URL = "public.url";
-  public static final String BP_PATH = "blueprint.path";
-  public static final String PRIVATE_PATH = "private.path";
-  public static final String MASTER_BRANCH = "master.branch";
+  public static final String PUBLIC_PATH_PROP = "public.path";
+  public static final String PUBLIC_URL_PROP = "public.url";
+  public static final String BP_PATH_PROP = "blueprint.path";
+  public static final String PRIVATE_PATH_PROP = "private.path";
+  public static final String MASTER_BRANCH_PROP = "master.branch";
 
   //file names
   public static final String ITEM_VERSION_INFO_FILE_NAME = "itemVersionInfo.json";
@@ -32,4 +35,17 @@ public class PluginConstants {
   public static final String DATA_FILE_NAME = "data";
   //public static final String INITIAL_BRANCH = "main";
   public static final String SEARCH_DATA_FILE_NAME = "search";
+
+  public static final String SAVE_ITEM_VERSION_MESSAGE = "Save Item Version";
+  public static final String DELETE_ITEM_VERSION_MESSAGE = "Delete Item Version";
+  public static final String ADD_ITEM_INFO_MESSAGE = "Add Item Info";
+  public static String PUBLIC_PATH = ConfigurationAccessor.getPluginProperty(SdkConstants
+      .TSUZAMMEN_COLLABORATIVE_STORE, PUBLIC_PATH_PROP);
+  public static String PRIVATE_PATH = ConfigurationAccessor.getPluginProperty(
+      SdkConstants.TSUZAMMEN_COLLABORATIVE_STORE, PRIVATE_PATH_PROP);
+  public static String PUBLIC_URL = ConfigurationAccessor.getPluginProperty(
+      SdkConstants.TSUZAMMEN_COLLABORATIVE_STORE, PUBLIC_URL_PROP);
+  public static String BP_PATH = ConfigurationAccessor.getPluginProperty(
+      SdkConstants.TSUZAMMEN_COLLABORATIVE_STORE, BP_PATH_PROP);
+  public static String TENANT = "{tenant}";
 }

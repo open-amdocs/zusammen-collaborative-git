@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.amdocs.tsuzammen.plugin.collaborationstore.git.plugin.mocks;
+package org.amdocs.tsuzammen.plugin.collaborationstore.git.main.mocks;
 
 import org.amdocs.tsuzammen.datatypes.SessionContext;
-import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
+import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;

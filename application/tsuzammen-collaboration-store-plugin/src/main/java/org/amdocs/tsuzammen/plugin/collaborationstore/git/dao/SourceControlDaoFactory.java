@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-package org.amdocs.tsuzammen.plugin.collaborationstore.git.impl;
+package org.amdocs.tsuzammen.plugin.collaborationstore.git.dao;
 
 import org.amdocs.tsuzammen.datatypes.SessionContext;
-import org.amdocs.tsuzammen.plugin.collaborationstore.git.GitSourceControlDao;
-import org.amdocs.tsuzammen.plugin.collaborationstore.git.SourceControlDaoFactory;
+import org.amdocs.tsuzammen.utils.facade.api.AbstractComponentFactory;
+import org.amdocs.tsuzammen.utils.facade.api.AbstractFactory;
 
-public class SourceControlDaoFactoryImpl extends SourceControlDaoFactory {
-  @Override
-  public GitSourceControlDao createInterface(SessionContext context) {
-    return new GitSourceControlDaoImpl();
+public abstract class SourceControlDaoFactory
+    extends AbstractComponentFactory<GitSourceControlDao> {
+
+  public static SourceControlDaoFactory getInstance() {
+    return AbstractFactory.getInstance(SourceControlDaoFactory.class);
   }
+
+  public abstract <T> GitSourceControlDao createInterface(SessionContext context);
 }
