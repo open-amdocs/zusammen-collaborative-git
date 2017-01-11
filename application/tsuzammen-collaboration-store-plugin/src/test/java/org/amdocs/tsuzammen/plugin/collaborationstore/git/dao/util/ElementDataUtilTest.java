@@ -19,12 +19,9 @@ package org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.util;
 import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.Namespace;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
-import org.amdocs.tsuzammen.datatypes.item.ElementContext;
 import org.amdocs.tsuzammen.datatypes.item.Info;
-import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.util.TestUtil;
 import org.amdocs.tsuzammen.sdk.types.ElementData;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -44,17 +41,12 @@ public class ElementDataUtilTest {
   //@Spy
   private ElementDataUtil elementDataUtil;
   // = spy(new ItemVersionCollaborationStore());
-  @Mock
-  private GitSourceControlDao gitSourceControlDaoMock;
-  @Mock
-  private SourceControlUtil sourceControlUtil;
+
 
   private static final Id ITEM_ID = new Id();
-  private static final Id VERSION_ID = new Id();
-  private static final Id BASE_VERSION_ID = new Id();
+
   private static final SessionContext context = TestUtil.createSessionContext();
-  private static final ElementContext elementContext = new ElementContext(ITEM_ID.toString(),
-      VERSION_ID.toString());
+
   private static final String NAME_SPACE = (new Id()).toString() + File.separator + (new Id())
       .toString();
 
