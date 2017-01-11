@@ -105,7 +105,7 @@ public class ElementDataUtilTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-    ElementData elementData = new ElementData(ITEM_ID,VERSION_ID,namespace,ElementDataUtilTest.class);
+    ElementData elementData = new ElementData(ITEM_ID,VERSION_ID,namespace);
 
     elementData.setData(new ByteArrayInputStream("testUpdateElementData()".getBytes()));
 
@@ -126,7 +126,7 @@ public class ElementDataUtilTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-    ElementData elementData = new ElementData(ITEM_ID,VERSION_ID,namespace,ElementDataUtilTest.class);
+    ElementData elementData = new ElementData(ITEM_ID,VERSION_ID,namespace);
 
     elementData.setData(new ByteArrayInputStream("testUpdateElementData()".getBytes()));
     Info info = new Info();

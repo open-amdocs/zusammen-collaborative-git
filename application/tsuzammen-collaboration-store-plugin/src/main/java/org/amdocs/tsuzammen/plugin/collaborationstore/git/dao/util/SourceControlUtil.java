@@ -132,9 +132,9 @@ public class SourceControlUtil {
   private  CollaborationElementDataConflicts handleElementConflict(ElementData elementData) {
     CollaborationElementDataConflicts elementConflicts = new CollaborationElementDataConflicts();
     elementConflicts.setLocalElementData(new ElementData(elementData.getItemId(),elementData
-        .getVersionId(),elementData.getNamespace(),elementData.getClass()));
+        .getVersionId(),elementData.getNamespace()));
     elementConflicts.setRemoteElementData(new ElementData(elementData.getItemId(),elementData
-        .getVersionId(),elementData.getNamespace(),elementData.getClass()));
+        .getVersionId(),elementData.getNamespace()));
 
     //data
     LocalRemoteDataConflict localRemoteDataConflict = splitMergedFile(elementData.getData());
@@ -151,10 +151,10 @@ public class SourceControlUtil {
         String(localRemoteDataConflict.getRemote()), Info.class));
 
     //search data
-    localRemoteDataConflict = splitMergedFile(elementData.getSearchData());
-    elementConflicts.getLocalElementData().setSearchData(new ByteArrayInputStream
+    localRemoteDataConflict = splitMergedFile(elementData.getSearchableData());
+    elementConflicts.getLocalElementData().setSearchableData(new ByteArrayInputStream
         (localRemoteDataConflict.getLocal()));
-    elementConflicts.getRemoteElementData().setSearchData(new ByteArrayInputStream
+    elementConflicts.getRemoteElementData().setSearchableData(new ByteArrayInputStream
         (localRemoteDataConflict.getRemote()));
 
     return elementConflicts;

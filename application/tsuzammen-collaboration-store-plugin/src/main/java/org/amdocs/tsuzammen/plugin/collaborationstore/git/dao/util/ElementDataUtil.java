@@ -46,13 +46,11 @@ public class ElementDataUtil {
   public ElementData uploadElementData(SessionContext context, Git git, String elementPath){
     ElementInfo elementInfo = uploadElementInfo(context,git,elementPath);
     Optional<InputStream> fileContent;
-    fileContent = getFileContent(context, git,elementPath, PluginConstants.IMPL_FILE_NAME);
     ElementData elementData = null;
     try {
         elementData = new ElementData(new Id(git.getRepository().getDirectory().getName()),new Id(git
-            .getRepository().getBranch()),null,Class.forName(new String(FileUtils.toByteArray
-            (fileContent.get()))));
-    } catch (IOException | ClassNotFoundException e) {
+            .getRepository().getBranch()),null);
+    } catch (IOException e) {
       e.printStackTrace();
     }
     elementData.setInfo(elementInfo.getInfo());
@@ -70,19 +68,14 @@ public class ElementDataUtil {
 
     fileContent = getFileContent(context, git,elementPath, PluginConstants.SEARCH_DATA_FILE_NAME);
     if (fileContent.isPresent()) {
-      elementData.setSearchData(fileContent.get());
+      elementData.setSearchableData(fileContent.get());
     }
 
     List<String> subElementIds = getSubElementIds(context,git,elementPath);
     String type;
     for (String subElementId:subElementIds) {
-      type = new String(FileUtils.toByteArray(getFileContent(context, git, elementPath + File
-          .separator + subElementId, PluginConstants.IMPL_FILE_NAME).get()));
-      try {
-        elementData.putSubElement(new Id(subElementId), Class.forName(type));
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
+      elementData.addSubElement(new Id(subElementId));
+
     }
     return elementData;
   }
@@ -133,9 +126,9 @@ public class ElementDataUtil {
           elementPath, PluginConstants.DATA_FILE_NAME, elementData.getData());
     }
 
-    if (elementData.getSearchData() != null) {
+    if (elementData.getSearchableData() != null) {
       addFileContent(context, git,
-          elementPath, PluginConstants.SEARCH_DATA_FILE_NAME, elementData.getSearchData());
+          elementPath, PluginConstants.SEARCH_DATA_FILE_NAME, elementData.getSearchableData());
     }
 
     Info info = elementData.getInfo();

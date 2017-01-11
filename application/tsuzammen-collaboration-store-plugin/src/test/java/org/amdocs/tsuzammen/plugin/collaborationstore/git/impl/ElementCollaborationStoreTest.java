@@ -50,11 +50,9 @@ public class ElementCollaborationStoreTest {
 
   private static final Id ITEM_ID = new Id();
   private static final Id VERSION_ID = new Id();
-  private static final Id BASE_VERSION_ID = new Id();
   private static final String NAME_SPACE = (new Id()).toString() + File.separator + (new Id());
   private static final SessionContext context = TestUtil.createSessionContext();
-  private static final ElementContext elementContext = new ElementContext(ITEM_ID.toString(),
-      VERSION_ID.toString());
+
 
   @BeforeMethod
   public void init() {
@@ -94,7 +92,7 @@ public class ElementCollaborationStoreTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
     ElementData elementData =
-        new ElementData(ITEM_ID, VERSION_ID, namespace, ElementCollaborationStoreTest.class);
+        new ElementData(ITEM_ID, VERSION_ID, namespace);
     elementCollaborationStore.create(context, elementData);
 
     verify(gitSourceControlDaoMock).openRepository(context,
@@ -112,7 +110,7 @@ public class ElementCollaborationStoreTest {
     namespace.setValue(NAME_SPACE);
 
     ElementData elementData =
-        new ElementData(ITEM_ID, VERSION_ID, namespace, ElementCollaborationStoreTest.class);
+        new ElementData(ITEM_ID, VERSION_ID, namespace);
 
 
     elementCollaborationStore.save(context, elementData
@@ -132,7 +130,7 @@ public class ElementCollaborationStoreTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
     ElementData elementData =
-        new ElementData(ITEM_ID, VERSION_ID, namespace, ElementCollaborationStoreTest.class);
+        new ElementData(ITEM_ID, VERSION_ID, namespace);
     elementCollaborationStore.delete(context, elementData);
 
     verify(gitSourceControlDaoMock).openRepository(context,
