@@ -23,9 +23,7 @@ import org.amdocs.tsuzammen.datatypes.item.ElementContext;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.util.SourceControlUtil;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.util.TestUtil;
-import org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.amdocs.tsuzammen.sdk.types.ElementData;
-import org.eclipse.jgit.api.Git;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -38,7 +36,6 @@ import java.io.File;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.testng.Assert.*;
 
 public class ElementCollaborationStoreTest {
 
@@ -54,6 +51,7 @@ public class ElementCollaborationStoreTest {
   private static final Id ITEM_ID = new Id();
   private static final Id VERSION_ID = new Id();
   private static final Id BASE_VERSION_ID = new Id();
+  private static final String NAME_SPACE = (new Id()).toString() + File.separator + (new Id());
   private static final SessionContext context = TestUtil.createSessionContext();
   private static final ElementContext elementContext = new ElementContext(ITEM_ID.toString(),
       VERSION_ID.toString());
@@ -64,15 +62,13 @@ public class ElementCollaborationStoreTest {
     MockitoAnnotations.initMocks(this);
 
 
-
-
     Mockito.doNothing().when(elementCollaborationStore).addFileContent(anyObject(), anyObject(),
         anyObject(),
         anyObject(),
         anyObject());
 
-    Mockito.doNothing().when(elementCollaborationStore).updateElementData(anyObject(),anyObject()
-        ,anyObject(),anyObject());
+    Mockito.doNothing().when(elementCollaborationStore).updateElementData(anyObject(), anyObject()
+        , anyObject(), anyObject());
 
     when(elementCollaborationStore.getSourceControlDao(anyObject())).thenReturn
         (gitSourceControlDaoMock);
@@ -85,61 +81,66 @@ public class ElementCollaborationStoreTest {
         (anyObject(), anyObject())).thenReturn(null);
 
     when(gitSourceControlDaoMock.add
-        (anyObject(), anyObject(),anyObject())).thenReturn(null);
+        (anyObject(), anyObject(), anyObject())).thenReturn(null);
 
     when(gitSourceControlDaoMock.clone
         (anyObject(), anyObject(), anyObject())).thenReturn(null);
   }
 
 
-
   @Test
   public void testCreate() throws Exception {
-    ElementData elementData = new ElementData();
-    Namespace namespace = new Namespace();
-    namespace.setValue("10000/20000");
 
-    elementCollaborationStore.create(context,elementContext,namespace,elementData);
+    Namespace namespace = new Namespace();
+    namespace.setValue(NAME_SPACE);
+    ElementData elementData =
+        new ElementData(ITEM_ID, VERSION_ID, namespace, ElementCollaborationStoreTest.class);
+    elementCollaborationStore.create(context, elementData);
 
     verify(gitSourceControlDaoMock).openRepository(context,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
 
-    verify(elementCollaborationStore).updateElementData(context,null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\"+ITEM_ID
-            .toString()+"\\10000\\20000",elementData);
+    verify(elementCollaborationStore).updateElementData(context, null,
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
+            .toString() + "\\" + NAME_SPACE, elementData);
 
   }
 
   @Test
   public void testSave() throws Exception {
-
-    ElementData elementData = new ElementData();
     Namespace namespace = new Namespace();
-    namespace.setValue("10000/20000");
+    namespace.setValue(NAME_SPACE);
 
-    elementCollaborationStore.save(context,elementContext,namespace,elementData);
+    ElementData elementData =
+        new ElementData(ITEM_ID, VERSION_ID, namespace, ElementCollaborationStoreTest.class);
+
+
+    elementCollaborationStore.save(context, elementData
+    );
 
     verify(gitSourceControlDaoMock).openRepository(context,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
 
-    verify(elementCollaborationStore).updateElementData(context,null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\"+ITEM_ID
-            .toString()+"\\10000\\20000",elementData);
+    verify(elementCollaborationStore).updateElementData(context, null,
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
+            .toString() + "\\" + NAME_SPACE, elementData);
   }
 
   @Test
   public void testDelete() throws Exception {
-    ElementData elementData = new ElementData();
-    Namespace namespace = new Namespace();
-    namespace.setValue("10000/20000");
 
-    elementCollaborationStore.delete(context,elementContext,namespace,elementData);
+    Namespace namespace = new Namespace();
+    namespace.setValue(NAME_SPACE);
+    ElementData elementData =
+        new ElementData(ITEM_ID, VERSION_ID, namespace, ElementCollaborationStoreTest.class);
+    elementCollaborationStore.delete(context, elementData);
 
     verify(gitSourceControlDaoMock).openRepository(context,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString());
 
     verify(gitSourceControlDaoMock).delete(context,
-        null,"/git/test/private\\users\\COLLABORATION_TEST\\"+ITEM_ID.toString()+"\\10000/20000");
+        null,
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" + NAME_SPACE);
   }
 
   @Test

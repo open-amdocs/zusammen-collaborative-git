@@ -31,6 +31,7 @@ import org.amdocs.tsuzammen.utils.fileutils.json.JsonUtil;
 import org.eclipse.jgit.api.Git;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,22 +45,18 @@ public class ElementDataUtil {
 
   public ElementData uploadElementData(SessionContext context, Git git, String elementPath){
     ElementInfo elementInfo = uploadElementInfo(context,git,elementPath);
-
-    ElementData elementData = new ElementData();
-    elementData.setInfo(elementInfo.getInfo());
-    elementData.setRelations(elementInfo.getRelations());
-    //elementData.setSearchData(elementInfo.getSearchData());
-
     Optional<InputStream> fileContent;
     fileContent = getFileContent(context, git,elementPath, PluginConstants.IMPL_FILE_NAME);
+    ElementData elementData = null;
     try {
-      elementData.setElementImplClass(Class.forName(new String(FileUtils.toByteArray(fileContent.get())
-      )));
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
+        elementData = new ElementData(new Id(git.getRepository().getDirectory().getName()),new Id(git
+            .getRepository().getBranch()),null,Class.forName(new String(FileUtils.toByteArray
+            (fileContent.get()))));
+    } catch (IOException | ClassNotFoundException e) {
+      e.printStackTrace();
     }
-
-
+    elementData.setInfo(elementInfo.getInfo());
+    elementData.setRelations(elementInfo.getRelations());
 
     fileContent = getFileContent(context, git,elementPath, PluginConstants.VISUALIZATION_FILE_NAME);
     if (fileContent.isPresent()) {

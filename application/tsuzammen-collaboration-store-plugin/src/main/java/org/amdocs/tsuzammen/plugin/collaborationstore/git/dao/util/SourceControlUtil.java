@@ -131,8 +131,10 @@ public class SourceControlUtil {
 
   private  CollaborationElementDataConflicts handleElementConflict(ElementData elementData) {
     CollaborationElementDataConflicts elementConflicts = new CollaborationElementDataConflicts();
-    elementConflicts.setLocalElementData(new ElementData());
-    elementConflicts.setRemoteElementData(new ElementData());
+    elementConflicts.setLocalElementData(new ElementData(elementData.getItemId(),elementData
+        .getVersionId(),elementData.getNamespace(),elementData.getClass()));
+    elementConflicts.setRemoteElementData(new ElementData(elementData.getItemId(),elementData
+        .getVersionId(),elementData.getNamespace(),elementData.getClass()));
 
     //data
     LocalRemoteDataConflict localRemoteDataConflict = splitMergedFile(elementData.getData());

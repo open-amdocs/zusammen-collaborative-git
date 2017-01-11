@@ -66,22 +66,19 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public void createElement(SessionContext context, ElementContext elementContext,
-                            Namespace namespace, ElementData elementData) {
-    elementCollaborationStore.create(context, elementContext, namespace, elementData);
+  public void createElement(SessionContext context, ElementData elementData) {
+    elementCollaborationStore.create(context,  elementData);
   }
 
   @Override
-  public void saveElement(SessionContext context, ElementContext elementContext,
-                          Namespace namespace, ElementData elementData) {
-    elementCollaborationStore.save(context, elementContext, namespace, elementData);
+  public void saveElement(SessionContext context,  ElementData elementData) {
+    elementCollaborationStore.save(context,  elementData);
   }
 
   @Override
-  public void deleteElement(SessionContext context, ElementContext elementContext,
-                            Namespace namespace, ElementData elementData) {
+  public void deleteElement(SessionContext context,  ElementData elementData) {
 
-    elementCollaborationStore.delete(context, elementContext, namespace, elementData);
+    elementCollaborationStore.delete(context,  elementData);
   }
 
   @Override

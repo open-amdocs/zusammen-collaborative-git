@@ -41,6 +41,7 @@ public class ElementDataUtilTest {
   private ElementDataUtil elementDataUtil;
   // = spy(new ItemVersionCollaborationStore());
   private static final Id ITEM_ID = new Id();
+  private static final Id VERSION_ID = new Id();
 
   private static final SessionContext context = TestUtil.createSessionContext();
 
@@ -104,8 +105,8 @@ public class ElementDataUtilTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-    ElementData elementData = new ElementData();
-    elementData.setElementImplClass(ElementDataUtilTest.class);
+    ElementData elementData = new ElementData(ITEM_ID,VERSION_ID,namespace,ElementDataUtilTest.class);
+
     elementData.setData(new ByteArrayInputStream("testUpdateElementData()".getBytes()));
 
     elementDataUtil
@@ -125,8 +126,8 @@ public class ElementDataUtilTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-    ElementData elementData = new ElementData();
-    elementData.setElementImplClass(ElementDataUtilTest.class);
+    ElementData elementData = new ElementData(ITEM_ID,VERSION_ID,namespace,ElementDataUtilTest.class);
+
     elementData.setData(new ByteArrayInputStream("testUpdateElementData()".getBytes()));
     Info info = new Info();
     info.setDescription("testUpdateElementDataContainDataAndInfo");
