@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.amdocs.tsuzammen.plugin.collaborationstore.git.utils;
+package org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.util;
 
 import com.google.gson.reflect.TypeToken;
 import org.amdocs.tsuzammen.datatypes.Id;
@@ -24,6 +24,7 @@ import org.amdocs.tsuzammen.datatypes.item.Info;
 import org.amdocs.tsuzammen.datatypes.item.Relation;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.SourceControlDaoFactory;
+import org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.amdocs.tsuzammen.sdk.types.ElementData;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.amdocs.tsuzammen.utils.fileutils.json.JsonUtil;
@@ -39,9 +40,7 @@ import static org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginCon
 
 public class ElementDataUtil {
 
-  public static ElementDataUtil init(){
-    return new ElementDataUtil();
-  }
+
 
   public ElementData uploadElementData(SessionContext context, Git git, String elementPath){
     ElementInfo elementInfo = uploadElementInfo(context,git,elementPath);
@@ -116,8 +115,10 @@ public class ElementDataUtil {
   }
 
   private String extractElementIdFromElementPath(String elementPath) {
-    String[] splitPath = elementPath.split(File.separator);
-    return splitPath[splitPath.length-1];
+
+    return (new File(elementPath)).getName();
+    /*String[] splitPath = elementPath.split(File.separator);
+    return splitPath[splitPath.length-1];*/
   }
 
 
@@ -135,13 +136,13 @@ public class ElementDataUtil {
           elementPath, PluginConstants.DATA_FILE_NAME, elementData.getData());
     }
 
-    if (elementData.getData() != null) {
+    if (elementData.getSearchData() != null) {
       addFileContent(context, git,
           elementPath, PluginConstants.SEARCH_DATA_FILE_NAME, elementData.getSearchData());
     }
 
     Info info = elementData.getInfo();
-    if (info != null && info.getProperties() != null && !info.getProperties().isEmpty()) {
+    if (info != null ) {
       addFileContent(context, git,
           elementPath, PluginConstants.INFO_FILE_NAME, info);
     }
@@ -150,8 +151,7 @@ public class ElementDataUtil {
 
 
   public void addFileContent(SessionContext context, Git git, String path, String fileName,
-                              Object
-                                  fileContent) {
+                              Object fileContent) {
 
     if (fileContent instanceof InputStream) {
       FileUtils
@@ -162,13 +162,13 @@ public class ElementDataUtil {
     getSourceControlDao(context).add(context, git, path + File.separator + fileName);
   }
 
-  private Optional<InputStream> getFileContent(SessionContext context, Git git, String
+  protected Optional<InputStream> getFileContent(SessionContext context, Git git, String
       path, String fileName) {
 
      return  FileUtils.readFile(path , fileName);
   }
 
-  private List<String> getSubElementIds(SessionContext context,Git git,String path){
+  protected List<String> getSubElementIds(SessionContext context,Git git,String path){
 
     List<String> elementIds = new ArrayList<>();
     File file = new File(path);

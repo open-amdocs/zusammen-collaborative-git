@@ -29,9 +29,9 @@ import java.io.File;
 
 import static org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants.INFO_FILE_NAME;
 
-public class ItemCollaborationStore {
-  public void createItem(SessionContext context, Id itemId, Info info) {
-   /* GitSourceControlDao dao = getSourceControlDao(context);
+public class ItemCollaborationStore extends CollaborationStore {
+  public void create(SessionContext context, Id itemId, Info info) {
+    GitSourceControlDao dao = getSourceControlDao(context);
     String itemPublicPath = PluginConstants.PUBLIC_PATH +
         File.separator + itemId;
     itemPublicPath = resolveTenantPath(context, itemPublicPath);
@@ -44,7 +44,8 @@ public class ItemCollaborationStore {
     itemPrivatePath = resolveTenantPath(context, itemPrivatePath);
     String itemPublicUrl = PluginConstants.PUBLIC_URL + "/" + itemId;
     itemPublicUrl = resolveTenantPath(context, itemPublicUrl);
-    String bluePrintPath = resolveTenantPath(context, PluginConstants.BP_PATH); *//*todo - add item type to the blue print*//*
+    String bluePrintPath = resolveTenantPath(context, PluginConstants.BP_PATH);
+    //todo - add item    type to the blue print
 
     String initialVersion = ConfigurationAccessor.getPluginProperty(SdkConstants
         .TSUZAMMEN_COLLABORATIVE_STORE, PluginConstants.MASTER_BRANCH_PROP);
@@ -55,6 +56,12 @@ public class ItemCollaborationStore {
       dao.commit(context, git, PluginConstants.ADD_ITEM_INFO_MESSAGE);
     }
 
-    dao.close(context, git);*/
+    dao.close(context, git);
   }
+
+  public void delete(SessionContext context, Id itemId) {
+    //todo - implement delete item
+  }
+
+
 }

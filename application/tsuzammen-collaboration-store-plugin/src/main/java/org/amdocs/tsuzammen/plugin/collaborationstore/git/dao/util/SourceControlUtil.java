@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.amdocs.tsuzammen.plugin.collaborationstore.git.utils;
+package org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.util;
 
 
 import org.amdocs.tsuzammen.datatypes.Id;
@@ -24,6 +24,7 @@ import org.amdocs.tsuzammen.datatypes.collaboration.FileSyncInfo;
 import org.amdocs.tsuzammen.datatypes.item.Info;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.SourceControlDaoFactory;
+import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.util.ElementDataUtil;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.types.LocalRemoteDataConflict;
 import org.amdocs.tsuzammen.sdk.types.CollaborationChangedElementData;
 import org.amdocs.tsuzammen.sdk.types.CollaborationElementDataConflicts;
@@ -50,18 +51,20 @@ import java.util.Set;
 
 public class SourceControlUtil {
 
-  private static final String HEADER_END = "<<<<<<<";
-  private static final String TRAILER_START = ">>>>>>>";
-  private static final String SWITCH_FILE = "=======";
+  private  final String HEADER_END = "<<<<<<<";
+  private  final String TRAILER_START = ">>>>>>>";
+  private  final String SWITCH_FILE = "=======";
 
-  private static String convertNamespaceToPath(String namespace) {
+  private final ElementDataUtil elementDataUtil = new ElementDataUtil();
+  
+  private  String convertNamespaceToPath(String namespace) {
     String[] pathArray = namespace.split(".");
 
     return CommonMethods.arrayToSeparatedString(pathArray, File.separatorChar);
   }
 
 
-  public static String getPrivateRepositoryPath(SessionContext context, String path, Id itemId) {
+  public String getPrivateRepositoryPath(SessionContext context, String path, Id itemId) {
     StringBuffer sb = new StringBuffer();
     sb.append(path).append(File.separator).append("users").append(File.separator).append(context
         .getUser()
@@ -72,7 +75,7 @@ public class SourceControlUtil {
     return sb.toString();
   }
 
-  public static String getPublicRepositoryPath(SessionContext context, String
+  public  String getPublicRepositoryPath(SessionContext context, String
       path, Id itemId) {
     StringBuffer sb = new StringBuffer();
     sb.append(path).append(File.separator).append(itemId.getValue().toString());
@@ -80,7 +83,7 @@ public class SourceControlUtil {
     return sb.toString();
   }
 
-  public static CollaborationSyncResult handleSyncResponse(SessionContext context, Git git, PullResult
+  public  CollaborationSyncResult handleSyncResponse(SessionContext context, Git git, PullResult
       pullResult) {
 
     if (pullResult != null && !pullResult.isSuccessful()){
@@ -89,7 +92,7 @@ public class SourceControlUtil {
     return new CollaborationSyncResult();
   }
 
-  public static CollaborationSyncResult handleMergeResponse(SessionContext context,Git git, MergeResult
+  public  CollaborationSyncResult handleMergeResponse(SessionContext context,Git git, MergeResult
       mergeResult) {
 
     CollaborationSyncResult result = new CollaborationSyncResult();
@@ -100,7 +103,7 @@ public class SourceControlUtil {
       for (String file : mergeResult.getConflicts().keySet()) {
         elementId = extractEelementIdFromFilePath(file);
         if (!elementDataMap.containsKey(elementId)) {
-          elementData = ElementDataUtil.init().uploadElementData(context, git, FileUtils.trimPath
+          elementData = elementDataUtil.uploadElementData(context, git, FileUtils.trimPath
               (file));
           elementDataMap.put(elementId, elementData);
         }
@@ -114,16 +117,19 @@ public class SourceControlUtil {
 
   }
 
-  private static boolean isMergeSuccesses(MergeResult mergeResult) {
-    return mergeResult!=null &&
+  private  boolean isMergeSuccesses(MergeResult mergeResult) {
+    return (mergeResult!=null &&
         !mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.ALREADY_UP_TO_DATE) &&
         !mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.MERGED) &&
         !mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.MERGED_NOT_COMMITTED) &&
-        !mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.FAST_FORWARD);
+        !mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.FAST_FORWARD)
+    || (mergeResult == null ||
+        mergeResult.getConflicts()==null ||
+        mergeResult.getConflicts().size()==0));
   }
 
 
-  private static CollaborationElementDataConflicts handleElementConflict(ElementData elementData) {
+  private  CollaborationElementDataConflicts handleElementConflict(ElementData elementData) {
     CollaborationElementDataConflicts elementConflicts = new CollaborationElementDataConflicts();
     elementConflicts.setLocalElementData(new ElementData());
     elementConflicts.setRemoteElementData(new ElementData());
@@ -153,12 +159,12 @@ public class SourceControlUtil {
 
   }
 
-  public static LocalRemoteDataConflict splitMergedFile(InputStream is) {
+  public  LocalRemoteDataConflict splitMergedFile(InputStream is) {
     String mergedFile = new String(FileUtils.toByteArray(is));
     return splitMergedFile(mergedFile);
   }
 
-  public static LocalRemoteDataConflict splitMergedFile(String mergedFile) {
+  public  LocalRemoteDataConflict splitMergedFile(String mergedFile) {
     LocalRemoteDataConflict localRemoteDataConflict = new LocalRemoteDataConflict();
     String[] lines = mergedFile.split("\\r\\n|\\r|\\n");
 
@@ -188,7 +194,7 @@ public class SourceControlUtil {
     return localRemoteDataConflict;
   }
 
-  public static Collection<CollaborationChangedElementData> handleSyncFileDiff(SessionContext
+  public  Collection<CollaborationChangedElementData> handleSyncFileDiff(SessionContext
                                                                                   context,
                                                                                GitSourceControlDao dao, Git git,
                                                                                Id itemId, Id versionId,
@@ -205,7 +211,7 @@ public class SourceControlUtil {
       for (DiffEntry diff : diffs) {
         elementId = extractEelementIdFromFilePath(diff.getNewPath());
         if (!elementDataSet.contains(elementId)) {
-          elementData = ElementDataUtil.init().uploadElementData(context, git, diff.getNewPath());
+          elementData = elementDataUtil.uploadElementData(context, git, diff.getNewPath());
           elementDataSet.add(elementId);
           changedElementData = new CollaborationChangedElementData();
           changedElementData.setChangeType(ChangeType.valueOf(diff.getChangeType().name()));
@@ -217,12 +223,12 @@ public class SourceControlUtil {
     return changedElementInfoCollection;
   }
 
-  private static String extractEelementIdFromFilePath(String path) {
+  private  String extractEelementIdFromFilePath(String path) {
     String[] splitPath = path.split(File.separator);
     return splitPath[splitPath.length - 2];
   }
 
-  private static FileSyncInfo convertDiffEntityToFilesyncInfo(DiffEntry diff) {
+  private  FileSyncInfo convertDiffEntityToFilesyncInfo(DiffEntry diff) {
     FileSyncInfo fileSyncInfo = new FileSyncInfo();
     fileSyncInfo.setFileName(diff.getNewPath());
     fileSyncInfo.setAction(ChangeType.valueOf(diff.getChangeType().name()));
@@ -230,7 +236,7 @@ public class SourceControlUtil {
   }
 
 
-  private static GitSourceControlDao getSourceControlDao(SessionContext context) {
+  private  GitSourceControlDao getSourceControlDao(SessionContext context) {
     return SourceControlDaoFactory.getInstance().createInterface(context);
   }
 }
