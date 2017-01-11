@@ -37,12 +37,9 @@ import static org.mockito.Mockito.verify;
 
 public class ElementDataUtilTest {
 
-
   //@Spy
   private ElementDataUtil elementDataUtil;
   // = spy(new ItemVersionCollaborationStore());
-
-
   private static final Id ITEM_ID = new Id();
 
   private static final SessionContext context = TestUtil.createSessionContext();
@@ -54,22 +51,14 @@ public class ElementDataUtilTest {
   public void init() {
 
     MockitoAnnotations.initMocks(this);
-
-
     elementDataUtil = spy(new ElementDataUtil());
     Mockito.doNothing().when(elementDataUtil).addFileContent(anyObject(), anyObject(),
         anyObject(),
         anyObject(),
         anyObject());
-
-
-
     /*Mockito.doNothing().when(elementDataUtil).getSubElementIds(anyObject(), anyObject(),
         anyObject());*/
-
-
   }
-
 
   @Test
   public void testUploadElementData() throws Exception {
