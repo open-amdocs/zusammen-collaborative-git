@@ -322,5 +322,18 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     }
   }
 
+  @Override
+  public ObjectId getRemoteHead(SessionContext context, Git git) {
+    try {
+      return git.getRepository().exactRef(Constants.R_HEADS+"/"+git.getRepository().getBranch())
+          .getObjectId();
+
+    }catch (IOException e){
+      throw new RuntimeException(e);
+    }
+  }
+
+
+
 
 }

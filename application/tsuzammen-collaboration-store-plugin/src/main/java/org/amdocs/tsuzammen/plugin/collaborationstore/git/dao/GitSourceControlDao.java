@@ -69,4 +69,6 @@ public interface GitSourceControlDao {
   Collection<DiffEntry> revisionDiff(SessionContext context, Git git, ObjectId from, ObjectId to);
 
   ObjectId getHead(SessionContext context, Git git);
+
+  ObjectId getRemoteHead(SessionContext context,Git git);
 }

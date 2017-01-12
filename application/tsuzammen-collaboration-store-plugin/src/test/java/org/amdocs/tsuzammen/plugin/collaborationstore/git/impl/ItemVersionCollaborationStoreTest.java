@@ -22,42 +22,35 @@ import org.amdocs.tsuzammen.datatypes.item.Info;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.util.SourceControlUtil;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.util.TestUtil;
-import org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants;
-import org.amdocs.tsuzammen.sdk.types.CollaborationChangedElementData;
-import org.amdocs.tsuzammen.sdk.types.CollaborationSyncResult;
-import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
-import org.eclipse.jgit.api.MergeResult;
-import org.eclipse.jgit.api.PullResult;
-import org.eclipse.jgit.lib.ObjectId;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Collection;
-
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.testng.Assert.*;
 
 public class ItemVersionCollaborationStoreTest {
 
+
   @Spy
-  private ItemVersionCollaborationStore itemVersionCollaborationStore;//
-  // = spy(new ItemVersionCollaborationStore());
+  private SourceControlUtil sourceControlUtil;
   @Mock
   private GitSourceControlDao gitSourceControlDaoMock;
-  @Mock
-  private SourceControlUtil sourceControlUtil;
+
+
+
+  @Spy
+  @InjectMocks
+  private ItemVersionCollaborationStore itemVersionCollaborationStore;//
+  // = spy(new ItemVersionCollaborationStore());
 
   private static final Id ITEM_ID = new Id();
   private static final Id VERSION_ID = new Id();
@@ -70,8 +63,8 @@ public class ItemVersionCollaborationStoreTest {
     MockitoAnnotations.initMocks(this);
 
 
-    when(itemVersionCollaborationStore.convertPushresultToPublishResult
-        (anyObject())).thenReturn(null);
+    doReturn(null).when(sourceControlUtil).handlePublishResponse(anyObject(),
+        anyObject(),anyObject(),anyObject());
 
     Mockito.doNothing().when(itemVersionCollaborationStore).addFileContent(anyObject(), anyObject(),
         anyObject(),
@@ -149,7 +142,9 @@ public class ItemVersionCollaborationStoreTest {
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
 
     verify(gitSourceControlDaoMock).checkoutBranch(context, null, VERSION_ID.getValue().toString());
-    verify(itemVersionCollaborationStore).convertPushresultToPublishResult(anyObject());
+    //verify(itemVersionCollaborationStore).(anyObject());
+    verify(sourceControlUtil).handlePublishResponse(anyObject(),
+        anyObject(),anyObject(),anyObject());
 
   }
 

@@ -26,8 +26,14 @@ import org.eclipse.jgit.api.Git;
 
 public class CollaborationStore {
 
-  protected final ElementDataUtil elementDataUtil = new ElementDataUtil();
-  protected final SourceControlUtil sourceControlUtil = new SourceControlUtil();
+  protected ElementDataUtil elementDataUtil;
+  protected SourceControlUtil sourceControlUtil;
+
+  public CollaborationStore(){
+    elementDataUtil = new ElementDataUtil();
+    sourceControlUtil = new SourceControlUtil();
+  }
+
 
   protected GitSourceControlDao getSourceControlDao(SessionContext context) {
     return SourceControlDaoFactory.getInstance().createInterface(context);

@@ -57,31 +57,20 @@ public class RevisionDiffCommand {
       throws GitAPIException {
 
     List<DiffEntry> returnDiffs = new ArrayList<>();
+    if(from.getName().equals(to.getName())) return returnDiffs;
     try {
-
-
-
-
-
       RevWalk walk = new RevWalk(git.getRepository());
       RevCommit last = walk.parseCommit(to);
       RevCommit fromCommit = walk.parseCommit(from);
       Iterable<RevCommit> revCommitIter = git.log().addRange(this.from,this.to).call();
       List<RevCommit> revCommitList = CommonMethods.iteratorToList(revCommitIter);
       revCommitList.add(fromCommit);
-      for(RevCommit revCommit:revCommitList){
-        if(revCommit.getName().equals(last.getName())) continue;
-        TreeWalk tw = new TreeWalk(git.getRepository());
-        tw.addTree(revCommit.getTree());
-        tw.addTree(last.getTree());
-        tw.setRecursive(true);
-        List<DiffEntry> diffs = DiffEntry.scan(tw);
-        returnDiffs.addAll(diffs);
-        for (DiffEntry diffEntry : diffs) {
-          System.out.println("start:"+last.getName()+" commit:"+revCommit
-              .getName()+" "+diffEntry.toString());
-        }
-      }
+      TreeWalk tw = new TreeWalk(git.getRepository());
+      tw.addTree(fromCommit.getTree());
+      tw.addTree(last.getTree());
+      tw.setRecursive(true);
+      List<DiffEntry> diffs = DiffEntry.scan(tw);
+      returnDiffs.addAll(diffs);
     } catch (java.io.IOException e) {
       throw new RuntimeException(e);
     }

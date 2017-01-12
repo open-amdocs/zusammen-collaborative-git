@@ -19,12 +19,12 @@ package org.amdocs.tsuzammen.plugin.collaborationstore.git.impl;
 import org.amdocs.tsuzammen.commons.configuration.impl.ConfigurationAccessor;
 import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
-import org.amdocs.tsuzammen.datatypes.collaboration.PublishResult;
 import org.amdocs.tsuzammen.datatypes.item.Info;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.amdocs.tsuzammen.sdk.types.CollaborationChangedElementData;
 import org.amdocs.tsuzammen.sdk.types.CollaborationSyncResult;
+import org.amdocs.tsuzammen.sdk.types.searchindex.CollaborationPublishResult;
 import org.amdocs.tsuzammen.sdk.utils.SdkConstants;
 import org.amdocs.tsuzammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.Git;
@@ -60,7 +60,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
 
 
   protected void createInt(SessionContext context, Git git, String baseBranch,
-                                      String branch, Info versionInfo) {
+                           String branch, Info versionInfo) {
     GitSourceControlDao dao = getSourceControlDao(context);
     dao.createBranch(context, git, baseBranch, branch);
 
@@ -102,24 +102,25 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
   }
 
 
-  public PublishResult publish(SessionContext context, Id itemId, Id versionId,
-                                          String message) {
+  public CollaborationPublishResult publish(SessionContext context, Id itemId, Id versionId,
+                                            String message) {
     GitSourceControlDao dao = getSourceControlDao(context);
     String repositoryPath =
         sourceControlUtil.getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH, itemId);
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git = dao.openRepository(context, repositoryPath);
     String branchId = versionId.getValue().toString();
+    ObjectId oldId = null;
+    dao.getRemoteHead(context, git);
     Collection<PushResult> pushResult = dao.publish(context, git, branchId);
     dao.checkoutBranch(context, git, branchId);
 //    dao.inComing(context,git,versionId.getValue());
     dao.close(context, git);
-    return  convertPushresultToPublishResult(pushResult);
-  }
-
-  protected PublishResult convertPushresultToPublishResult(Collection<PushResult> pushResult) {
-    //todo - create publish result
-    return null;
+    Collection<CollaborationChangedElementData> changedElementDataCollection = sourceControlUtil
+        .handlePublishResponse(context, dao, git, pushResult);
+    CollaborationPublishResult publishResult = new CollaborationPublishResult();
+    publishResult.setCollaborationChangedElementDataCollection(changedElementDataCollection);
+    return publishResult;
   }
 
 
@@ -147,7 +148,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     }
     Collection<CollaborationChangedElementData> changedElementDataCollection = sourceControlUtil
         .handleSyncFileDiff
-            (context, dao, git, itemId, versionId, oldId);
+            (context, dao, git, oldId, null);
 
     result.setCollaborationChangedElementDataCollection(changedElementDataCollection);
     dao.close(context, git);
@@ -183,17 +184,13 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
 
     Collection<CollaborationChangedElementData> changedElementDataCollection = sourceControlUtil
         .handleSyncFileDiff
-            (context, dao, git, itemId, versionId, oldId);
+            (context, dao, git, oldId, null);
 
     result.setCollaborationChangedElementDataCollection(changedElementDataCollection);
 
     dao.close(context, git);
     return result;
   }
-
-
-
-
 
 
 }

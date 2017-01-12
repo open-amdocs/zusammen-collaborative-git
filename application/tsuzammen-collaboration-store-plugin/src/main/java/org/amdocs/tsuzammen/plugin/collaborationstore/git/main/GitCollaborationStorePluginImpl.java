@@ -19,7 +19,6 @@ package org.amdocs.tsuzammen.plugin.collaborationstore.git.main;
 import org.amdocs.tsuzammen.datatypes.Id;
 import org.amdocs.tsuzammen.datatypes.Namespace;
 import org.amdocs.tsuzammen.datatypes.SessionContext;
-import org.amdocs.tsuzammen.datatypes.collaboration.PublishResult;
 import org.amdocs.tsuzammen.datatypes.item.ElementContext;
 import org.amdocs.tsuzammen.datatypes.item.Info;
 import org.amdocs.tsuzammen.plugin.collaborationstore.git.impl.ElementCollaborationStore;
@@ -28,6 +27,7 @@ import org.amdocs.tsuzammen.plugin.collaborationstore.git.impl.ItemVersionCollab
 import org.amdocs.tsuzammen.sdk.CollaborationStore;
 import org.amdocs.tsuzammen.sdk.types.CollaborationSyncResult;
 import org.amdocs.tsuzammen.sdk.types.ElementData;
+import org.amdocs.tsuzammen.sdk.types.searchindex.CollaborationPublishResult;
 
 public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
@@ -67,18 +67,18 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   @Override
   public void createElement(SessionContext context, ElementData elementData) {
-    elementCollaborationStore.create(context,  elementData);
+    elementCollaborationStore.create(context, elementData);
   }
 
   @Override
-  public void saveElement(SessionContext context,  ElementData elementData) {
-    elementCollaborationStore.save(context,  elementData);
+  public void saveElement(SessionContext context, ElementData elementData) {
+    elementCollaborationStore.save(context, elementData);
   }
 
   @Override
-  public void deleteElement(SessionContext context,  ElementData elementData) {
+  public void deleteElement(SessionContext context, ElementData elementData) {
 
-    elementCollaborationStore.delete(context,  elementData);
+    elementCollaborationStore.delete(context, elementData);
   }
 
   @Override
@@ -87,8 +87,9 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public PublishResult publishItemVersion(SessionContext context, Id itemId, Id versionId,
-                                          String message) {
+  public CollaborationPublishResult publishItemVersion(SessionContext context, Id itemId,
+                                                       Id versionId,
+                                                       String message) {
     return itemVersionCollaborationStore.publish(context, itemId, versionId, message);
   }
 
