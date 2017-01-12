@@ -44,7 +44,7 @@ public class ElementDataUtil {
 
 
   public ElementData uploadElementData(SessionContext context, Git git, String elementPath){
-    ElementInfo elementInfo = uploadElementInfo(context,git,elementPath);
+
     Optional<InputStream> fileContent;
     ElementData elementData = null;
     try {
@@ -53,8 +53,17 @@ public class ElementDataUtil {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    elementData.setInfo(elementInfo.getInfo());
-    elementData.setRelations(elementInfo.getRelations());
+
+    fileContent = getFileContent(context, git,elementPath, PluginConstants.INFO_FILE_NAME);
+    if (fileContent.isPresent()) {
+      elementData.setInfo(JsonUtil.json2Object(fileContent.get(), Info.class));
+    }
+
+    fileContent = getFileContent(context, git,elementPath, PluginConstants.RELATIONS_FILE_NAME);
+    if (fileContent.isPresent()) {
+      elementData.setRelations(JsonUtil.json2Object(fileContent.get(), new
+          TypeToken<ArrayList<Relation>>() {}.getType()));
+    }
 
     fileContent = getFileContent(context, git,elementPath, PluginConstants.VISUALIZATION_FILE_NAME);
     if (fileContent.isPresent()) {
@@ -81,34 +90,9 @@ public class ElementDataUtil {
   }
 
 
-  public ElementInfo uploadElementInfo(SessionContext context, Git git, String elementPath) {
-    ElementInfo elementInfo = new ElementInfo(new Id(extractElementIdFromElementPath(elementPath)));
-    Optional<InputStream> fileContent;
-
-    fileContent = getFileContent(context, git,elementPath, PluginConstants.RELATIONS_FILE_NAME);
-    if (fileContent.isPresent()) {
-      elementInfo.setRelations(JsonUtil.json2Object(fileContent.get(), new
-          TypeToken<ArrayList<Relation>>() {}.getType()));
-    }
-
-    fileContent = getFileContent(context, git,elementPath, PluginConstants.INFO_FILE_NAME);
-    if (fileContent.isPresent()) {
-      elementInfo.setInfo(JsonUtil.json2Object(fileContent.get(), Info.class));
-    }
-    ElementInfo subElementInfo;
-    List<String> elementIds = getSubElementIds(context,git,elementPath);
-    for(String subElementId:elementIds){
-      subElementInfo = uploadElementInfo(context,git,elementPath+File.separator+subElementId);
-      elementInfo.addSubelement(subElementInfo);
-    }
-    return elementInfo;
-  }
-
   private String extractElementIdFromElementPath(String elementPath) {
 
     return (new File(elementPath)).getName();
-    /*String[] splitPath = elementPath.split(File.separator);
-    return splitPath[splitPath.length-1];*/
   }
 
 
