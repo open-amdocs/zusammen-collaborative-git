@@ -22,9 +22,9 @@ import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
-import org.amdocs.zusammen.sdk.types.CollaborationChangedElementData;
-import org.amdocs.zusammen.sdk.types.CollaborationSyncResult;
-import org.amdocs.zusammen.sdk.types.searchindex.CollaborationPublishResult;
+import org.amdocs.zusammen.sdk.types.ChangedElementData;
+import org.amdocs.zusammen.sdk.types.ElementsMergeResult;
+import org.amdocs.zusammen.sdk.types.ElementsPublishResult;
 import org.amdocs.zusammen.sdk.utils.SdkConstants;
 import org.amdocs.zusammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.Git;
@@ -44,13 +44,13 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
                      Info versionInfo) {
     String baseBranchId = baseVersionId == null ?
         ConfigurationAccessor.getPluginProperty(SdkConstants.ZUSAMMEN_COLLABORATIVE_STORE,
-            PluginConstants.MASTER_BRANCH_PROP) : baseVersionId.getValue().toString();
+            PluginConstants.MASTER_BRANCH_PROP) : baseVersionId.toString();
     GitSourceControlDao dao = getSourceControlDao(context);
     String repositoryPath =
         sourceControlUtil.getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH, itemId);
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git = dao.openRepository(context, repositoryPath);
-    createInt(context, git, baseBranchId, versionId.getValue().toString(), versionInfo);
+    createInt(context, git, baseBranchId, versionId.toString(), versionInfo);
     boolean commitRequired = storeItemVersionInfo(context, git, itemId, versionInfo);
     if (commitRequired) {
       dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
@@ -88,7 +88,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     repositoryPath = resolveTenantPath(context, repositoryPath);
     GitSourceControlDao dao = getSourceControlDao(context);
     Git git = dao.openRepository(context, repositoryPath);
-    dao.checkoutBranch(context, git, versionId.getValue().toString());
+    dao.checkoutBranch(context, git, versionId.toString());
     boolean commitRequired = storeItemVersionInfo(context, git, itemId, versionInfo);
     if (commitRequired) {
       dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
@@ -102,36 +102,36 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
   }
 
 
-  public CollaborationPublishResult publish(SessionContext context, Id itemId, Id versionId,
-                                            String message) {
+  public ElementsPublishResult publish(SessionContext context, Id itemId, Id versionId,
+                                       String message) {
     GitSourceControlDao dao = getSourceControlDao(context);
     String repositoryPath =
         sourceControlUtil.getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH, itemId);
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git = dao.openRepository(context, repositoryPath);
-    String branchId = versionId.getValue().toString();
+    String branchId = versionId.toString();
     ObjectId oldId = null;
     dao.getRemoteHead(context, git);
     Collection<PushResult> pushResult = dao.publish(context, git, branchId);
     dao.checkoutBranch(context, git, branchId);
 //    dao.inComing(context,git,versionId.getValue());
     dao.close(context, git);
-    Collection<CollaborationChangedElementData> changedElementDataCollection = sourceControlUtil
+    Collection<ChangedElementData> changedElements = sourceControlUtil
         .handlePublishResponse(context, dao, git, pushResult);
-    CollaborationPublishResult publishResult = new CollaborationPublishResult();
-    publishResult.setCollaborationChangedElementDataCollection(changedElementDataCollection);
+    ElementsPublishResult publishResult = new ElementsPublishResult();
+    publishResult.setChangedElements(changedElements);
     return publishResult;
   }
 
 
-  public CollaborationSyncResult sync(SessionContext context, Id itemId, Id versionId) {
-    CollaborationSyncResult result;
+  public ElementsMergeResult sync(SessionContext context, Id itemId, Id versionId) {
+    ElementsMergeResult result;
     GitSourceControlDao dao = getSourceControlDao(context);
     String repositoryPath =
         sourceControlUtil.getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH, itemId);
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git;
-    String branch = versionId.getValue().toString();
+    String branch = versionId.toString();
     ObjectId oldId = null;
     if (FileUtils.exists(repositoryPath)) {
       git = dao.openRepository(context, repositoryPath);
@@ -144,28 +144,27 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
       git = dao.clone(context,
           sourceControlUtil.getPublicRepositoryPath(context, publicPath, itemId),
           repositoryPath, branch);
-      result = new CollaborationSyncResult();
+      result = new ElementsMergeResult();
     }
-    Collection<CollaborationChangedElementData> changedElementDataCollection = sourceControlUtil
-        .handleSyncFileDiff
-            (context, dao, git, oldId, null);
+    Collection<ChangedElementData> changedElementDataCollection =
+        sourceControlUtil.handleSyncFileDiff(context, dao, git, oldId, null);
 
-    result.setCollaborationChangedElementDataCollection(changedElementDataCollection);
+    result.setChangedElements(changedElementDataCollection);
     dao.close(context, git);
     return result;
   }
 
 
-  public CollaborationSyncResult merge(SessionContext context, Id itemId, Id
+  public ElementsMergeResult merge(SessionContext context, Id itemId, Id
       versionId, Id sourceVersionId) {
-    CollaborationSyncResult result;
+    ElementsMergeResult result;
     GitSourceControlDao dao = getSourceControlDao(context);
     String repositoryPath =
         sourceControlUtil.getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH, itemId);
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git;
-    String branch = versionId.getValue().toString();
-    String sourceBranch = sourceVersionId.getValue().toString();
+    String branch = versionId.toString();
+    String sourceBranch = sourceVersionId.toString();
     ObjectId oldId = null;
     if (FileUtils.exists(repositoryPath)) {
       git = dao.openRepository(context, repositoryPath);
@@ -179,14 +178,13 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
       git = dao.clone(context,
           sourceControlUtil.getPublicRepositoryPath(context, publicPath, itemId),
           repositoryPath, branch);
-      result = new CollaborationSyncResult();
+      result = new ElementsMergeResult();
     }
 
-    Collection<CollaborationChangedElementData> changedElementDataCollection = sourceControlUtil
-        .handleSyncFileDiff
-            (context, dao, git, oldId, null);
+    Collection<ChangedElementData> changedElements =
+        sourceControlUtil.handleSyncFileDiff(context, dao, git, oldId, null);
 
-    result.setCollaborationChangedElementDataCollection(changedElementDataCollection);
+    result.setChangedElements(changedElements);
 
     dao.close(context, git);
     return result;

@@ -94,7 +94,6 @@
     </profiles>
     <modules>
         <module>application</module>
-        <module>tools</module>
     </modules>
     <build>
         <plugins>

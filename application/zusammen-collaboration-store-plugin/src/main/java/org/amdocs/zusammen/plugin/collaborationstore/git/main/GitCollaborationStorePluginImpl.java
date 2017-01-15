@@ -25,9 +25,9 @@ import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ElementCollaborati
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemCollaborationStore;
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemVersionCollaborationStore;
 import org.amdocs.zusammen.sdk.CollaborationStore;
-import org.amdocs.zusammen.sdk.types.CollaborationSyncResult;
 import org.amdocs.zusammen.sdk.types.ElementData;
-import org.amdocs.zusammen.sdk.types.searchindex.CollaborationPublishResult;
+import org.amdocs.zusammen.sdk.types.ElementsMergeResult;
+import org.amdocs.zusammen.sdk.types.ElementsPublishResult;
 
 public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
@@ -71,8 +71,8 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public void saveElement(SessionContext context, ElementData elementData) {
-    elementCollaborationStore.save(context, elementData);
+  public void updateElement(SessionContext context, ElementData elementData) {
+    elementCollaborationStore.update(context, elementData);
   }
 
   @Override
@@ -87,19 +87,19 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public CollaborationPublishResult publishItemVersion(SessionContext context, Id itemId,
-                                                       Id versionId,
-                                                       String message) {
+  public ElementsPublishResult publishItemVersion(SessionContext context, Id itemId,
+                                                  Id versionId,
+                                                  String message) {
     return itemVersionCollaborationStore.publish(context, itemId, versionId, message);
   }
 
   @Override
-  public CollaborationSyncResult syncItemVersion(SessionContext context, Id itemId, Id versionId) {
+  public ElementsMergeResult syncItemVersion(SessionContext context, Id itemId, Id versionId) {
     return itemVersionCollaborationStore.sync(context, itemId, versionId);
   }
 
   @Override
-  public CollaborationSyncResult mergeItemVersion(SessionContext context, Id itemId, Id
+  public ElementsMergeResult mergeItemVersion(SessionContext context, Id itemId, Id
       versionId, Id sourceVersionId) {
     return itemVersionCollaborationStore.merge(context, itemId, versionId, sourceVersionId);
   }

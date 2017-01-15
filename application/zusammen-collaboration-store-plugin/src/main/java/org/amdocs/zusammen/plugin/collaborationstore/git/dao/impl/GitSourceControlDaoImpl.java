@@ -97,7 +97,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
 */
       /*config.setString( CONFIG_REMOTE_SECTION, baseBranch, "url", git.getRepository().get );
       config.setString( CONFIG_REMOTE_SECTION, "remote-alias-name", "fetch", "ref-spec" );
-      config.save();*/
+      config.update();*/
     } catch (GitAPIException /*| IOException*/ e) {
       throw new RuntimeException(e);
     }

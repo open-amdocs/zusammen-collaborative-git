@@ -19,7 +19,6 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.impl;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
-import org.amdocs.zusammen.datatypes.item.ElementContext;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.util.SourceControlUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
@@ -96,11 +95,11 @@ public class ElementCollaborationStoreTest {
     elementCollaborationStore.create(context, elementData);
 
     verify(gitSourceControlDaoMock).openRepository(context,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString());
 
     verify(elementCollaborationStore).updateElementData(context, null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
-            .toString() + "\\" + NAME_SPACE, elementData);
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" + NAME_SPACE,
+        elementData);
 
   }
 
@@ -113,15 +112,15 @@ public class ElementCollaborationStoreTest {
         new ElementData(ITEM_ID, VERSION_ID, namespace);
 
 
-    elementCollaborationStore.save(context, elementData
+    elementCollaborationStore.update(context, elementData
     );
 
     verify(gitSourceControlDaoMock).openRepository(context,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString());
 
     verify(elementCollaborationStore).updateElementData(context, null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
-            .toString() + "\\" + NAME_SPACE, elementData);
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" + NAME_SPACE,
+        elementData);
   }
 
   @Test

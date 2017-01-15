@@ -52,7 +52,7 @@ public class ElementCollaborationStore extends CollaborationStore {
     //return new CollaborationNamespace(elementPath);
   }
 
-  public void save(SessionContext context, ElementData elementData) {
+  public void update(SessionContext context, ElementData elementData) {
     GitSourceControlDao dao = getSourceControlDao(context);
     String elementPath = elementData.getNamespace().getValue().replace(Namespace
         .NAMESPACE_DELIMITER, File
