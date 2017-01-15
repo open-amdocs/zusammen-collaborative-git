@@ -1,6 +1,0 @@
-{
-  "org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.SourceControlDaoFactory":
-  "org.amdocs.tsuzammen.plugin.collaborationstore.git.dao.impl.SourceControlDaoFactoryImpl"
-
-
-}

@@ -1,0 +1,18 @@
+{
+  "configuration": {
+    "level": 1,
+    "plugins": {
+      "zusammen_collaborative_store": {
+        "properties": {
+          "private.path": "/git/{tenant}/private",
+          "public.path": "/git/{tenant}/public",
+          "blueprint.path": "/git/{tenant}/public/BP",
+          "public.url": "/git/{tenant}/public",
+          "git.username": "",
+          "git.password": "",
+          "master.branch":"main"
+        }
+      }
+    }
+  }
+}
