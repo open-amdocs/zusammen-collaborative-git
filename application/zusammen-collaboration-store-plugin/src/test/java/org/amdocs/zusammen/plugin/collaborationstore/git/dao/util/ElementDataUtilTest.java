@@ -114,7 +114,7 @@ public class ElementDataUtilTest {
             .toString() + "\\" + NAME_SPACE, elementData);
 
 
-    verify(elementDataUtil, times(3)).addFileContent(anyObject(), anyObject(), anyObject(),
+    verify(elementDataUtil, times(1)).addFileContent(anyObject(), anyObject(), anyObject(),
         anyObject(),
         anyObject());
 
@@ -137,7 +137,7 @@ public class ElementDataUtilTest {
             .toString() + "\\" + NAME_SPACE, elementData);
 
 
-    verify(elementDataUtil, times(4)).addFileContent(anyObject(), anyObject(), anyObject(),
+    verify(elementDataUtil, times(2)).addFileContent(anyObject(), anyObject(), anyObject(),
         anyObject(),
         anyObject());
 

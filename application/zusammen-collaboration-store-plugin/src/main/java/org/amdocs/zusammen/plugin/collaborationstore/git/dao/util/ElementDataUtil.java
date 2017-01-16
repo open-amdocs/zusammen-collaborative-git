@@ -132,6 +132,7 @@ public class ElementDataUtil {
   public void addFileContent(SessionContext context, Git git, String path, String fileName,
                               Object fileContent) {
 
+    if(fileContent==null) return;
     if (fileContent instanceof InputStream) {
       FileUtils
           .writeFileFromInputStream(path, fileName, (InputStream) fileContent);
