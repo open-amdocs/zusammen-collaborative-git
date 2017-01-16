@@ -240,8 +240,8 @@ public class SourceControlUtil {
     return changedElementInfoCollection;
   }
 
-  private String extractElementIdFromFilePath(String path) {
-    String[] splitPath = path.split(File.separator);
-    return splitPath[splitPath.length - 2];
+  protected String extractElementIdFromFilePath(String path) {
+    File file = new File(path);
+    return file.getParent();
   }
 }

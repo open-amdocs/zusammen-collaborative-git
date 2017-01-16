@@ -93,12 +93,12 @@ public class ElementCollaborationStore extends CollaborationStore {
     String repositoryPath = sourceControlUtil.getPrivateRepositoryPath(context,
         PluginConstants.PRIVATE_PATH.replace(PluginConstants.TENANT, context.getTenant()),
         elementContext.getItemId());
-    String fullPath = repositoryPath + File.separator + elementPath;
+    //String fullPath = repositoryPath + File.separator + elementPath;
 
     git = dao.openRepository(context, repositoryPath);
     try {
       dao.checkoutBranch(context, git, elementContext.getVersionId().toString());
-      return uploadElementData(context, git, fullPath);
+      return uploadElementData(context, git, elementPath);
     } finally {
       if (git != null) {
         dao.close(context, git);
