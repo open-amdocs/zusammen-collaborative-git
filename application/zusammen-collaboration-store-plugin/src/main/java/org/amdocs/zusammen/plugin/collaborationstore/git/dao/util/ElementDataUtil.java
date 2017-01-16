@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants.ITEM_VERSION_INFO_FILE_NAME;
 
 public class ElementDataUtil {
 
@@ -135,9 +134,9 @@ public class ElementDataUtil {
 
     if (fileContent instanceof InputStream) {
       FileUtils
-          .writeFileFromInputStream(path, ITEM_VERSION_INFO_FILE_NAME, (InputStream) fileContent);
+          .writeFileFromInputStream(path, fileName, (InputStream) fileContent);
     } else {
-      FileUtils.writeFile(path, ITEM_VERSION_INFO_FILE_NAME, fileContent);
+      FileUtils.writeFile(path, fileName, fileContent);
     }
     getSourceControlDao(context).add(context, git, path + File.separator + fileName);
   }
