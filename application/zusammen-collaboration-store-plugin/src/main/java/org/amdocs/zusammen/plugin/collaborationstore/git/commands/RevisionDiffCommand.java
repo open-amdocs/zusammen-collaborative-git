@@ -31,6 +31,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 public class RevisionDiffCommand {
@@ -56,8 +57,11 @@ public class RevisionDiffCommand {
   public Collection<DiffEntry> call()
       throws GitAPIException {
 
+    if(this.from==null){
+      from = getFirstCommit(git);
+    }
     List<DiffEntry> returnDiffs = new ArrayList<>();
-    if(from.getName().equals(to.getName())) return returnDiffs;
+    if(from!= null && from.getName().equals(to.getName())) return returnDiffs;
     try {
       RevWalk walk = new RevWalk(git.getRepository());
       RevCommit last = walk.parseCommit(to);
@@ -76,6 +80,23 @@ public class RevisionDiffCommand {
     }
 
     return returnDiffs;
+  }
+
+  private ObjectId getFirstCommit(Git git) {
+    try {
+      Iterable<RevCommit> commitsIterator = git.log().call();
+      Iterator<RevCommit> iterator = commitsIterator.iterator();
+      RevCommit commit = null;
+      while((iterator.hasNext())){
+        commit = iterator.next();
+        if(commit.getParents() ==null || commit.getParents().length==0 || commit.getParents()
+            [0]==null) return commit;
+      }
+      return commit;
+    } catch (GitAPIException e) {
+      throw new RuntimeException(e);
+    }
+
   }
 
   private RevisionDiffCommand(Git git) {
