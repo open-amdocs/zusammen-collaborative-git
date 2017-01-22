@@ -26,8 +26,9 @@ import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemCollaborationS
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemVersionCollaborationStore;
 import org.amdocs.zusammen.sdk.CollaborationStore;
 import org.amdocs.zusammen.sdk.types.ElementData;
-import org.amdocs.zusammen.sdk.types.ElementsMergeResult;
 import org.amdocs.zusammen.sdk.types.ElementsPublishResult;
+import org.amdocs.zusammen.sdk.types.ItemVersionMergeResult;
+import org.amdocs.zusammen.sdk.types.ItemVersionPublishResult;
 
 public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
@@ -87,19 +88,19 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public ElementsPublishResult publishItemVersion(SessionContext context, Id itemId,
-                                                  Id versionId,
-                                                  String message) {
+  public ItemVersionPublishResult publishItemVersion(SessionContext context, Id itemId,
+                                                     Id versionId,
+                                                     String message) {
     return itemVersionCollaborationStore.publish(context, itemId, versionId, message);
   }
 
   @Override
-  public ElementsMergeResult syncItemVersion(SessionContext context, Id itemId, Id versionId) {
+  public ItemVersionMergeResult syncItemVersion(SessionContext context, Id itemId, Id versionId) {
     return itemVersionCollaborationStore.sync(context, itemId, versionId);
   }
 
   @Override
-  public ElementsMergeResult mergeItemVersion(SessionContext context, Id itemId, Id
+  public ItemVersionMergeResult mergeItemVersion(SessionContext context, Id itemId, Id
       versionId, Id sourceVersionId) {
     return itemVersionCollaborationStore.merge(context, itemId, versionId, sourceVersionId);
   }

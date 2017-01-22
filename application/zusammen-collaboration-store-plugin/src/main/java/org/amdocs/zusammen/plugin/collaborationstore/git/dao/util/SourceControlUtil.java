@@ -27,8 +27,8 @@ import org.amdocs.zusammen.plugin.collaborationstore.git.types.LocalRemoteDataCo
 import org.amdocs.zusammen.sdk.types.ChangedElementData;
 import org.amdocs.zusammen.sdk.types.ElementData;
 import org.amdocs.zusammen.sdk.types.ElementDataConflict;
-import org.amdocs.zusammen.sdk.types.ElementsMergeResult;
-import org.amdocs.zusammen.utils.common.CommonMethods;
+import org.amdocs.zusammen.sdk.types.ItemVersionChangedData;
+import org.amdocs.zusammen.sdk.types.ItemVersionMergeConflict;
 import org.amdocs.zusammen.utils.fileutils.FileUtils;
 import org.amdocs.zusammen.utils.fileutils.json.JsonUtil;
 import org.eclipse.jgit.api.Git;
@@ -80,19 +80,19 @@ public class SourceControlUtil {
         + File.separator + elementId.toString();
   }
 
-  public ElementsMergeResult handleSyncResponse(SessionContext context, Git git, PullResult
+  public ItemVersionMergeConflict handleSyncResponse(SessionContext context, Git git, PullResult
       pullResult) {
 
     if (pullResult != null && !pullResult.isSuccessful()) {
       return handleMergeResponse(context, git, pullResult.getMergeResult());
     }
-    return new ElementsMergeResult();
+    return new ItemVersionMergeConflict();
   }
 
-  public ElementsMergeResult handleMergeResponse(SessionContext context, Git git, MergeResult
+  public ItemVersionMergeConflict handleMergeResponse(SessionContext context, Git git, MergeResult
       mergeResult) {
 
-    ElementsMergeResult result = new ElementsMergeResult();
+    ItemVersionMergeConflict result = new ItemVersionMergeConflict();
     String elementId;
     Map<String, ElementData> elementDataMap = new HashMap<>();
     ElementData elementData;
@@ -100,8 +100,9 @@ public class SourceControlUtil {
       for (String file : mergeResult.getConflicts().keySet()) {
         elementId = extractElementIdFromFilePath(file);
         if (!elementDataMap.containsKey(elementId)) {
-          elementData = elementDataUtil.uploadElementData(context, git, extractElementPathFromFilePath
-              (file), elementId);
+          elementData =
+              elementDataUtil.uploadElementData(context, git, extractElementPathFromFilePath
+                  (file), elementId);
           elementDataMap.put(elementId, elementData);
         }
       }
@@ -110,6 +111,8 @@ public class SourceControlUtil {
     for (Map.Entry<String, ElementData> entry : elementDataMap.entrySet()) {
       result.addElementConflict(handleElementConflict(entry.getValue()));
     }
+
+
     return result;
 
   }
@@ -193,10 +196,10 @@ public class SourceControlUtil {
     return localRemoteDataConflict;
   }
 
-  public Collection<ChangedElementData> handlePublishResponse(SessionContext context,
-                                                              GitSourceControlDao dao,
-                                                              Git git,
-                                                              Collection<PushResult> pushResult) {
+  public ItemVersionChangedData handlePublishResponse(SessionContext context,
+                                                      GitSourceControlDao dao,
+                                                      Git git,
+                                                      Collection<PushResult> pushResult) {
 
     ObjectId from =
         pushResult.iterator().next().getRemoteUpdates().iterator().next().getExpectedOldObjectId();
@@ -208,13 +211,16 @@ public class SourceControlUtil {
   }
 
 
-  public Collection<ChangedElementData> handleSyncFileDiff(SessionContext
-                                                               context,
-                                                           GitSourceControlDao dao,
-                                                           Git git,
-                                                           ObjectId from,
-                                                           ObjectId to) {
+  public ItemVersionChangedData handleSyncFileDiff(SessionContext
+                                                       context,
+                                                   GitSourceControlDao dao,
+                                                   Git git,
+                                                   ObjectId from,
+                                                   ObjectId to) {
     to = to != null ? to : dao.getHead(context, git);
+
+
+    ItemVersionChangedData itemVersionChangedData = new ItemVersionChangedData();
 
     Collection<DiffEntry> diffs = dao.revisionDiff(context, git, from, to);
     Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
@@ -224,11 +230,17 @@ public class SourceControlUtil {
       String elementId;
       ElementData elementData;
       ChangedElementData changedElementData;
+      Info changedInfo;
       for (DiffEntry diff : diffs) {
         elementId = extractElementIdFromFilePath(diff.getNewPath());
+        if (elementId == null) {
+          changedInfo = elementDataUtil.uploadItemVersionInfo(context, git);
+          itemVersionChangedData.setItemVersionInfo(changedInfo);
+        }
+
         if (!elementDataSet.contains(elementId)) {
           String elementPath = extractElementPathFromFilePath(diff.getNewPath());
-          elementData = elementDataUtil.uploadElementData(context, git,elementPath ,
+          elementData = elementDataUtil.uploadElementData(context, git, elementPath,
               elementId);
           elementDataSet.add(elementId);
           changedElementData = new ChangedElementData();
@@ -238,7 +250,9 @@ public class SourceControlUtil {
         }
       }
     }
-    return changedElementInfoCollection;
+
+    itemVersionChangedData.setChangedElements(changedElementInfoCollection);
+    return itemVersionChangedData;
   }
 
   protected String extractElementIdFromFilePath(String path) {
@@ -248,6 +262,6 @@ public class SourceControlUtil {
 
   protected String extractElementPathFromFilePath(String path) {
     File file = new File(path);
-    return file.getParentFile() != null?file.getParentFile().getPath():"";
+    return file.getParentFile() != null ? file.getParentFile().getPath() : "";
   }
 }

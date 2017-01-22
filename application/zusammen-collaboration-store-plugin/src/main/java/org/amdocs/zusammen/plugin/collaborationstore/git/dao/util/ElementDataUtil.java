@@ -44,12 +44,12 @@ public class ElementDataUtil {
   public ElementData uploadElementData(SessionContext context, Git git, String elementPath,
                                        String elementId) {
 
+
     Optional<InputStream> fileContent;
     ElementData elementData = null;
     String fullPath = git.getRepository().getDirectory().getPath() + File.separator + elementPath;
     try {
       Namespace namespace = getNamespaceFromElementPath(elementPath,elementId);
-
       elementData = new ElementData(new Id(git.getRepository().getDirectory().getName()), new Id(git
           .getRepository().getBranch()), namespace, new Id(elementId));
     } catch (IOException e) {
@@ -95,6 +95,19 @@ public class ElementDataUtil {
     return elementData;
   }
 
+  public Info uploadItemVersionInfo(SessionContext context, Git git) {
+
+      Optional<InputStream> fileContent =
+          getFileContent(context, git, git.getRepository().getDirectory().getPath(),
+              PluginConstants
+                  .ITEM_VERSION_INFO_FILE_NAME);
+      if (fileContent.isPresent()) {
+        return JsonUtil.json2Object(fileContent.get(), Info.class);
+      }else{
+        return null;
+      }
+  }
+
   private Namespace getNamespaceFromElementPath(String elementPath, String elementId) {
     Namespace namespace = new Namespace();
     namespace.setValue(elementPath.replace(File.separator + elementId, "")
@@ -108,6 +121,11 @@ public class ElementDataUtil {
 
   public void updateElementData(SessionContext context, Git git,String basePath,String
       relativePath,ElementData elementData) {
+
+    if(elementData.getId().getValue().equals(Id.ZERO.getValue())){
+      updateItemVersionDataFromElementData(context,git,basePath,elementData);
+    }
+
 
     if (elementData.getVisualization() != null) {
       addFileContent(context, git,
@@ -133,6 +151,15 @@ public class ElementDataUtil {
     }
   }
 
+  private void updateItemVersionDataFromElementData(SessionContext context, Git git,
+                                                    String basePath, ElementData elementData) {
+    Info info = elementData.getInfo();
+    if (info != null) {
+      addFileContent(context, git,
+          basePath,null, PluginConstants.ITEM_VERSION_INFO_FILE_NAME, info);
+    }
+
+  }
 
 
   public void addFileContent(SessionContext context, Git git, String basePath,String
