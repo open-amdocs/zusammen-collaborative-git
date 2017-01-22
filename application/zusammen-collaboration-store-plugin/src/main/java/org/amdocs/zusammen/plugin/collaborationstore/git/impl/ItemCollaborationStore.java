@@ -52,7 +52,7 @@ public class ItemCollaborationStore extends CollaborationStore {
     Git git = dao.clone(context, bluePrintPath, itemPublicPath, initialVersion);
     dao.clone(context, itemPublicUrl, itemPrivatePath, null);
     if (info != null) {
-      addFileContent(context, git, itemPrivatePath, INFO_FILE_NAME, info);
+      addFileContent(context, git, itemPrivatePath,null, INFO_FILE_NAME, info);
       dao.commit(context, git, PluginConstants.ADD_ITEM_INFO_MESSAGE);
     }
 

@@ -103,46 +103,59 @@ public class ElementDataUtil {
   }
 
 
-  public void updateElementData(SessionContext context, Git git, String elementPath,
-                                ElementData
-                                    elementData) {
+  public void updateElementData(SessionContext context, Git git,String basePath,String
+      relativePath,ElementData elementData) {
 
     if (elementData.getVisualization() != null) {
       addFileContent(context, git,
-          elementPath, PluginConstants.VISUALIZATION_FILE_NAME, elementData.getVisualization());
+          git.getRepository().getDirectory().getPath(),relativePath, PluginConstants
+              .VISUALIZATION_FILE_NAME, elementData
+              .getVisualization());
     }
 
     if (elementData.getData() != null) {
       addFileContent(context, git,
-          elementPath, PluginConstants.DATA_FILE_NAME, elementData.getData());
+          basePath,relativePath, PluginConstants.DATA_FILE_NAME, elementData.getData());
     }
 
     if (elementData.getSearchableData() != null) {
       addFileContent(context, git,
-          elementPath, PluginConstants.SEARCH_DATA_FILE_NAME, elementData.getSearchableData());
+          basePath,relativePath, PluginConstants.SEARCH_DATA_FILE_NAME, elementData.getSearchableData());
     }
 
     Info info = elementData.getInfo();
     if (info != null) {
       addFileContent(context, git,
-          elementPath, PluginConstants.INFO_FILE_NAME, info);
+          basePath,relativePath, PluginConstants.INFO_FILE_NAME, info);
     }
   }
 
 
-  public void addFileContent(SessionContext context, Git git, String path, String fileName,
-                             Object fileContent) {
 
-    if (fileContent == null) {
-      return;
-    }
+  public void addFileContent(SessionContext context, Git git, String basePath,String
+      relativePath, String fileName,
+                              Object fileContent) {
+    relativePath= relativePath==null?"":relativePath;
+    if(fileContent==null) return;
     if (fileContent instanceof InputStream) {
       FileUtils
-          .writeFileFromInputStream(path, fileName, (InputStream) fileContent);
+          .writeFileFromInputStream(basePath+File.separator+relativePath, fileName, (InputStream)
+              fileContent);
     } else {
-      FileUtils.writeFile(path, fileName, fileContent);
+      FileUtils.writeFile(basePath+File.separator+relativePath, fileName, fileContent);
     }
-    getSourceControlDao(context).add(context, git, path + File.separator + fileName);
+    String fileToAdd = getFileRelativePath(relativePath,fileName);
+    getSourceControlDao(context).add(context, git, fileToAdd);
+  }
+
+  private String getFileRelativePath(String relativePath, String fileName) {
+    if (relativePath == null || "".equals(relativePath)) {
+      return fileName;
+    }else{
+      relativePath = relativePath.startsWith(File.separator)?relativePath.substring(1)
+          :relativePath;
+      return relativePath+File.separator+fileName;
+    }
   }
 
   protected Optional<InputStream> getFileContent(SessionContext context, Git git, String

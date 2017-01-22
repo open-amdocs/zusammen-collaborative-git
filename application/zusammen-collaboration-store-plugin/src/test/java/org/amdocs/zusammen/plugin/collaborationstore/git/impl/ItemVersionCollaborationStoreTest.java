@@ -69,6 +69,7 @@ public class ItemVersionCollaborationStoreTest {
     Mockito.doNothing().when(itemVersionCollaborationStore).addFileContent(anyObject(), anyObject(),
         anyObject(),
         anyObject(),
+        anyObject(),
         anyObject());
 
     when(itemVersionCollaborationStore.getSourceControlDao(anyObject())).thenReturn
@@ -143,7 +144,7 @@ public class ItemVersionCollaborationStoreTest {
 
     verify(gitSourceControlDaoMock).checkoutBranch(context, null, VERSION_ID.getValue().toString());
     //verify(itemVersionCollaborationStore).(anyObject());
-    verify(sourceControlUtil).handlePublishResponse(anyObject(),
+    verify(sourceControlUtil).handleSyncFileDiff(anyObject(),anyObject(),
         anyObject(),anyObject(),anyObject());
 
   }

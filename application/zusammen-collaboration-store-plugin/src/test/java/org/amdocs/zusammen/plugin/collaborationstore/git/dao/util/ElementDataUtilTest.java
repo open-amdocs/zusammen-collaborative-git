@@ -55,6 +55,7 @@ public class ElementDataUtilTest {
     Mockito.doNothing().when(elementDataUtil).addFileContent(anyObject(), anyObject(),
         anyObject(),
         anyObject(),
+        anyObject(),
         anyObject());
     /*Mockito.doNothing().when(elementDataUtil).getSubElementIds(anyObject(), anyObject(),
         anyObject());*/
@@ -110,10 +111,11 @@ public class ElementDataUtilTest {
 
     elementDataUtil
         .updateElementData(context, null, "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
-            .toString() + "\\" + NAME_SPACE + "\\" + ELEMENT_ID.toString(), elementData);
+            .toString()  , NAME_SPACE, elementData);
 
 
     verify(elementDataUtil, times(1)).addFileContent(anyObject(), anyObject(), anyObject(),
+        anyObject(),
         anyObject(),
         anyObject());
 
@@ -133,10 +135,11 @@ public class ElementDataUtilTest {
     elementData.setInfo(info);
     elementDataUtil
         .updateElementData(context, null, "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
-            .toString() + "\\" + NAME_SPACE + "\\" + ELEMENT_ID.toString(), elementData);
+            .toString()  , NAME_SPACE, elementData);
 
 
     verify(elementDataUtil, times(2)).addFileContent(anyObject(), anyObject(), anyObject(),
+        anyObject(),
         anyObject(),
         anyObject());
 

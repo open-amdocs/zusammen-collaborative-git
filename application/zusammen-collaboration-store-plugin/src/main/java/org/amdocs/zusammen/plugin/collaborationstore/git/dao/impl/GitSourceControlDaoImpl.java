@@ -144,7 +144,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
         filesAdded.add(file);
       }
     } catch (GitAPIException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     return filesAdded;
   }
@@ -161,7 +161,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       try {
         DirCache ret = command.call();
       } catch (GitAPIException e) {
-        e.printStackTrace();
+        throw new RuntimeException(e);
       }
     }
   }
@@ -307,9 +307,6 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     } catch (GitAPIException e) {
       throw new RuntimeException(e);
     }
-
-
-
   }
 
   @Override

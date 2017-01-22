@@ -39,9 +39,9 @@ public class CollaborationStore {
     return SourceControlDaoFactory.getInstance().createInterface(context);
   }
 
-  protected void addFileContent(SessionContext context, Git git, String path,
-                             String fileName, Object fileContent) {
-    this.elementDataUtil.addFileContent(context, git, path, fileName, fileContent);
+  protected void addFileContent(SessionContext context, Git git, String basePath,String
+      relativePath,String fileName, Object fileContent) {
+    this.elementDataUtil.addFileContent(context, git, basePath,relativePath, fileName, fileContent);
   }
 
   protected String resolveTenantPath(SessionContext context, String path) {

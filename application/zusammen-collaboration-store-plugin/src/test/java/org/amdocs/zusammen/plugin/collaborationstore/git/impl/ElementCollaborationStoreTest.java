@@ -30,6 +30,8 @@ import org.mockito.Spy;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.File;
+
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,7 +50,7 @@ public class ElementCollaborationStoreTest {
   private static final Id ITEM_ID = new Id();
   private static final Id VERSION_ID = new Id();
   private static final Id ELEMENT_ID = new Id();
-  private static final String NAME_SPACE = (new Id()).toString();
+  private static final String NAME_SPACE = (new Id()).toString() + File.separator + (new Id());
   private static final SessionContext context = TestUtil.createSessionContext();
 
 
@@ -61,10 +63,11 @@ public class ElementCollaborationStoreTest {
     Mockito.doNothing().when(elementCollaborationStore).addFileContent(anyObject(), anyObject(),
         anyObject(),
         anyObject(),
+        anyObject(),
         anyObject());
 
     Mockito.doNothing().when(elementCollaborationStore).updateElementData(anyObject(), anyObject()
-        , anyObject(), anyObject());
+        , anyObject(), anyObject(), anyObject());
 
     when(elementCollaborationStore.getSourceControlDao(anyObject())).thenReturn
         (gitSourceControlDaoMock);
@@ -97,8 +100,9 @@ public class ElementCollaborationStoreTest {
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString());
 
     verify(elementCollaborationStore).updateElementData(context, null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" +
-            NAME_SPACE + "\\" + ELEMENT_ID, elementData);
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() , NAME_SPACE+File
+            .separator+ELEMENT_ID,
+        elementData);
 
   }
 
@@ -117,8 +121,9 @@ public class ElementCollaborationStoreTest {
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString());
 
     verify(elementCollaborationStore).updateElementData(context, null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" + NAME_SPACE +
-            "\\" + ELEMENT_ID, elementData);
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() , NAME_SPACE+File
+            .separator+ELEMENT_ID,
+        elementData);
   }
 
   @Test

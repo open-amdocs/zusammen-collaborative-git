@@ -50,7 +50,8 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
         sourceControlUtil.getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH, itemId);
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git = dao.openRepository(context, repositoryPath);
-    createInt(context, git, baseBranchId, versionId.toString(), versionInfo);
+    createInt(context, git, baseBranchId, versionId.getValue(), versionInfo);
+    dao.checkoutBranch(context,git,versionId.getValue());
     boolean commitRequired = storeItemVersionInfo(context, git, itemId, versionInfo);
     if (commitRequired) {
       dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
@@ -74,8 +75,10 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     addFileContent(
         context,
         git,
-        sourceControlUtil.getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH, itemId) +
+        sourceControlUtil.getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH,
+            itemId) +
             File.separator,
+        null,
         ITEM_VERSION_INFO_FILE_NAME,
         info);
     return true;
@@ -110,14 +113,17 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git = dao.openRepository(context, repositoryPath);
     String branchId = versionId.toString();
-    ObjectId oldId = null;
+    ObjectId from = dao.getRemoteHead(context,git);
     dao.getRemoteHead(context, git);
     Collection<PushResult> pushResult = dao.publish(context, git, branchId);
+    ObjectId to = dao.getRemoteHead(context,git);
     dao.checkoutBranch(context, git, branchId);
 //    dao.inComing(context,git,versionId.getValue());
-    dao.close(context, git);
+
     Collection<ChangedElementData> changedElements = sourceControlUtil
-        .handlePublishResponse(context, dao, git, pushResult);
+        .handleSyncFileDiff(context,dao,git,from,to);//handlePublishResponse(context, dao, git,
+    // pushResult);
+    dao.close(context, git);
     ElementsPublishResult publishResult = new ElementsPublishResult();
     publishResult.setChangedElements(changedElements);
     return publishResult;

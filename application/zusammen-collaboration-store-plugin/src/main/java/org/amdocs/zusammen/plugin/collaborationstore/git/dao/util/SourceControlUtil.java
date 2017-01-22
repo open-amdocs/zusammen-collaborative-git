@@ -56,13 +56,6 @@ public class SourceControlUtil {
 
   private final ElementDataUtil elementDataUtil = new ElementDataUtil();
 
-  private String convertNamespaceToPath(String namespace) {
-    String[] pathArray = namespace.split(".");
-
-    return CommonMethods.arrayToSeparatedString(pathArray, File.separatorChar);
-  }
-
-
   public String getPrivateRepositoryPath(SessionContext context, String path, Id itemId) {
     StringBuffer sb = new StringBuffer();
     sb.append(path).append(File.separator).append("users").append(File.separator).append(context

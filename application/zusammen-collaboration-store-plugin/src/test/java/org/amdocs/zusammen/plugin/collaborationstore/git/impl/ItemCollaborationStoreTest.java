@@ -52,6 +52,7 @@ public class ItemCollaborationStoreTest {
     Mockito.doNothing().when(itemCollaborationStore).addFileContent(anyObject(),anyObject(),
         anyObject(),
         anyObject(),
+        anyObject(),
         anyObject());
 
     when(itemCollaborationStore.getSourceControlDao(anyObject())).thenReturn
@@ -78,6 +79,7 @@ public class ItemCollaborationStoreTest {
 
     verify(itemCollaborationStore).addFileContent(context,null,
         "/git/test/private\\users\\COLLABORATION_TEST\\"+ITEM_ID.getValue().toString(),
+        null,
         "info.json",
         info);
   }
