@@ -30,8 +30,6 @@ import org.mockito.Spy;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.io.File;
-
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,7 +47,8 @@ public class ElementCollaborationStoreTest {
 
   private static final Id ITEM_ID = new Id();
   private static final Id VERSION_ID = new Id();
-  private static final String NAME_SPACE = (new Id()).toString() + File.separator + (new Id());
+  private static final Id ELEMENT_ID = new Id();
+  private static final String NAME_SPACE = (new Id()).toString();
   private static final SessionContext context = TestUtil.createSessionContext();
 
 
@@ -91,15 +90,15 @@ public class ElementCollaborationStoreTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
     ElementData elementData =
-        new ElementData(ITEM_ID, VERSION_ID, namespace);
+        new ElementData(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
     elementCollaborationStore.create(context, elementData);
 
     verify(gitSourceControlDaoMock).openRepository(context,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString());
 
     verify(elementCollaborationStore).updateElementData(context, null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" + NAME_SPACE,
-        elementData);
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" +
+            NAME_SPACE + "\\" + ELEMENT_ID, elementData);
 
   }
 
@@ -109,18 +108,17 @@ public class ElementCollaborationStoreTest {
     namespace.setValue(NAME_SPACE);
 
     ElementData elementData =
-        new ElementData(ITEM_ID, VERSION_ID, namespace);
+        new ElementData(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
 
 
-    elementCollaborationStore.update(context, elementData
-    );
+    elementCollaborationStore.update(context, elementData);
 
     verify(gitSourceControlDaoMock).openRepository(context,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString());
 
     verify(elementCollaborationStore).updateElementData(context, null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" + NAME_SPACE,
-        elementData);
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" + NAME_SPACE +
+            "\\" + ELEMENT_ID, elementData);
   }
 
   @Test
@@ -129,7 +127,7 @@ public class ElementCollaborationStoreTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
     ElementData elementData =
-        new ElementData(ITEM_ID, VERSION_ID, namespace);
+        new ElementData(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
     elementCollaborationStore.delete(context, elementData);
 
     verify(gitSourceControlDaoMock).openRepository(context,
@@ -137,13 +135,12 @@ public class ElementCollaborationStoreTest {
 
     verify(gitSourceControlDaoMock).delete(context,
         null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" + NAME_SPACE);
+        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" + NAME_SPACE +
+            "\\" + ELEMENT_ID);
   }
 
   @Test
   public void testGet() throws Exception {
 
   }
-
-
 }

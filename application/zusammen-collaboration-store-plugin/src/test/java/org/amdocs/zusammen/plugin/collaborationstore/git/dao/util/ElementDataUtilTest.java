@@ -28,7 +28,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.spy;
@@ -42,11 +41,11 @@ public class ElementDataUtilTest {
   // = spy(new ItemVersionCollaborationStore());
   private static final Id ITEM_ID = new Id();
   private static final Id VERSION_ID = new Id();
+  private static final Id ELEMENT_ID = new Id();
 
   private static final SessionContext context = TestUtil.createSessionContext();
 
-  private static final String NAME_SPACE = (new Id()).toString() + File.separator + (new Id())
-      .toString();
+  private static final String NAME_SPACE = (new Id()).toString();
 
   @BeforeMethod
   public void init() {
@@ -105,13 +104,13 @@ public class ElementDataUtilTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-    ElementData elementData = new ElementData(ITEM_ID,VERSION_ID,namespace);
+    ElementData elementData = new ElementData(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
 
     elementData.setData(new ByteArrayInputStream("testUpdateElementData()".getBytes()));
 
     elementDataUtil
         .updateElementData(context, null, "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
-            .toString() + "\\" + NAME_SPACE, elementData);
+            .toString() + "\\" + NAME_SPACE + "\\" + ELEMENT_ID.toString(), elementData);
 
 
     verify(elementDataUtil, times(1)).addFileContent(anyObject(), anyObject(), anyObject(),
@@ -126,7 +125,7 @@ public class ElementDataUtilTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-    ElementData elementData = new ElementData(ITEM_ID,VERSION_ID,namespace);
+    ElementData elementData = new ElementData(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
 
     elementData.setData(new ByteArrayInputStream("testUpdateElementData()".getBytes()));
     Info info = new Info();
@@ -134,7 +133,7 @@ public class ElementDataUtilTest {
     elementData.setInfo(info);
     elementDataUtil
         .updateElementData(context, null, "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
-            .toString() + "\\" + NAME_SPACE, elementData);
+            .toString() + "\\" + NAME_SPACE + "\\" + ELEMENT_ID.toString(), elementData);
 
 
     verify(elementDataUtil, times(2)).addFileContent(anyObject(), anyObject(), anyObject(),

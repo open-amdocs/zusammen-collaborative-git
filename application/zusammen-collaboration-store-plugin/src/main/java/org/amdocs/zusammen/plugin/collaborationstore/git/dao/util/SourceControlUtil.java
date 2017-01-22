@@ -18,6 +18,7 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.dao.util;
 
 
 import org.amdocs.zusammen.datatypes.Id;
+import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.collaboration.ChangeType;
 import org.amdocs.zusammen.datatypes.item.Info;
@@ -81,6 +82,11 @@ public class SourceControlUtil {
     return sb.toString();
   }
 
+  public String getElementRelativePath(Namespace namespace, Id elementId) {
+    return namespace.getValue().replace(Namespace.NAMESPACE_DELIMITER, File.separator)
+        + File.separator + elementId.toString();
+  }
+
   public ElementsMergeResult handleSyncResponse(SessionContext context, Git git, PullResult
       pullResult) {
 
@@ -130,9 +136,9 @@ public class SourceControlUtil {
   private ElementDataConflict handleElementConflict(ElementData elementData) {
     ElementDataConflict elementConflicts = new ElementDataConflict();
     elementConflicts.setLocalElement(new ElementData(elementData.getItemId(), elementData
-        .getVersionId(), elementData.getNamespace()));
+        .getVersionId(), elementData.getNamespace(), elementData.getId()));
     elementConflicts.setRemoteElement(new ElementData(elementData.getItemId(), elementData
-        .getVersionId(), elementData.getNamespace()));
+        .getVersionId(), elementData.getNamespace(), elementData.getId()));
 
     //data
     LocalRemoteDataConflict localRemoteDataConflict = splitMergedFile(elementData.getData());
