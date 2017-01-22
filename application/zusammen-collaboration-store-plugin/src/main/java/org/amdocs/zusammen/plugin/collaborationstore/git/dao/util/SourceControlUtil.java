@@ -100,7 +100,7 @@ public class SourceControlUtil {
       for (String file : mergeResult.getConflicts().keySet()) {
         elementId = extractElementIdFromFilePath(file);
         if (!elementDataMap.containsKey(elementId)) {
-          elementData = elementDataUtil.uploadElementData(context, git, FileUtils.trimPath
+          elementData = elementDataUtil.uploadElementData(context, git, extractElementPathFromFilePath
               (file), elementId);
           elementDataMap.put(elementId, elementData);
         }
@@ -227,7 +227,8 @@ public class SourceControlUtil {
       for (DiffEntry diff : diffs) {
         elementId = extractElementIdFromFilePath(diff.getNewPath());
         if (!elementDataSet.contains(elementId)) {
-          elementData = elementDataUtil.uploadElementData(context, git, diff.getNewPath(),
+          String elementPath = extractElementPathFromFilePath(diff.getNewPath());
+          elementData = elementDataUtil.uploadElementData(context, git,elementPath ,
               elementId);
           elementDataSet.add(elementId);
           changedElementData = new ChangedElementData();
@@ -243,5 +244,10 @@ public class SourceControlUtil {
   protected String extractElementIdFromFilePath(String path) {
     File file = new File(path);
     return file.getParent();
+  }
+
+  protected String extractElementPathFromFilePath(String path) {
+    File file = new File(path);
+    return file.getParentFile().getPath();
   }
 }

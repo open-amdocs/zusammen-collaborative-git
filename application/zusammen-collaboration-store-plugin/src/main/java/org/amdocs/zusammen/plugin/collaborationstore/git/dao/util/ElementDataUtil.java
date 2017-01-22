@@ -48,9 +48,8 @@ public class ElementDataUtil {
     ElementData elementData = null;
     String fullPath = git.getRepository().getDirectory().getPath() + File.separator + elementPath;
     try {
-      Namespace namespace = new Namespace();
-      namespace.setValue(elementPath.replace(File.separator + elementId, "")
-          .replace(File.separator, Namespace.NAMESPACE_DELIMITER));
+      Namespace namespace = getNamespaceFromElementPath(elementPath,elementId);
+
       elementData = new ElementData(new Id(git.getRepository().getDirectory().getName()), new Id(git
           .getRepository().getBranch()), namespace, new Id(elementId));
     } catch (IOException e) {
@@ -88,7 +87,7 @@ public class ElementDataUtil {
     }
 
     List<String> subElementIds = getSubElementIds(context, git, fullPath);
-    String type;
+
     for (String subElementId : subElementIds) {
       elementData.addSubElement(new Id(subElementId));
 
@@ -96,11 +95,15 @@ public class ElementDataUtil {
     return elementData;
   }
 
-
-  private String extractElementIdFromElementPath(String elementPath) {
-
-    return (new File(elementPath)).getName();
+  private Namespace getNamespaceFromElementPath(String elementPath, String elementId) {
+    Namespace namespace = new Namespace();
+    namespace.setValue(elementPath.replace(File.separator + elementId, "")
+        .replace(File.separator, Namespace.NAMESPACE_DELIMITER));
+    return namespace;
   }
+
+
+
 
 
   public void updateElementData(SessionContext context, Git git,String basePath,String
@@ -169,6 +172,7 @@ public class ElementDataUtil {
     List<String> elementIds = new ArrayList<>();
     File file = new File(path);
     File[] files = file.listFiles();
+    if(files == null || files.length==0) return elementIds;
     for (File subfile : files) {
       if (subfile.isDirectory()) {
         elementIds.add(subfile.getName());
