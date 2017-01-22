@@ -108,7 +108,7 @@ public class SourceControlUtil {
         elementId = extractElementIdFromFilePath(file);
         if (!elementDataMap.containsKey(elementId)) {
           elementData = elementDataUtil.uploadElementData(context, git, FileUtils.trimPath
-              (file));
+              (file), elementId);
           elementDataMap.put(elementId, elementData);
         }
       }
@@ -234,7 +234,8 @@ public class SourceControlUtil {
       for (DiffEntry diff : diffs) {
         elementId = extractElementIdFromFilePath(diff.getNewPath());
         if (!elementDataSet.contains(elementId)) {
-          elementData = elementDataUtil.uploadElementData(context, git, diff.getNewPath());
+          elementData = elementDataUtil.uploadElementData(context, git, diff.getNewPath(),
+              elementId);
           elementDataSet.add(elementId);
           changedElementData = new ChangedElementData();
           changedElementData.setChangeType(ChangeType.valueOf(diff.getChangeType().name()));

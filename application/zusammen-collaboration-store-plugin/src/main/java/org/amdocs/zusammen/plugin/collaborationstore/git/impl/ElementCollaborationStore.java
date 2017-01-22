@@ -94,7 +94,7 @@ public class ElementCollaborationStore extends CollaborationStore {
     git = dao.openRepository(context, repositoryPath);
     try {
       dao.checkoutBranch(context, git, elementContext.getVersionId().toString());
-      return uploadElementData(context, git, elementPath);
+      return uploadElementData(context, git, elementPath, elementId);
     } finally {
       if (git != null) {
         dao.close(context, git);
@@ -108,9 +108,9 @@ public class ElementCollaborationStore extends CollaborationStore {
     elementDataUtil.updateElementData(context, git, elementPath, elementData);
   }
 
-  protected ElementData uploadElementData(SessionContext context, Git git, String elementPath
-  ) {
-    return elementDataUtil.uploadElementData(context, git, elementPath);
+  protected ElementData uploadElementData(SessionContext context, Git git, String elementPath,
+                                          Id elementId) {
+    return elementDataUtil.uploadElementData(context, git, elementPath, elementId.toString());
 
   }
 

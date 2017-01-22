@@ -20,7 +20,6 @@ import com.google.gson.reflect.TypeToken;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
-import org.amdocs.zusammen.datatypes.item.ElementInfo;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.datatypes.item.Relation;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
@@ -42,16 +41,18 @@ import java.util.Optional;
 public class ElementDataUtil {
 
 
-  public ElementData uploadElementData(SessionContext context, Git git, String elementPath){
+  public ElementData uploadElementData(SessionContext context, Git git, String elementPath,
+                                       String elementId) {
 
     Optional<InputStream> fileContent;
     ElementData elementData = null;
-    String fullPath = git.getRepository().getDirectory().getPath()+File.separator+elementPath;
+    String fullPath = git.getRepository().getDirectory().getPath() + File.separator + elementPath;
     try {
       Namespace namespace = new Namespace();
-      namespace.setValue(elementPath.replace(File.separator,Namespace.NAMESPACE_DELIMITER));
-      elementData = new ElementData(new Id(git.getRepository().getDirectory().getName()),new Id(git
-            .getRepository().getBranch()),namespace);
+      namespace.setValue(elementPath.replace(File.separator + elementId, "")
+          .replace(File.separator, Namespace.NAMESPACE_DELIMITER));
+      elementData = new ElementData(new Id(git.getRepository().getDirectory().getName()), new Id(git
+          .getRepository().getBranch()), namespace, new Id(elementId));
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -59,35 +60,36 @@ public class ElementDataUtil {
     elementData.setParentId(new Id((new File(fullPath)).getParent()));
 
 
-    fileContent = getFileContent(context, git,fullPath, PluginConstants.INFO_FILE_NAME);
+    fileContent = getFileContent(context, git, fullPath, PluginConstants.INFO_FILE_NAME);
     if (fileContent.isPresent()) {
       elementData.setInfo(JsonUtil.json2Object(fileContent.get(), Info.class));
     }
 
-    fileContent = getFileContent(context, git,fullPath, PluginConstants.RELATIONS_FILE_NAME);
+    fileContent = getFileContent(context, git, fullPath, PluginConstants.RELATIONS_FILE_NAME);
     if (fileContent.isPresent()) {
       elementData.setRelations(JsonUtil.json2Object(fileContent.get(), new
-          TypeToken<ArrayList<Relation>>() {}.getType()));
+          TypeToken<ArrayList<Relation>>() {
+          }.getType()));
     }
 
-    fileContent = getFileContent(context, git,fullPath, PluginConstants.VISUALIZATION_FILE_NAME);
+    fileContent = getFileContent(context, git, fullPath, PluginConstants.VISUALIZATION_FILE_NAME);
     if (fileContent.isPresent()) {
       elementData.setVisualization(fileContent.get());
     }
 
-    fileContent = getFileContent(context, git,fullPath, PluginConstants.DATA_FILE_NAME);
+    fileContent = getFileContent(context, git, fullPath, PluginConstants.DATA_FILE_NAME);
     if (fileContent.isPresent()) {
       elementData.setData(fileContent.get());
     }
 
-    fileContent = getFileContent(context, git,fullPath, PluginConstants.SEARCH_DATA_FILE_NAME);
+    fileContent = getFileContent(context, git, fullPath, PluginConstants.SEARCH_DATA_FILE_NAME);
     if (fileContent.isPresent()) {
       elementData.setSearchableData(fileContent.get());
     }
 
-    List<String> subElementIds = getSubElementIds(context,git,fullPath);
+    List<String> subElementIds = getSubElementIds(context, git, fullPath);
     String type;
-    for (String subElementId:subElementIds) {
+    for (String subElementId : subElementIds) {
       elementData.addSubElement(new Id(subElementId));
 
     }
@@ -102,8 +104,8 @@ public class ElementDataUtil {
 
 
   public void updateElementData(SessionContext context, Git git, String elementPath,
-                                     ElementData
-      elementData) {
+                                ElementData
+                                    elementData) {
 
     if (elementData.getVisualization() != null) {
       addFileContent(context, git,
@@ -121,18 +123,19 @@ public class ElementDataUtil {
     }
 
     Info info = elementData.getInfo();
-    if (info != null ) {
+    if (info != null) {
       addFileContent(context, git,
           elementPath, PluginConstants.INFO_FILE_NAME, info);
     }
   }
 
 
-
   public void addFileContent(SessionContext context, Git git, String path, String fileName,
-                              Object fileContent) {
+                             Object fileContent) {
 
-    if(fileContent==null) return;
+    if (fileContent == null) {
+      return;
+    }
     if (fileContent instanceof InputStream) {
       FileUtils
           .writeFileFromInputStream(path, fileName, (InputStream) fileContent);
@@ -145,16 +148,16 @@ public class ElementDataUtil {
   protected Optional<InputStream> getFileContent(SessionContext context, Git git, String
       path, String fileName) {
 
-     return  FileUtils.readFile(path , fileName);
+    return FileUtils.readFile(path, fileName);
   }
 
-  protected List<String> getSubElementIds(SessionContext context,Git git,String path){
+  protected List<String> getSubElementIds(SessionContext context, Git git, String path) {
 
     List<String> elementIds = new ArrayList<>();
     File file = new File(path);
     File[] files = file.listFiles();
-    for(File subfile:files){
-      if(subfile.isDirectory()){
+    for (File subfile : files) {
+      if (subfile.isDirectory()) {
         elementIds.add(subfile.getName());
       }
     }
