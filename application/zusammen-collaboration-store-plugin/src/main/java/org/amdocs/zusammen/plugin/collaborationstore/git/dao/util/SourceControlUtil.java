@@ -248,6 +248,6 @@ public class SourceControlUtil {
 
   protected String extractElementPathFromFilePath(String path) {
     File file = new File(path);
-    return file.getParentFile().getPath();
+    return file.getParentFile() != null?file.getParentFile().getPath():"";
   }
 }
