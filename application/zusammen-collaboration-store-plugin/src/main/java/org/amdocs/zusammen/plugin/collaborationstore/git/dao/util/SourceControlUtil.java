@@ -244,9 +244,7 @@ public class SourceControlUtil {
         if (elementId == null) {
           changedInfo = elementDataUtil.uploadItemVersionInfo(context, git);
           itemVersionChangedData.setItemVersionInfo(changedInfo);
-        }
-
-        if (!elementDataSet.contains(elementId)) {
+        }else if (!elementDataSet.contains(elementId)) {
           String elementPath = extractElementPathFromFilePath(diff.getNewPath());
           elementData = elementDataUtil.uploadElementData(context, git, elementPath,
               elementId);
