@@ -47,16 +47,18 @@ public class ElementDataUtil {
 
     Optional<InputStream> fileContent;
     ElementData elementData = null;
-    String fullPath = git.getRepository().getDirectory().getPath() + File.separator + elementPath;
+    String fullPath = getRepositoryPath(git) + File
+        .separator +
+        elementPath;
     try {
       Namespace namespace = getNamespaceFromElementPath(elementPath,elementId);
-      elementData = new ElementData(new Id(git.getRepository().getDirectory().getName()), new Id(git
+      elementData = new ElementData(new Id((new File(getRepositoryPath(git))).getName()), new Id(git
           .getRepository().getBranch()), namespace, new Id(elementId));
     } catch (IOException e) {
       e.printStackTrace();
     }
 
-    elementData.setParentId(new Id((new File(fullPath)).getParentFile().getName()));
+    elementData.setParentId(getParentId(fullPath));
 
 
     fileContent = getFileContent(context, git, fullPath, PluginConstants.INFO_FILE_NAME);
@@ -95,10 +97,18 @@ public class ElementDataUtil {
     return elementData;
   }
 
+  private Id getParentId(String path) {
+    File file = new File(path);
+    if(file.getParentFile()!=null){
+      return new Id(file.getParentFile().getName());
+    }
+    return null;
+  }
+
   public Info uploadItemVersionInfo(SessionContext context, Git git) {
 
       Optional<InputStream> fileContent =
-          getFileContent(context, git, git.getRepository().getDirectory().getPath(),
+          getFileContent(context, git, getRepositoryPath(git),
               PluginConstants
                   .ITEM_VERSION_INFO_FILE_NAME);
       if (fileContent.isPresent()) {
@@ -108,16 +118,16 @@ public class ElementDataUtil {
       }
   }
 
+  private String getRepositoryPath(Git git) {
+    return git.getRepository().getWorkTree().getPath();
+  }
+
   private Namespace getNamespaceFromElementPath(String elementPath, String elementId) {
     Namespace namespace = new Namespace();
     namespace.setValue(elementPath.replace(elementId, "")
         .replace(File.separator, Namespace.NAMESPACE_DELIMITER));
     return namespace;
   }
-
-
-
-
 
   public void updateElementData(SessionContext context, Git git,String basePath,String
       relativePath,ElementData elementData) {
@@ -129,7 +139,8 @@ public class ElementDataUtil {
 
     if (elementData.getVisualization() != null) {
       addFileContent(context, git,
-          git.getRepository().getDirectory().getPath(),relativePath, PluginConstants
+          getRepositoryPath(git),relativePath,
+              PluginConstants
               .VISUALIZATION_FILE_NAME, elementData
               .getVisualization());
     }
