@@ -36,10 +36,18 @@ import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.transport.RemoteRefUpdate;
+import org.eclipse.jgit.treewalk.TreeWalk;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -256,12 +264,147 @@ public class SourceControlUtil {
   }
 
   protected String extractElementIdFromFilePath(String path) {
+
+
     File file = new File(path);
-    return file.getParent();
+    if(file.getParentFile() == null) return null;
+    return file.getParentFile().getName();
   }
 
   protected String extractElementPathFromFilePath(String path) {
     File file = new File(path);
     return file.getParentFile() != null ? file.getParentFile().getPath() : "";
+  }
+
+  public ItemVersionChangedData handleSyncFileDiff(SessionContext context, GitSourceControlDao dao,
+                                                   Git git,
+                                                   Collection<PushResult> pushResult) {
+    ItemVersionChangedData itemVersionChangedData;
+    Collection<ChangedElementData> changedElementInfoCollection ;
+
+    ObjectId from = getOldRevisionId(pushResult);
+    ObjectId to = getNewRevisionId(pushResult);
+
+    if(from!= null){
+      itemVersionChangedData = getChangeDataAfterPush(context,dao,git,from,to);
+    }else{
+      itemVersionChangedData = getRepoData(context,dao,git);
+    }
+
+
+    return itemVersionChangedData;
+  }
+
+  public ItemVersionChangedData getRepoData(SessionContext context,
+                                                     GitSourceControlDao dao, Git git) {
+    ItemVersionChangedData itemVersionChangedData = new ItemVersionChangedData();
+    Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
+    ChangedElementData changedElementData;
+    ElementData elementData;
+    String elementId;
+    String elementPath;
+    try {
+      RevWalk walk = new RevWalk(git.getRepository());
+      Ref head = git.getRepository().getRef("HEAD");
+      RevCommit commit = walk.parseCommit(head.getObjectId());
+      RevTree tree = commit.getTree();
+
+      TreeWalk treeWalk = new TreeWalk(git.getRepository());
+
+      treeWalk.addTree(tree);
+      treeWalk.setRecursive(true);
+      while (treeWalk.next()) {
+        changedElementData = new ChangedElementData();
+        changedElementData.setChangeType(ChangeType.ADD);
+        elementId = extractElementIdFromFilePath(treeWalk.getPathString());
+        elementPath = extractElementPathFromFilePath(treeWalk.getPathString());
+        if(elementId==null){
+          Info itemVersionInfo = elementDataUtil.uploadItemVersionInfo(context,git);
+          itemVersionChangedData.setItemVersionInfo(itemVersionInfo);
+
+        }else {
+          elementData = elementDataUtil.uploadElementData(context, git, elementPath, elementId);
+          changedElementData.setElementData(elementData);
+        }
+        changedElementInfoCollection.add(changedElementData);
+
+      }
+      itemVersionChangedData.setChangedElements(changedElementInfoCollection);
+      return itemVersionChangedData;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+  }
+
+  private ItemVersionChangedData getChangeDataAfterPush(SessionContext context,
+                                                                 GitSourceControlDao dao,Git git,
+                                                                 ObjectId from,ObjectId to) {
+
+    ItemVersionChangedData itemVersionChangedData = new ItemVersionChangedData();
+    Collection<DiffEntry> diffs = dao.revisionDiff(context, git, from, to);
+    Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
+
+    if (diffs != null) {
+      Set<String> elementDataSet = new HashSet<>();
+      String elementId;
+      ElementData elementData;
+      ChangedElementData changedElementData;
+      Info changedInfo;
+      for (DiffEntry diff : diffs) {
+        elementId = extractElementIdFromFilePath(diff.getNewPath());
+        if (elementId == null) {
+          changedInfo = elementDataUtil.uploadItemVersionInfo(context, git);
+          itemVersionChangedData.setItemVersionInfo(changedInfo);
+        }
+
+        if (!elementDataSet.contains(elementId)) {
+          String elementPath = extractElementPathFromFilePath(diff.getNewPath());
+          elementData = elementDataUtil.uploadElementData(context, git, elementPath,
+              elementId);
+          elementDataSet.add(elementId);
+          changedElementData = new ChangedElementData();
+          changedElementData.setChangeType(ChangeType.valueOf(diff.getChangeType().name()));
+          changedElementData.setElementData(elementData);
+          changedElementInfoCollection.add(changedElementData);
+        }
+      }
+    }
+
+    itemVersionChangedData.setChangedElements(changedElementInfoCollection);
+
+    return itemVersionChangedData;
+  }
+
+  private ObjectId getNewRevisionId(Collection<PushResult> pushResults) {
+
+    PushResult pushResult;
+    if(pushResults.iterator().hasNext())
+      pushResult = pushResults.iterator().next();
+    else return null;
+    Collection<RemoteRefUpdate> remoteUpdates =
+        pushResult.getRemoteUpdates();
+    if(remoteUpdates.iterator().hasNext()) {
+      ObjectId id = remoteUpdates.iterator().next().getNewObjectId();
+      if(id ==null || id.equals(ObjectId.zeroId())) return null;
+
+      return id;
+    }
+    else return null;
+  }
+
+  private ObjectId getOldRevisionId(Collection<PushResult> pushResults) {
+    PushResult pushResult;
+    if(pushResults.iterator().hasNext())
+      pushResult = pushResults.iterator().next();
+    else return null;
+    Collection<RemoteRefUpdate> remoteUpdates =
+        pushResult.getRemoteUpdates();
+    if(remoteUpdates.iterator().hasNext()) {
+      ObjectId id = remoteUpdates.iterator().next().getExpectedOldObjectId();
+      if (id == null || id.equals(ObjectId.zeroId())) return null;
+      return id;
+    }
+    else return null;
   }
 }

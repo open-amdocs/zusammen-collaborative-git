@@ -115,25 +115,26 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git = dao.openRepository(context, repositoryPath);
     String branchId = versionId.toString();
-    ObjectId from = dao.getRemoteHead(context, git);
-    dao.getRemoteHead(context, git);
+    //ObjectId from = dao.getRemoteHead(context, git);
+
     Collection<PushResult> pushResult = dao.publish(context, git, branchId);
     ObjectId to = dao.getRemoteHead(context, git);
     dao.checkoutBranch(context, git, branchId);
 //    dao.inComing(context,git,versionId.getValue());
 
     ItemVersionChangedData itemVersionChangedData = sourceControlUtil
-        .handleSyncFileDiff(context, dao, git, from, to);//handlePublishResponse(context, dao, git,
+        .handleSyncFileDiff(context, dao, git, pushResult);//handlePublishResponse(context, dao, git,
 
     dao.close(context, git);
     ItemVersionPublishResult publishResult = new ItemVersionPublishResult();
 
     ElementsPublishResult elementPublishResult = new ElementsPublishResult();
-
-    elementPublishResult.setChangedElements(itemVersionChangedData.getChangedElements());
-
+    if(itemVersionChangedData != null) {
+      elementPublishResult.setChangedElements(itemVersionChangedData.getChangedElements());
+      publishResult.setItemVersionInfo(itemVersionChangedData.getItemVersionInfo());
+    }
     publishResult.setElementsPublishResult(elementPublishResult);
-    publishResult.setItemVersionInfo(itemVersionChangedData.getItemVersionInfo());
+
     return publishResult;
   }
 
