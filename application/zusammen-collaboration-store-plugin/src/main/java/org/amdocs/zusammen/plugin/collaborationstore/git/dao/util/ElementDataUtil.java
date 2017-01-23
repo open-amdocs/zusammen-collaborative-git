@@ -56,7 +56,7 @@ public class ElementDataUtil {
       e.printStackTrace();
     }
 
-    elementData.setParentId(new Id((new File(fullPath)).getParent()));
+    elementData.setParentId(new Id((new File(fullPath)).getParentFile().getName()));
 
 
     fileContent = getFileContent(context, git, fullPath, PluginConstants.INFO_FILE_NAME);
@@ -110,7 +110,7 @@ public class ElementDataUtil {
 
   private Namespace getNamespaceFromElementPath(String elementPath, String elementId) {
     Namespace namespace = new Namespace();
-    namespace.setValue(elementPath.replace(File.separator + elementId, "")
+    namespace.setValue(elementPath.replace(elementId, "")
         .replace(File.separator, Namespace.NAMESPACE_DELIMITER));
     return namespace;
   }
