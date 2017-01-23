@@ -118,7 +118,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     //ObjectId from = dao.getRemoteHead(context, git);
 
     Collection<PushResult> pushResult = dao.publish(context, git, branchId);
-    ObjectId to = dao.getRemoteHead(context, git);
+    //ObjectId to = dao.getRemoteHead(context, git);
     dao.checkoutBranch(context, git, branchId);
 //    dao.inComing(context,git,versionId.getValue());
 

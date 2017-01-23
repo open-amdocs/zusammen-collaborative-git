@@ -314,8 +314,7 @@ public class SourceControlUtil {
       treeWalk.addTree(tree);
       treeWalk.setRecursive(true);
       while (treeWalk.next()) {
-        changedElementData = new ChangedElementData();
-        changedElementData.setChangeType(ChangeType.ADD);
+
         elementId = extractElementIdFromFilePath(treeWalk.getPathString());
         elementPath = extractElementPathFromFilePath(treeWalk.getPathString());
         if(elementId==null){
@@ -323,10 +322,13 @@ public class SourceControlUtil {
           itemVersionChangedData.setItemVersionInfo(itemVersionInfo);
 
         }else {
+          changedElementData = new ChangedElementData();
+          changedElementData.setChangeType(ChangeType.ADD);
           elementData = elementDataUtil.uploadElementData(context, git, elementPath, elementId);
           changedElementData.setElementData(elementData);
+          changedElementInfoCollection.add(changedElementData);
         }
-        changedElementInfoCollection.add(changedElementData);
+
 
       }
       itemVersionChangedData.setChangedElements(changedElementInfoCollection);
