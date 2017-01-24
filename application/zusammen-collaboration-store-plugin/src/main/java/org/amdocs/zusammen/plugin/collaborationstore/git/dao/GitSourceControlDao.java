@@ -28,6 +28,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 import java.util.Collection;
 import java.util.List;
@@ -66,7 +67,8 @@ public interface GitSourceControlDao {
 
   Status status(SessionContext context,Git git);
 
-  Collection<DiffEntry> revisionDiff(SessionContext context, Git git, ObjectId from, ObjectId to);
+  Collection<DiffEntry> revisionDiff(SessionContext context, Git git, ObjectId from, ObjectId to,
+                                     TreeFilter treeFilter);
 
   ObjectId getHead(SessionContext context, Git git);
 

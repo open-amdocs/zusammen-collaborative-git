@@ -16,6 +16,7 @@
 
 package org.amdocs.zusammen.plugin.collaborationstore.git.commands;
 
+import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.amdocs.zusammen.utils.common.CommonMethods;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
@@ -28,6 +29,8 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +42,7 @@ public class RevisionDiffCommand {
   private Git git;
   private ObjectId from;
   private ObjectId to;
+  private TreeFilter treeFilter;
 
   public static RevisionDiffCommand init(Git git){
     return new RevisionDiffCommand(git);
@@ -53,6 +57,12 @@ public class RevisionDiffCommand {
     this.to=to;
     return this;
   }
+
+  public RevisionDiffCommand filter(TreeFilter treeFilter){
+    this.treeFilter=treeFilter;
+    return this;
+  }
+
 
   public Collection<DiffEntry> call()
       throws GitAPIException {
@@ -73,6 +83,8 @@ public class RevisionDiffCommand {
       tw.addTree(fromCommit.getTree());
       tw.addTree(last.getTree());
       tw.setRecursive(true);
+      if(this.treeFilter != null)
+      tw.setFilter(this.treeFilter);
       List<DiffEntry> diffs = DiffEntry.scan(tw);
       returnDiffs.addAll(diffs);
     } catch (java.io.IOException e) {

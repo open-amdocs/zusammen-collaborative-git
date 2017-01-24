@@ -20,6 +20,7 @@ import com.google.gson.reflect.TypeToken;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
+import org.amdocs.zusammen.datatypes.item.ElementAction;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.datatypes.item.Relation;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
@@ -40,6 +41,8 @@ import java.util.stream.Collectors;
 
 
 public class ElementDataUtil {
+
+  private static final String EMPTY_FILE = "";
 
   public ElementData uploadElementData(Git git, String elementPath, String elementId) {
     ElementData elementData;
@@ -105,7 +108,12 @@ public class ElementDataUtil {
   }
 
   public void updateElementData(SessionContext context, Git git, String basePath, String
-      relativePath, ElementData elementData) {
+      relativePath, ElementData elementData, ElementAction action) {
+
+    if(action.equals(ElementAction.CREATE)){
+      addFileContent(context, git, getRepositoryPath(git), relativePath,
+          PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME, EMPTY_FILE);
+    }
 
     if (elementData.getId().getValue().equals(Id.ZERO.getValue())) {
       updateItemVersionDataFromElementData(context, git, basePath, elementData);

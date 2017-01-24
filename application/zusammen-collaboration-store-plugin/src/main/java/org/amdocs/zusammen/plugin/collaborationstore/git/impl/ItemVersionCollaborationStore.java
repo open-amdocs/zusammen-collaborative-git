@@ -123,7 +123,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
 //    dao.inComing(context,git,versionId.getValue());
 
     ItemVersionChangedData itemVersionChangedData = sourceControlUtil
-        .handleSyncFileDiff(context, dao, git, pushResult);//handlePublishResponse(context, dao, git,
+        .handlePushFileDiff(context, dao, git, pushResult);//handlePublishResponse(context, dao, git,
 
     dao.close(context, git);
     ItemVersionPublishResult publishResult = new ItemVersionPublishResult();
@@ -167,7 +167,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
 
     //Collection<ChangedElementData> changedElementDataCollection =
     ItemVersionChangedData itemVersionChangedData =
-        sourceControlUtil.handleSyncFileDiff(context, dao, git, oldId,
+        sourceControlUtil.handlePushFileDiff(context, dao, git, oldId,
             null);
 
     result.setItemVersionChangedData(itemVersionChangedData);
@@ -208,7 +208,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
 
     //Collection<ChangedElementData> changedElements =
     ItemVersionChangedData itemVersionChangedData =
-        sourceControlUtil.handleSyncFileDiff(context, dao, git, oldId,
+        sourceControlUtil.handlePushFileDiff(context, dao, git, oldId,
             null);
 
     result.setItemVersionChangedData(itemVersionChangedData);

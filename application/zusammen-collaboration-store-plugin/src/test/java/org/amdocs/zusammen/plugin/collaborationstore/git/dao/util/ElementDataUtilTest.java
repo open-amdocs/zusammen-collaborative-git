@@ -19,6 +19,7 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.dao.util;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
+import org.amdocs.zusammen.datatypes.item.ElementAction;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
 import org.amdocs.zusammen.sdk.types.ElementData;
@@ -111,7 +112,7 @@ public class ElementDataUtilTest {
 
     elementDataUtil
         .updateElementData(context, null, "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
-            .toString()  , NAME_SPACE, elementData);
+            .toString()  , NAME_SPACE, elementData, ElementAction.UPDATE);
 
 
     verify(elementDataUtil, times(1)).addFileContent(anyObject(), anyObject(), anyObject(),
@@ -135,7 +136,7 @@ public class ElementDataUtilTest {
     elementData.setInfo(info);
     elementDataUtil
         .updateElementData(context, null, "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
-            .toString()  , NAME_SPACE, elementData);
+            .toString()  , NAME_SPACE, elementData, ElementAction.UPDATE);
 
 
     verify(elementDataUtil, times(2)).addFileContent(anyObject(), anyObject(), anyObject(),

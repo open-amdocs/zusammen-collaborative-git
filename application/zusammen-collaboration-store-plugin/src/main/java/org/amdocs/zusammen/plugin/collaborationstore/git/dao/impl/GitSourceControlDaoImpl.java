@@ -46,6 +46,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 import java.io.File;
 import java.io.IOException;
@@ -296,12 +297,15 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public Collection<DiffEntry> revisionDiff(SessionContext context, Git git, ObjectId from, ObjectId to) {
+  public Collection<DiffEntry> revisionDiff(SessionContext context, Git git, ObjectId from,
+                                            ObjectId to, TreeFilter treeFilter) {
 
     RevisionDiffCommand command = RevisionDiffCommand.init(git);
     try {
       command.from(from);
       command.to(to);
+      if(treeFilter!= null)
+        command.filter(treeFilter);
       return command.call();
 
     } catch (GitAPIException e) {

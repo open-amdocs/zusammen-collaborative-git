@@ -24,6 +24,7 @@ import org.amdocs.zusammen.datatypes.collaboration.ChangeType;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.types.LocalRemoteDataConflict;
+import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.amdocs.zusammen.sdk.types.ChangedElementData;
 import org.amdocs.zusammen.sdk.types.ElementData;
 import org.amdocs.zusammen.sdk.types.ElementDataConflict;
@@ -43,6 +44,9 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -207,18 +211,16 @@ public class SourceControlUtil {
                                                       GitSourceControlDao dao,
                                                       Git git,
                                                       Collection<PushResult> pushResult) {
-
     ObjectId from =
         pushResult.iterator().next().getRemoteUpdates().iterator().next().getExpectedOldObjectId();
     ObjectId to =
         pushResult.iterator().next().getRemoteUpdates().iterator().next().getNewObjectId();
-    return handleSyncFileDiff(context, dao, git,
+    return handlePushFileDiff(context, dao, git,
         from, to);
-
   }
 
 
-  public ItemVersionChangedData handleSyncFileDiff(SessionContext
+  public ItemVersionChangedData handlePushFileDiff(SessionContext
                                                        context,
                                                    GitSourceControlDao dao,
                                                    Git git,
@@ -227,13 +229,26 @@ public class SourceControlUtil {
     to = to != null ? to : dao.getHead(context, git);
 
 
+
+    ItemVersionChangedData itemVersionChangedData = calculateItemVersionChangedData(context,dao,git,
+    from,to,PathSuffixFilter.create(PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME));
+    return itemVersionChangedData;
+  }
+
+  private ItemVersionChangedData calculateItemVersionChangedData(SessionContext context,
+                                                                 GitSourceControlDao dao,
+                                                                 Git git,
+                                                                 ObjectId from,
+                                                                 ObjectId to,
+                                                                 TreeFilter treeFilter) {
+
     ItemVersionChangedData itemVersionChangedData = new ItemVersionChangedData();
 
-    Collection<DiffEntry> diffs = dao.revisionDiff(context, git, from, to);
+    Collection<DiffEntry> diffs = dao.revisionDiff(context, git, from, to, treeFilter);
     Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
 
     if (diffs != null) {
-      Set<String> elementDataSet = new HashSet<>();
+      //Set<String> elementDataSet = new HashSet<>();
       String elementId;
       ElementData elementData;
       ChangedElementData changedElementData;
@@ -243,11 +258,10 @@ public class SourceControlUtil {
         if (elementId == null) {
           changedInfo = elementDataUtil.uploadItemVersionInfo(git);
           itemVersionChangedData.setItemVersionInfo(changedInfo);
-        }else if (!elementDataSet.contains(elementId)) {
+        }else  {
           String elementPath = extractElementPathFromFilePath(diff.getNewPath());
           elementData = elementDataUtil.uploadElementData(git, elementPath,
               elementId);
-          elementDataSet.add(elementId);
           changedElementData = new ChangedElementData();
           changedElementData.setChangeType(ChangeType.valueOf(diff.getChangeType().name()));
           changedElementData.setElementData(elementData);
@@ -273,7 +287,7 @@ public class SourceControlUtil {
     return file.getParentFile() != null ? file.getParentFile().getPath() : "";
   }
 
-  public ItemVersionChangedData handleSyncFileDiff(SessionContext context, GitSourceControlDao dao,
+  public ItemVersionChangedData handlePushFileDiff(SessionContext context, GitSourceControlDao dao,
                                                    Git git,
                                                    Collection<PushResult> pushResult) {
     ItemVersionChangedData itemVersionChangedData;
@@ -342,36 +356,9 @@ public class SourceControlUtil {
                                                                  GitSourceControlDao dao,Git git,
                                                                  ObjectId from,ObjectId to) {
 
-    ItemVersionChangedData itemVersionChangedData = new ItemVersionChangedData();
-    Collection<DiffEntry> diffs = dao.revisionDiff(context, git, from, to);
-    Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
 
-    if (diffs != null) {
-      Set<String> elementDataSet = new HashSet<>();
-      String elementId;
-      ElementData elementData;
-      ChangedElementData changedElementData;
-      Info changedInfo;
-      for (DiffEntry diff : diffs) {
-        elementId = extractElementIdFromFilePath(diff.getNewPath());
-        if (elementId == null) {
-          changedInfo = elementDataUtil.uploadItemVersionInfo(git);
-          itemVersionChangedData.setItemVersionInfo(changedInfo);
-        }else if (!elementDataSet.contains(elementId)) {
-          String elementPath = extractElementPathFromFilePath(diff.getNewPath());
-          elementData = elementDataUtil.uploadElementData(git, elementPath,
-              elementId);
-          elementDataSet.add(elementId);
-          changedElementData = new ChangedElementData();
-          changedElementData.setChangeType(ChangeType.valueOf(diff.getChangeType().name()));
-          changedElementData.setElementData(elementData);
-          changedElementInfoCollection.add(changedElementData);
-        }
-      }
-    }
-
-    itemVersionChangedData.setChangedElements(changedElementInfoCollection);
-
+    ItemVersionChangedData itemVersionChangedData = calculateItemVersionChangedData(context,dao,git,
+        from,to,PathSuffixFilter.create(PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME));
     return itemVersionChangedData;
   }
 

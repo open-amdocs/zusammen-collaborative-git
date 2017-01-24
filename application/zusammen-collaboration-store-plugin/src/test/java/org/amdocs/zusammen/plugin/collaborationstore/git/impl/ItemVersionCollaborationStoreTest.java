@@ -146,7 +146,7 @@ public class ItemVersionCollaborationStoreTest {
 
     verify(gitSourceControlDaoMock).checkoutBranch(context, null, VERSION_ID.getValue().toString());
     //verify(itemVersionCollaborationStore).(anyObject());
-    verify(sourceControlUtil).handleSyncFileDiff(anyObject(),anyObject(),
+    verify(sourceControlUtil).handlePushFileDiff(anyObject(),anyObject(),
         anyObject(),anyObject());
 
   }

@@ -19,6 +19,7 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.impl;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
+import org.amdocs.zusammen.datatypes.item.ElementAction;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.util.SourceControlUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
@@ -67,7 +68,7 @@ public class ElementCollaborationStoreTest {
         anyObject());
 
     Mockito.doNothing().when(elementCollaborationStore).updateElementData(anyObject(), anyObject()
-        , anyObject(), anyObject(), anyObject());
+        , anyObject(), anyObject(), anyObject(),anyObject() );
 
     when(elementCollaborationStore.getSourceControlDao(anyObject())).thenReturn
         (gitSourceControlDaoMock);
@@ -102,7 +103,7 @@ public class ElementCollaborationStoreTest {
     verify(elementCollaborationStore).updateElementData(context, null,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() , NAME_SPACE+File
             .separator+ELEMENT_ID,
-        elementData);
+        elementData, ElementAction.CREATE);
 
   }
 
@@ -123,7 +124,7 @@ public class ElementCollaborationStoreTest {
     verify(elementCollaborationStore).updateElementData(context, null,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() , NAME_SPACE+File
             .separator+ELEMENT_ID,
-        elementData);
+        elementData, ElementAction.UPDATE);
   }
 
   @Test

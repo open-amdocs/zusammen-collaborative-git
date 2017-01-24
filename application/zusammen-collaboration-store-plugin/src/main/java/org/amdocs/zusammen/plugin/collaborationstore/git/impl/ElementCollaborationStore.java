@@ -19,6 +19,7 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.impl;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
+import org.amdocs.zusammen.datatypes.item.ElementAction;
 import org.amdocs.zusammen.datatypes.item.ElementContext;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
@@ -44,7 +45,7 @@ public class ElementCollaborationStore extends CollaborationStore {
     File elementPathFile = new File(fullPath);
     elementPathFile.mkdirs();
 
-    updateElementData(context, git, repositoryPath,elementPath, elementData);
+    updateElementData(context, git, repositoryPath,elementPath, elementData, ElementAction.CREATE);
     dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
     //return new CollaborationNamespace(elementPath);
@@ -60,7 +61,7 @@ public class ElementCollaborationStore extends CollaborationStore {
         sourceControlUtil.getElementRelativePath(elementData.getNamespace(), elementData.getId());*/
     Git git = dao.openRepository(context, repositoryPath);
     dao.checkoutBranch(context, git, elementData.getVersionId().toString());
-    updateElementData(context, git, repositoryPath,elementPath, elementData);
+    updateElementData(context, git, repositoryPath,elementPath, elementData, ElementAction.UPDATE);
     dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
   }
@@ -107,8 +108,8 @@ public class ElementCollaborationStore extends CollaborationStore {
   protected void updateElementData(SessionContext context, Git git,
                                    String basePath,
                                    String relativePath,
-                                   ElementData elementData) {
-    elementDataUtil.updateElementData(context, git,basePath, relativePath, elementData);
+                                   ElementData elementData, ElementAction action) {
+    elementDataUtil.updateElementData(context, git,basePath, relativePath, elementData,action);
   }
 
   protected ElementData uploadElementData(SessionContext context, Git git, String elementPath,
