@@ -18,6 +18,7 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.impl;
 
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.SessionContext;
+import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.datatypes.item.ItemVersionData;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
@@ -136,7 +137,8 @@ public class ItemVersionCollaborationStoreTest {
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
 
     verify(gitSourceControlDaoMock).checkoutBranch(context, null, VERSION_ID.getValue().toString());
-    verify(itemVersionCollaborationStore).storeItemVersionData(context, null, ITEM_ID,itemVersionData );
+    verify(itemVersionCollaborationStore).storeItemVersionData(context, null, ITEM_ID,itemVersionData,
+        Action.action);
 
   }
 

@@ -38,6 +38,8 @@ public class PluginConstants {
   public static final String DELETE_ITEM_VERSION_MESSAGE = "Delete Item Version";
   public static final String ADD_ITEM_INFO_MESSAGE = "Add Item Info";
   public static final String ZUSAMMEN_TAGGING_FILE_NAME = ".zusammen";
+  public static final String ITEM_VERSION_BASE_ID = "itemVersionBaseId";
+  public static final String ITEM_VERSION_ID = "itemVersionId";
   public static String PUBLIC_PATH = ConfigurationAccessor.getPluginProperty(SdkConstants
       .ZUSAMMEN_COLLABORATIVE_STORE, PUBLIC_PATH_PROP);
   public static String PRIVATE_PATH = ConfigurationAccessor.getPluginProperty(

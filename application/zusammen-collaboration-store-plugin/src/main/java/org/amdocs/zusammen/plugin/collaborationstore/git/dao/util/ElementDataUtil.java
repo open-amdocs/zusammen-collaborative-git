@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -94,7 +95,12 @@ public class ElementDataUtil {
         .map(fileContent -> (ArrayList<Relation>) JsonUtil
             .json2Object(fileContent, new TypeToken<ArrayList<Relation>>() {
             }.getType())).orElse(null));
-
+    Map<String,String> itemVersionInformation = JsonUtil.json2Object(getFileContent(getRepositoryPath(git), PluginConstants
+            .ZUSAMMEN_TAGGING_FILE_NAME).get(),Map.class);
+    itemVersion.setBaseId(new Id(itemVersionInformation.get(PluginConstants
+        .ITEM_VERSION_BASE_ID)));
+    itemVersion.setId(new Id(itemVersionInformation.get(PluginConstants
+        .ITEM_VERSION_ID)));
     itemVersion.setData(itemVersionData);
     return itemVersion;
   }

@@ -19,6 +19,7 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.impl;
 import org.amdocs.zusammen.commons.configuration.impl.ConfigurationAccessor;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.SessionContext;
+import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.ItemVersionData;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
@@ -28,6 +29,7 @@ import org.amdocs.zusammen.sdk.types.CollaborationMergeResult;
 import org.amdocs.zusammen.sdk.types.CollaborationPublishResult;
 import org.amdocs.zusammen.sdk.utils.SdkConstants;
 import org.amdocs.zusammen.utils.fileutils.FileUtils;
+import org.amdocs.zusammen.utils.fileutils.json.JsonUtil;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
@@ -36,10 +38,16 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.PushResult;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants.ITEM_VERSION_INFO_FILE_NAME;
 import static org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants.RELATIONS_FILE_NAME;
+import static org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME;
 
 public class ItemVersionCollaborationStore extends CollaborationStore {
   public void create(SessionContext context, Id itemId, Id baseVersionId, Id versionId,
@@ -54,7 +62,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     Git git = dao.openRepository(context, repositoryPath);
     createInt(context, git, baseBranchId, versionId.getValue());
     dao.checkoutBranch(context, git, versionId.getValue());
-    boolean commitRequired = storeItemVersionData(context, git, itemId, itemVersionData);
+    boolean commitRequired = storeItemVersionData(context, git, itemId, itemVersionData, Action.CREATE);
     if (commitRequired) {
       dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     }
@@ -71,13 +79,15 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
 
 
   protected boolean storeItemVersionData(SessionContext context, Git git, Id itemId,
-                                         ItemVersionData itemVersionData) {
+                                         ItemVersionData itemVersionData, Action action) {
 
     if (itemVersionData == null || (itemVersionData.getInfo() == null && itemVersionData
         .getRelations() == null)) {
       return false;
     }
-
+    if(action.equals(Action.CREATE)) {
+      storeZusammenTaggingInfo(context, git,itemId);
+    }
     if (itemVersionData.getInfo() != null) {
       storeData(context, git, itemId, ITEM_VERSION_INFO_FILE_NAME, itemVersionData.getInfo());
     }
@@ -86,6 +96,31 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     }
 
     return true;
+  }
+
+  private void storeZusammenTaggingInfo(SessionContext context, Git git,Id itemId) {
+
+
+      try {
+        Optional<InputStream> is = FileUtils.readFile(git.getRepository().getDirectory
+                ().getPath(),
+            ZUSAMMEN_TAGGING_FILE_NAME);
+        String baseId;
+        Map<String,String>  itemVersionInformation;
+        if(is.isPresent()){
+          itemVersionInformation = JsonUtil.json2Object(is.get(),Map.class);
+          baseId = itemVersionInformation.get(PluginConstants.ITEM_VERSION_ID);
+        }else{
+          itemVersionInformation = new HashMap<>();
+          baseId=null;
+        }
+        itemVersionInformation.put(PluginConstants.ITEM_VERSION_ID,git.getRepository().getBranch());
+        itemVersionInformation.put(PluginConstants.ITEM_VERSION_BASE_ID,baseId);
+        storeData(context, git, itemId, ZUSAMMEN_TAGGING_FILE_NAME, itemVersionInformation);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+
   }
 
   protected boolean storeData(SessionContext context, Git git, Id itemId, String fileName, Object
@@ -112,7 +147,8 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     GitSourceControlDao dao = getSourceControlDao(context);
     Git git = dao.openRepository(context, repositoryPath);
     dao.checkoutBranch(context, git, versionId.toString());
-    boolean commitRequired = storeItemVersionData(context, git, itemId, itemVersionData);
+    boolean commitRequired = storeItemVersionData(context, git, itemId, itemVersionData,
+        Action.UPDATE);
     if (commitRequired) {
       dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     }
