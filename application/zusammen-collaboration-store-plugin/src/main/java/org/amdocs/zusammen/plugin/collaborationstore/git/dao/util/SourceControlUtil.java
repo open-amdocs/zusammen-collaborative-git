@@ -310,6 +310,7 @@ public class SourceControlUtil {
 
       treeWalk.addTree(tree);
       treeWalk.setRecursive(true);
+      Set<String> elementDataSet = new HashSet<>();
       while (treeWalk.next()) {
 
         elementId = extractElementIdFromFilePath(treeWalk.getPathString());
@@ -318,7 +319,8 @@ public class SourceControlUtil {
           Info itemVersionInfo = elementDataUtil.uploadItemVersionInfo(git);
           itemVersionChangedData.setItemVersionInfo(itemVersionInfo);
 
-        }else {
+        }else if (!elementDataSet.contains(elementId)){
+          elementDataSet.add(elementId);
           changedElementData = new ChangedElementData();
           changedElementData.setChangeType(ChangeType.ADD);
           elementData = elementDataUtil.uploadElementData(git, elementPath, elementId);
@@ -355,9 +357,7 @@ public class SourceControlUtil {
         if (elementId == null) {
           changedInfo = elementDataUtil.uploadItemVersionInfo(git);
           itemVersionChangedData.setItemVersionInfo(changedInfo);
-        }
-
-        if (!elementDataSet.contains(elementId)) {
+        }else if (!elementDataSet.contains(elementId)) {
           String elementPath = extractElementPathFromFilePath(diff.getNewPath());
           elementData = elementDataUtil.uploadElementData(git, elementPath,
               elementId);

@@ -93,10 +93,15 @@ public class ElementDataUtil {
   }
 
   private Id getParentId(Namespace namespace) {
-    return Namespace.ROOT_NAMESPACE.equals(namespace)
-        ? null
-        : new Id(namespace.getValue()
-            .substring(0, namespace.getValue().lastIndexOf(Namespace.NAMESPACE_DELIMITER)));
+
+   if(Namespace.ROOT_NAMESPACE.equals(namespace)) return null;
+
+   int fromIndex = namespace.getValue().contains(Namespace.NAMESPACE_DELIMITER)?namespace
+       .getValue().lastIndexOf(Namespace.NAMESPACE_DELIMITER):0;
+   int toIndex = namespace.getValue().length();
+
+   return new Id(namespace.getValue()
+       .substring(fromIndex,toIndex));
   }
 
   public void updateElementData(SessionContext context, Git git, String basePath, String
