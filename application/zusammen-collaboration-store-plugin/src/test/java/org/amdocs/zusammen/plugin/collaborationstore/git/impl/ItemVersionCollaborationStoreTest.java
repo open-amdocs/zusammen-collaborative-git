@@ -75,6 +75,9 @@ public class ItemVersionCollaborationStoreTest {
         anyObject(),
         anyObject());
 
+    doReturn(true).when(itemVersionCollaborationStore).storeItemVersionData(anyObject(),
+        anyObject(), anyObject(), anyObject(), anyObject());
+
     when(itemVersionCollaborationStore.getSourceControlDao(anyObject())).thenReturn
         (gitSourceControlDaoMock);
     when(gitSourceControlDaoMock.clone
@@ -104,6 +107,8 @@ public class ItemVersionCollaborationStoreTest {
     verify(itemVersionCollaborationStore).createInt(context, null, "main", VERSION_ID.getValue()
             .toString()
         );
+    verify(itemVersionCollaborationStore).storeItemVersionData(context,null,ITEM_ID,
+        itemVersionData,Action.CREATE);
   }
 
   @Test
@@ -122,6 +127,8 @@ public class ItemVersionCollaborationStoreTest {
             .toString(),
         VERSION_ID.getValue()
             .toString());
+    verify(itemVersionCollaborationStore).storeItemVersionData(context,null,ITEM_ID,
+        itemVersionData,Action.CREATE);
   }
 
   @Test
@@ -138,7 +145,7 @@ public class ItemVersionCollaborationStoreTest {
 
     verify(gitSourceControlDaoMock).checkoutBranch(context, null, VERSION_ID.getValue().toString());
     verify(itemVersionCollaborationStore).storeItemVersionData(context, null, ITEM_ID,itemVersionData,
-        Action.action);
+        Action.UPDATE);
 
   }
 
