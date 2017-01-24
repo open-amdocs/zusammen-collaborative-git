@@ -36,7 +36,6 @@ import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -109,7 +108,7 @@ public class SourceControlUtil {
         elementId = extractElementIdFromFilePath(file);
         if (!elementDataMap.containsKey(elementId)) {
           elementData =
-              elementDataUtil.uploadElementData(context, git, extractElementPathFromFilePath
+              elementDataUtil.uploadElementData(git, extractElementPathFromFilePath
                   (file), elementId);
           elementDataMap.put(elementId, elementData);
         }
@@ -242,11 +241,11 @@ public class SourceControlUtil {
       for (DiffEntry diff : diffs) {
         elementId = extractElementIdFromFilePath(diff.getNewPath());
         if (elementId == null) {
-          changedInfo = elementDataUtil.uploadItemVersionInfo(context, git);
+          changedInfo = elementDataUtil.uploadItemVersionInfo(git);
           itemVersionChangedData.setItemVersionInfo(changedInfo);
         }else if (!elementDataSet.contains(elementId)) {
           String elementPath = extractElementPathFromFilePath(diff.getNewPath());
-          elementData = elementDataUtil.uploadElementData(context, git, elementPath,
+          elementData = elementDataUtil.uploadElementData(git, elementPath,
               elementId);
           elementDataSet.add(elementId);
           changedElementData = new ChangedElementData();
@@ -316,13 +315,13 @@ public class SourceControlUtil {
         elementId = extractElementIdFromFilePath(treeWalk.getPathString());
         elementPath = extractElementPathFromFilePath(treeWalk.getPathString());
         if(elementId==null){
-          Info itemVersionInfo = elementDataUtil.uploadItemVersionInfo(context,git);
+          Info itemVersionInfo = elementDataUtil.uploadItemVersionInfo(git);
           itemVersionChangedData.setItemVersionInfo(itemVersionInfo);
 
         }else {
           changedElementData = new ChangedElementData();
           changedElementData.setChangeType(ChangeType.ADD);
-          elementData = elementDataUtil.uploadElementData(context, git, elementPath, elementId);
+          elementData = elementDataUtil.uploadElementData(git, elementPath, elementId);
           changedElementData.setElementData(elementData);
           changedElementInfoCollection.add(changedElementData);
         }
@@ -354,13 +353,13 @@ public class SourceControlUtil {
       for (DiffEntry diff : diffs) {
         elementId = extractElementIdFromFilePath(diff.getNewPath());
         if (elementId == null) {
-          changedInfo = elementDataUtil.uploadItemVersionInfo(context, git);
+          changedInfo = elementDataUtil.uploadItemVersionInfo(git);
           itemVersionChangedData.setItemVersionInfo(changedInfo);
         }
 
         if (!elementDataSet.contains(elementId)) {
           String elementPath = extractElementPathFromFilePath(diff.getNewPath());
-          elementData = elementDataUtil.uploadElementData(context, git, elementPath,
+          elementData = elementDataUtil.uploadElementData(git, elementPath,
               elementId);
           elementDataSet.add(elementId);
           changedElementData = new ChangedElementData();

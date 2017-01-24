@@ -113,7 +113,7 @@ public class ElementCollaborationStore extends CollaborationStore {
 
   protected ElementData uploadElementData(SessionContext context, Git git, String elementPath,
                                           Id elementId) {
-    return elementDataUtil.uploadElementData(context, git, elementPath, elementId.toString());
+    return elementDataUtil.uploadElementData(git, elementPath, elementId.toString());
 
   }
 
