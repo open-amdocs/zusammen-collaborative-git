@@ -19,6 +19,7 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.impl;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.Info;
+import org.amdocs.zusammen.datatypes.item.ItemVersionData;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.util.SourceControlUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
@@ -46,7 +47,6 @@ public class ItemVersionCollaborationStoreTest {
   private GitSourceControlDao gitSourceControlDaoMock;
 
 
-
   @Spy
   @InjectMocks
   private ItemVersionCollaborationStore itemVersionCollaborationStore;//
@@ -63,10 +63,10 @@ public class ItemVersionCollaborationStoreTest {
     MockitoAnnotations.initMocks(this);
 
 
-    doReturn(null).when(sourceControlUtil).handlePublishResponse(anyObject(),
-        anyObject(),anyObject(),anyObject());
-
-    doReturn(null).when(sourceControlUtil).getRepoData(anyObject(),anyObject(),anyObject());
+    /*doReturn(null).when(sourceControlUtil).handlePublishResponse(anyObject(),
+        anyObject(), anyObject(), anyObject());
+*/
+    doReturn(null).when(sourceControlUtil).getRepoData(anyObject(), anyObject(), anyObject());
 
     Mockito.doNothing().when(itemVersionCollaborationStore).addFileContent(anyObject(), anyObject(),
         anyObject(),
@@ -93,45 +93,50 @@ public class ItemVersionCollaborationStoreTest {
   public void testCreate() throws Exception {
 
 
+    ItemVersionData itemVersionData = new ItemVersionData();
     Info info = new Info();
+    itemVersionData.setInfo(info);
     info.setName("createItemVersion");
-    itemVersionCollaborationStore.create(context, ITEM_ID, null, VERSION_ID, info);
+    itemVersionCollaborationStore.create(context, ITEM_ID, null, VERSION_ID, itemVersionData);
     verify(gitSourceControlDaoMock).openRepository(context,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
     verify(itemVersionCollaborationStore).createInt(context, null, "main", VERSION_ID.getValue()
-            .toString(),
-        info);
+            .toString()
+        );
   }
 
   @Test
   public void testCreateBaseBranchNotNull() throws Exception {
 
 
+    ItemVersionData itemVersionData = new ItemVersionData();
     Info info = new Info();
+    itemVersionData.setInfo(info);
     info.setName("createItemVersion");
 
-    itemVersionCollaborationStore.create(context, ITEM_ID, BASE_VERSION_ID, VERSION_ID, info);
+    itemVersionCollaborationStore.create(context, ITEM_ID, BASE_VERSION_ID, VERSION_ID, itemVersionData);
     verify(gitSourceControlDaoMock).openRepository(context,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
     verify(itemVersionCollaborationStore).createInt(context, null, BASE_VERSION_ID.getValue()
             .toString(),
         VERSION_ID.getValue()
-            .toString(),
-        info);
+            .toString());
   }
 
   @Test
   public void testSave() throws Exception {
 
 
+    ItemVersionData itemVersionData = new ItemVersionData();
     Info info = new Info();
+    itemVersionData.setInfo(info);
     info.setName("saveItemVersion");
-    itemVersionCollaborationStore.save(context, ITEM_ID, VERSION_ID, info);
+    itemVersionCollaborationStore.save(context, ITEM_ID, VERSION_ID, itemVersionData);
     verify(gitSourceControlDaoMock).openRepository(context,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
 
     verify(gitSourceControlDaoMock).checkoutBranch(context, null, VERSION_ID.getValue().toString());
-    verify(itemVersionCollaborationStore).storeItemVersionInfo(context, null, ITEM_ID, info);
+    verify(itemVersionCollaborationStore).storeItemVersionData(context, null, ITEM_ID,itemVersionData );
 
   }
 
@@ -146,8 +151,8 @@ public class ItemVersionCollaborationStoreTest {
 
     verify(gitSourceControlDaoMock).checkoutBranch(context, null, VERSION_ID.getValue().toString());
     //verify(itemVersionCollaborationStore).(anyObject());
-    verify(sourceControlUtil).handlePushFileDiff(anyObject(),anyObject(),
-        anyObject(),anyObject());
+    verify(sourceControlUtil).handlePublishFileDiff(anyObject(), anyObject(),
+        anyObject(), anyObject());
 
   }
 

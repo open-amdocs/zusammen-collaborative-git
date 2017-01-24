@@ -20,8 +20,10 @@ import com.google.gson.reflect.TypeToken;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
-import org.amdocs.zusammen.datatypes.item.ElementAction;
+import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.Info;
+import org.amdocs.zusammen.datatypes.item.ItemVersion;
+import org.amdocs.zusammen.datatypes.item.ItemVersionData;
 import org.amdocs.zusammen.datatypes.item.Relation;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.SourceControlDaoFactory;
@@ -78,10 +80,23 @@ public class ElementDataUtil {
         getSubElementIds(elementPath).stream().map(Id::new).collect(Collectors.toSet()));
   }
 
-  public Info uploadItemVersionInfo(Git git) {
-    return getFileContent(getRepositoryPath(git), PluginConstants.ITEM_VERSION_INFO_FILE_NAME)
-        .map(fileContent -> JsonUtil.json2Object(fileContent, Info.class))
-        .orElse(null);
+  public ItemVersion uploadItemVersionData(Git git) {
+    ItemVersion itemVersion = new ItemVersion();
+
+    ItemVersionData itemVersionData = new ItemVersionData();
+    itemVersionData
+        .setInfo(getFileContent(getRepositoryPath(git), PluginConstants.ITEM_VERSION_INFO_FILE_NAME)
+            .map(fileContent -> JsonUtil.json2Object(fileContent, Info.class))
+            .orElse(null));
+
+    itemVersionData.setRelations(getFileContent(getRepositoryPath(git), PluginConstants
+        .RELATIONS_FILE_NAME)
+        .map(fileContent -> (ArrayList<Relation>) JsonUtil
+            .json2Object(fileContent, new TypeToken<ArrayList<Relation>>() {
+            }.getType())).orElse(null));
+
+    itemVersion.setData(itemVersionData);
+    return itemVersion;
   }
 
   private String getRepositoryPath(Git git) {
@@ -97,20 +112,22 @@ public class ElementDataUtil {
 
   private Id getParentId(Namespace namespace) {
 
-   if(Namespace.ROOT_NAMESPACE.equals(namespace)) return null;
+    if (Namespace.ROOT_NAMESPACE.equals(namespace)) {
+      return null;
+    }
 
-   int fromIndex = namespace.getValue().contains(Namespace.NAMESPACE_DELIMITER)?namespace
-       .getValue().lastIndexOf(Namespace.NAMESPACE_DELIMITER):0;
-   int toIndex = namespace.getValue().length();
+    int fromIndex = namespace.getValue().contains(Namespace.NAMESPACE_DELIMITER) ? namespace
+        .getValue().lastIndexOf(Namespace.NAMESPACE_DELIMITER) : 0;
+    int toIndex = namespace.getValue().length();
 
-   return new Id(namespace.getValue()
-       .substring(fromIndex,toIndex));
+    return new Id(namespace.getValue()
+        .substring(fromIndex, toIndex));
   }
 
   public void updateElementData(SessionContext context, Git git, String basePath, String
-      relativePath, ElementData elementData, ElementAction action) {
+      relativePath, ElementData elementData, Action action) {
 
-    if(action.equals(ElementAction.CREATE)){
+    if (action.equals(Action.CREATE)) {
       addFileContent(context, git, getRepositoryPath(git), relativePath,
           PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME, EMPTY_FILE);
     }

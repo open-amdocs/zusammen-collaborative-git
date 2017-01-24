@@ -19,7 +19,7 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.impl;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
-import org.amdocs.zusammen.datatypes.item.ElementAction;
+import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.ElementContext;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
@@ -38,14 +38,15 @@ public class ElementCollaborationStore extends CollaborationStore {
     GitSourceControlDao dao = getSourceControlDao(context);
     Git git = dao.openRepository(context, repositoryPath);
     dao.checkoutBranch(context, git, elementData.getVersionId().toString());
-    String elementPath = sourceControlUtil.getElementRelativePath(elementData.getNamespace(), elementData.getId());
+    String elementPath =
+        sourceControlUtil.getElementRelativePath(elementData.getNamespace(), elementData.getId());
     String fullPath = repositoryPath + File.separator + elementPath;
 
 
     File elementPathFile = new File(fullPath);
     elementPathFile.mkdirs();
 
-    updateElementData(context, git, repositoryPath,elementPath, elementData, ElementAction.CREATE);
+    updateElementData(context, git, repositoryPath, elementPath, elementData, Action.CREATE);
     dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
     //return new CollaborationNamespace(elementPath);
@@ -56,12 +57,13 @@ public class ElementCollaborationStore extends CollaborationStore {
     String repositoryPath = sourceControlUtil.getPrivateRepositoryPath(context,
         PluginConstants.PRIVATE_PATH.replace(PluginConstants.TENANT, context.getTenant()),
         elementData.getItemId());
-    String elementPath = sourceControlUtil.getElementRelativePath(elementData.getNamespace(), elementData.getId());
+    String elementPath =
+        sourceControlUtil.getElementRelativePath(elementData.getNamespace(), elementData.getId());
     /*String fullPath = repositoryPath + File.separator +
         sourceControlUtil.getElementRelativePath(elementData.getNamespace(), elementData.getId());*/
     Git git = dao.openRepository(context, repositoryPath);
     dao.checkoutBranch(context, git, elementData.getVersionId().toString());
-    updateElementData(context, git, repositoryPath,elementPath, elementData, ElementAction.UPDATE);
+    updateElementData(context, git, repositoryPath, elementPath, elementData, Action.UPDATE);
     dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
   }
@@ -108,8 +110,8 @@ public class ElementCollaborationStore extends CollaborationStore {
   protected void updateElementData(SessionContext context, Git git,
                                    String basePath,
                                    String relativePath,
-                                   ElementData elementData, ElementAction action) {
-    elementDataUtil.updateElementData(context, git,basePath, relativePath, elementData,action);
+                                   ElementData elementData, Action action) {
+    elementDataUtil.updateElementData(context, git, basePath, relativePath, elementData, action);
   }
 
   protected ElementData uploadElementData(SessionContext context, Git git, String elementPath,

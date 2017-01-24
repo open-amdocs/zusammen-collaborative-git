@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.amdocs.zusammen;
+package org.amdocs.tsuzammen;
 
 
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.UserInfo;
 import org.amdocs.zusammen.datatypes.item.Info;
+import org.amdocs.zusammen.datatypes.item.ItemVersionData;
 import org.amdocs.zusammen.plugin.collaborationstore.git.main.GitCollaborationStorePluginImpl;
 
 import java.util.ArrayList;
@@ -62,11 +63,11 @@ public class GitTest_toDelete {
     System.out.println("sync item version:" + itemId + ":" + versionId);
   }
 
-  private static Id createItemVersion(SessionContext context, Id itemId, Info info) {
+  private static Id createItemVersion(SessionContext context, Id itemId, ItemVersionData info) {
     GitCollaborationStorePluginImpl gitCollaborationStorePlugin =
         new GitCollaborationStorePluginImpl();
 
-    Info versionInfo = createInfo(info);
+    ItemVersionData versionInfo = createItemVersionInfo(info);
 
     Id versionId = new Id();
     gitCollaborationStorePlugin.createItemVersion(context, itemId, null, versionId,
@@ -75,17 +76,20 @@ public class GitTest_toDelete {
     return versionId;
   }
 
-  private static Info createInfo(Info info) {
-    if (info != null) {
-      return info;
+  private static ItemVersionData createItemVersionInfo(ItemVersionData itemVersionData) {
+    if (itemVersionData != null) {
+      return itemVersionData;
     }
+    itemVersionData = new ItemVersionData();
+
     Info versionInfo = new Info();
+    itemVersionData.setInfo(versionInfo);
     versionInfo.addProperty("type", "testProp");
     List<String> listProp = new ArrayList<>();
     listProp.add("prop1");
     listProp.add("prop2");
     versionInfo.addProperty("listType", listProp);
-    return versionInfo;
+    return itemVersionData;
   }
 
   private static Id initItem(SessionContext context) {

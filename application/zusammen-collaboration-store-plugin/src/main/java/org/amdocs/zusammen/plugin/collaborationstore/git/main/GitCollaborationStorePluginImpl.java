@@ -21,14 +21,14 @@ import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.ElementContext;
 import org.amdocs.zusammen.datatypes.item.Info;
+import org.amdocs.zusammen.datatypes.item.ItemVersionData;
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ElementCollaborationStore;
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemCollaborationStore;
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemVersionCollaborationStore;
 import org.amdocs.zusammen.sdk.CollaborationStore;
+import org.amdocs.zusammen.sdk.types.CollaborationMergeResult;
+import org.amdocs.zusammen.sdk.types.CollaborationPublishResult;
 import org.amdocs.zusammen.sdk.types.ElementData;
-import org.amdocs.zusammen.sdk.types.ElementsPublishResult;
-import org.amdocs.zusammen.sdk.types.ItemVersionMergeResult;
-import org.amdocs.zusammen.sdk.types.ItemVersionPublishResult;
 
 public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
@@ -55,15 +55,16 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   @Override
   public void createItemVersion(SessionContext context, Id itemId, Id baseVersionId,
                                 Id versionId,
-                                Info versionInfo) {
-    itemVersionCollaborationStore.create(context, itemId, baseVersionId, versionId, versionInfo);
+                                ItemVersionData itemVersionData) {
+    itemVersionCollaborationStore
+        .create(context, itemId, baseVersionId, versionId, itemVersionData);
   }
 
   @Override
   public void saveItemVersion(SessionContext context, Id itemId, Id versionId,
-                              Info versionInfo) {
+                              ItemVersionData itemVersionData) {
 
-    itemVersionCollaborationStore.save(context, itemId, versionId, versionInfo);
+    itemVersionCollaborationStore.save(context, itemId, versionId, itemVersionData);
   }
 
   @Override
@@ -88,19 +89,19 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public ItemVersionPublishResult publishItemVersion(SessionContext context, Id itemId,
-                                                     Id versionId,
-                                                     String message) {
+  public CollaborationPublishResult publishItemVersion(SessionContext context, Id itemId,
+                                                       Id versionId,
+                                                       String message) {
     return itemVersionCollaborationStore.publish(context, itemId, versionId, message);
   }
 
   @Override
-  public ItemVersionMergeResult syncItemVersion(SessionContext context, Id itemId, Id versionId) {
+  public CollaborationMergeResult syncItemVersion(SessionContext context, Id itemId, Id versionId) {
     return itemVersionCollaborationStore.sync(context, itemId, versionId);
   }
 
   @Override
-  public ItemVersionMergeResult mergeItemVersion(SessionContext context, Id itemId, Id
+  public CollaborationMergeResult mergeItemVersion(SessionContext context, Id itemId, Id
       versionId, Id sourceVersionId) {
     return itemVersionCollaborationStore.merge(context, itemId, versionId, sourceVersionId);
   }

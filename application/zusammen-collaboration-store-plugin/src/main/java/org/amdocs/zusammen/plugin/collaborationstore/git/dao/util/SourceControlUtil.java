@@ -22,14 +22,16 @@ import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.collaboration.ChangeType;
 import org.amdocs.zusammen.datatypes.item.Info;
+import org.amdocs.zusammen.datatypes.item.ItemVersion;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.types.LocalRemoteDataConflict;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.amdocs.zusammen.sdk.types.ChangedElementData;
+import org.amdocs.zusammen.sdk.types.CollaborationMergeChange;
+import org.amdocs.zusammen.sdk.types.CollaborationMergeConflict;
+import org.amdocs.zusammen.sdk.types.CollaborationPublishResult;
 import org.amdocs.zusammen.sdk.types.ElementData;
 import org.amdocs.zusammen.sdk.types.ElementDataConflict;
-import org.amdocs.zusammen.sdk.types.ItemVersionChangedData;
-import org.amdocs.zusammen.sdk.types.ItemVersionMergeConflict;
 import org.amdocs.zusammen.utils.fileutils.FileUtils;
 import org.amdocs.zusammen.utils.fileutils.json.JsonUtil;
 import org.eclipse.jgit.api.Git;
@@ -44,7 +46,6 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
@@ -91,19 +92,19 @@ public class SourceControlUtil {
         + File.separator + elementId.toString();
   }
 
-  public ItemVersionMergeConflict handleSyncResponse(SessionContext context, Git git, PullResult
+  public CollaborationMergeConflict handleSyncResponse(SessionContext context, Git git, PullResult
       pullResult) {
 
     if (pullResult != null && !pullResult.isSuccessful()) {
       return handleMergeResponse(context, git, pullResult.getMergeResult());
     }
-    return new ItemVersionMergeConflict();
+    return new CollaborationMergeConflict();
   }
 
-  public ItemVersionMergeConflict handleMergeResponse(SessionContext context, Git git, MergeResult
+  public CollaborationMergeConflict handleMergeResponse(SessionContext context, Git git, MergeResult
       mergeResult) {
 
-    ItemVersionMergeConflict result = new ItemVersionMergeConflict();
+    CollaborationMergeConflict result = new CollaborationMergeConflict();
     String elementId;
     Map<String, ElementData> elementDataMap = new HashMap<>();
     ElementData elementData;
@@ -122,10 +123,7 @@ public class SourceControlUtil {
     for (Map.Entry<String, ElementData> entry : elementDataMap.entrySet()) {
       result.addElementConflict(handleElementConflict(entry.getValue()));
     }
-
-
     return result;
-
   }
 
   private boolean isMergeSuccesses(MergeResult mergeResult) {
@@ -207,7 +205,7 @@ public class SourceControlUtil {
     return localRemoteDataConflict;
   }
 
-  public ItemVersionChangedData handlePublishResponse(SessionContext context,
+  /*public ItemVersionChangedData handlePublishResponse(SessionContext context,
                                                       GitSourceControlDao dao,
                                                       Git git,
                                                       Collection<PushResult> pushResult) {
@@ -215,34 +213,34 @@ public class SourceControlUtil {
         pushResult.iterator().next().getRemoteUpdates().iterator().next().getExpectedOldObjectId();
     ObjectId to =
         pushResult.iterator().next().getRemoteUpdates().iterator().next().getNewObjectId();
-    return handlePushFileDiff(context, dao, git,
+    return handlePublishFileDiff(context, dao, git,
         from, to);
-  }
+  }*/
 
 
-  public ItemVersionChangedData handlePushFileDiff(SessionContext
-                                                       context,
-                                                   GitSourceControlDao dao,
-                                                   Git git,
-                                                   ObjectId from,
-                                                   ObjectId to) {
+  public CollaborationMergeChange handlePublishFileDiff(SessionContext
+                                                            context,
+                                                        GitSourceControlDao dao,
+                                                        Git git,
+                                                        ObjectId from,
+                                                        ObjectId to) {
     to = to != null ? to : dao.getHead(context, git);
 
 
-
-    ItemVersionChangedData itemVersionChangedData = calculateItemVersionChangedData(context,dao,git,
-    from,to,PathSuffixFilter.create(PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME));
-    return itemVersionChangedData;
+    CollaborationMergeChange collaborationPublishResult =
+        calculateItemVersionChangedData(context, dao, git,
+            from, to, PathSuffixFilter.create(PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME));
+    return collaborationPublishResult;
   }
 
-  private ItemVersionChangedData calculateItemVersionChangedData(SessionContext context,
-                                                                 GitSourceControlDao dao,
-                                                                 Git git,
-                                                                 ObjectId from,
-                                                                 ObjectId to,
-                                                                 TreeFilter treeFilter) {
+  private CollaborationMergeChange calculateItemVersionChangedData(SessionContext context,
+                                                                   GitSourceControlDao dao,
+                                                                   Git git,
+                                                                   ObjectId from,
+                                                                   ObjectId to,
+                                                                   TreeFilter treeFilter) {
 
-    ItemVersionChangedData itemVersionChangedData = new ItemVersionChangedData();
+    CollaborationMergeChange collaborationMergeChange = new CollaborationMergeChange();
 
     Collection<DiffEntry> diffs = dao.revisionDiff(context, git, from, to, treeFilter);
     Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
@@ -252,13 +250,13 @@ public class SourceControlUtil {
       String elementId;
       ElementData elementData;
       ChangedElementData changedElementData;
-      Info changedInfo;
+      ItemVersion itemVersion;
       for (DiffEntry diff : diffs) {
         elementId = extractElementIdFromFilePath(diff.getNewPath());
         if (elementId == null) {
-          changedInfo = elementDataUtil.uploadItemVersionInfo(git);
-          itemVersionChangedData.setItemVersionInfo(changedInfo);
-        }else  {
+          itemVersion = elementDataUtil.uploadItemVersionData(git);
+          collaborationMergeChange.setChangedVersion(itemVersion);
+        } else {
           String elementPath = extractElementPathFromFilePath(diff.getNewPath());
           elementData = elementDataUtil.uploadElementData(git, elementPath,
               elementId);
@@ -270,15 +268,17 @@ public class SourceControlUtil {
       }
     }
 
-    itemVersionChangedData.setChangedElements(changedElementInfoCollection);
-    return itemVersionChangedData;
+    collaborationMergeChange.setChangedElements(changedElementInfoCollection);
+    return collaborationMergeChange;
   }
 
   protected String extractElementIdFromFilePath(String path) {
 
 
     File file = new File(path);
-    if(file.getParentFile() == null) return null;
+    if (file.getParentFile() == null) {
+      return null;
+    }
     return file.getParentFile().getName();
   }
 
@@ -287,28 +287,31 @@ public class SourceControlUtil {
     return file.getParentFile() != null ? file.getParentFile().getPath() : "";
   }
 
-  public ItemVersionChangedData handlePushFileDiff(SessionContext context, GitSourceControlDao dao,
-                                                   Git git,
-                                                   Collection<PushResult> pushResult) {
-    ItemVersionChangedData itemVersionChangedData;
-    Collection<ChangedElementData> changedElementInfoCollection ;
+  public CollaborationPublishResult handlePublishFileDiff(SessionContext context,
+                                                          GitSourceControlDao dao,
+                                                          Git git,
+                                                          Collection<PushResult> pushResult) {
+    CollaborationPublishResult collaborationPublishResult;
+    Collection<ChangedElementData> changedElementInfoCollection;
 
     ObjectId from = getOldRevisionId(pushResult);
     ObjectId to = getNewRevisionId(pushResult);
 
-    if(from!= null){
-      itemVersionChangedData = getChangeDataAfterPush(context,dao,git,from,to);
-    }else{
-      itemVersionChangedData = getRepoData(context,dao,git);
+    if (from != null) {
+      collaborationPublishResult = getChangeData(context, dao, git, from, to);
+    } else {
+      collaborationPublishResult = getRepoData(context, dao, git);
     }
 
 
-    return itemVersionChangedData;
+    return collaborationPublishResult;
   }
 
-  public ItemVersionChangedData getRepoData(SessionContext context,
-                                                     GitSourceControlDao dao, Git git) {
-    ItemVersionChangedData itemVersionChangedData = new ItemVersionChangedData();
+  public CollaborationPublishResult getRepoData(SessionContext context,
+                                                GitSourceControlDao dao, Git git) {
+    CollaborationPublishResult collaborationPublishResult = new CollaborationPublishResult();
+    CollaborationMergeChange mergeChange = new CollaborationMergeChange();
+
     Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
     ChangedElementData changedElementData;
     ElementData elementData;
@@ -329,11 +332,11 @@ public class SourceControlUtil {
 
         elementId = extractElementIdFromFilePath(treeWalk.getPathString());
         elementPath = extractElementPathFromFilePath(treeWalk.getPathString());
-        if(elementId==null){
-          Info itemVersionInfo = elementDataUtil.uploadItemVersionInfo(git);
-          itemVersionChangedData.setItemVersionInfo(itemVersionInfo);
+        if (elementId == null) {
+          ItemVersion itemVersion = elementDataUtil.uploadItemVersionData(git);
+          mergeChange.setChangedVersion(itemVersion);
 
-        }else if (!elementDataSet.contains(elementId)){
+        } else if (!elementDataSet.contains(elementId)) {
           elementDataSet.add(elementId);
           changedElementData = new ChangedElementData();
           changedElementData.setChangeType(ChangeType.ADD);
@@ -341,56 +344,68 @@ public class SourceControlUtil {
           changedElementData.setElementData(elementData);
           changedElementInfoCollection.add(changedElementData);
         }
-
-
       }
-      itemVersionChangedData.setChangedElements(changedElementInfoCollection);
-      return itemVersionChangedData;
+      mergeChange.setChangedElements(changedElementInfoCollection);
+
+      collaborationPublishResult.setChange(mergeChange);
+      return collaborationPublishResult;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
   }
 
-  private ItemVersionChangedData getChangeDataAfterPush(SessionContext context,
-                                                                 GitSourceControlDao dao,Git git,
-                                                                 ObjectId from,ObjectId to) {
+  private CollaborationPublishResult getChangeData(SessionContext context,
+                                                   GitSourceControlDao dao, Git git,
+                                                   ObjectId from, ObjectId to) {
 
-
-    ItemVersionChangedData itemVersionChangedData = calculateItemVersionChangedData(context,dao,git,
-        from,to,PathSuffixFilter.create(PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME));
-    return itemVersionChangedData;
+    CollaborationPublishResult result = new CollaborationPublishResult();
+    CollaborationMergeChange mergeChange =
+        calculateItemVersionChangedData(context, dao, git,
+            from, to, PathSuffixFilter.create(PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME));
+    result.setChange(mergeChange);
+    return result;
   }
 
   private ObjectId getNewRevisionId(Collection<PushResult> pushResults) {
 
     PushResult pushResult;
-    if(pushResults.iterator().hasNext())
+    if (pushResults.iterator().hasNext()) {
       pushResult = pushResults.iterator().next();
-    else return null;
+    } else {
+      return null;
+    }
     Collection<RemoteRefUpdate> remoteUpdates =
         pushResult.getRemoteUpdates();
-    if(remoteUpdates.iterator().hasNext()) {
+    if (remoteUpdates.iterator().hasNext()) {
       ObjectId id = remoteUpdates.iterator().next().getNewObjectId();
-      if(id ==null || id.equals(ObjectId.zeroId())) return null;
+      if (id == null || id.equals(ObjectId.zeroId())) {
+        return null;
+      }
 
       return id;
+    } else {
+      return null;
     }
-    else return null;
   }
 
   private ObjectId getOldRevisionId(Collection<PushResult> pushResults) {
     PushResult pushResult;
-    if(pushResults.iterator().hasNext())
+    if (pushResults.iterator().hasNext()) {
       pushResult = pushResults.iterator().next();
-    else return null;
+    } else {
+      return null;
+    }
     Collection<RemoteRefUpdate> remoteUpdates =
         pushResult.getRemoteUpdates();
-    if(remoteUpdates.iterator().hasNext()) {
+    if (remoteUpdates.iterator().hasNext()) {
       ObjectId id = remoteUpdates.iterator().next().getExpectedOldObjectId();
-      if (id == null || id.equals(ObjectId.zeroId())) return null;
+      if (id == null || id.equals(ObjectId.zeroId())) {
+        return null;
+      }
       return id;
+    } else {
+      return null;
     }
-    else return null;
   }
 }
