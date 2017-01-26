@@ -20,17 +20,18 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.dao.util;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
-import org.amdocs.zusammen.datatypes.collaboration.ChangeType;
+import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.datatypes.item.ItemVersion;
+import org.amdocs.zusammen.datatypes.item.ItemVersionChange;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.types.LocalRemoteDataConflict;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
-import org.amdocs.zusammen.sdk.types.ChangedElementData;
 import org.amdocs.zusammen.sdk.types.CollaborationMergeChange;
 import org.amdocs.zusammen.sdk.types.CollaborationMergeConflict;
 import org.amdocs.zusammen.sdk.types.CollaborationPublishResult;
 import org.amdocs.zusammen.sdk.types.ElementData;
+import org.amdocs.zusammen.sdk.types.ElementDataChange;
 import org.amdocs.zusammen.sdk.types.ElementDataConflict;
 import org.amdocs.zusammen.utils.fileutils.FileUtils;
 import org.amdocs.zusammen.utils.fileutils.json.JsonUtil;
@@ -46,7 +47,6 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 import java.io.ByteArrayInputStream;
@@ -229,7 +229,7 @@ public class SourceControlUtil {
 
     CollaborationMergeChange collaborationPublishResult =
         calculateItemVersionChangedData(context, dao, git,
-            from, to, PathSuffixFilter.create(PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME));
+            from, to, null);
     return collaborationPublishResult;
   }
 
@@ -243,33 +243,61 @@ public class SourceControlUtil {
     CollaborationMergeChange collaborationMergeChange = new CollaborationMergeChange();
 
     Collection<DiffEntry> diffs = dao.revisionDiff(context, git, from, to, treeFilter);
-    Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
+    //Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
 
     if (diffs != null) {
-      //Set<String> elementDataSet = new HashSet<>();
+      Map<String, ElementDataChange> elementDataMap = new HashMap();
       String elementId;
       ElementData elementData;
-      ChangedElementData changedElementData;
-      ItemVersion itemVersion;
+      ElementDataChange changedElementData;
+      ItemVersion itemVersion = null;
+      ItemVersionChange itemVersionChange;
       for (DiffEntry diff : diffs) {
         elementId = extractElementIdFromFilePath(diff.getNewPath());
-        if (elementId == null) {
+        if (elementId == null && itemVersion == null) {
           itemVersion = elementDataUtil.uploadItemVersionData(git);
-          collaborationMergeChange.setChangedVersion(itemVersion);
-        } else {
+          itemVersionChange = new ItemVersionChange();
+          itemVersionChange.setItemVersion(itemVersion);
+          itemVersionChange.setAction(Action.UPDATE);
+          collaborationMergeChange.setChangedVersion(itemVersionChange);
+        } else if (elementId != null && !elementDataMap.containsKey(elementId)) {
           String elementPath = extractElementPathFromFilePath(diff.getNewPath());
           elementData = elementDataUtil.uploadElementData(git, elementPath,
               elementId);
-          changedElementData = new ChangedElementData();
-          changedElementData.setChangeType(ChangeType.valueOf(diff.getChangeType().name()));
+          changedElementData = new ElementDataChange();
+          changedElementData.setAction(Action.UPDATE);
           changedElementData.setElementData(elementData);
-          changedElementInfoCollection.add(changedElementData);
+          elementDataMap.put(elementId, changedElementData);
         }
+
+        if (diff.getNewPath().contains(PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME)) {
+          if (elementId == null) {
+            collaborationMergeChange.getChangedVersion().setAction(getAction(diff
+                .getChangeType()));
+          } else {
+            elementDataMap.get(elementId).setAction(getAction(diff.getChangeType()));
+          }
+        }
+
+
       }
+      collaborationMergeChange.setChangedElements(elementDataMap.values());
     }
 
-    collaborationMergeChange.setChangedElements(changedElementInfoCollection);
+
     return collaborationMergeChange;
+  }
+
+  private Action getAction(DiffEntry.ChangeType changeType) {
+    switch (changeType) {
+      case ADD:
+        return Action.CREATE;
+      case DELETE:
+        return Action.DELETE;
+      case MODIFY:
+        return Action.UPDATE;
+    }
+    throw new RuntimeException("Action[" + changeType + "] not supported");
   }
 
   protected String extractElementIdFromFilePath(String path) {
@@ -292,7 +320,7 @@ public class SourceControlUtil {
                                                           Git git,
                                                           Collection<PushResult> pushResult) {
     CollaborationPublishResult collaborationPublishResult;
-    Collection<ChangedElementData> changedElementInfoCollection;
+    Collection<ElementDataChange> changedElementInfoCollection;
 
     ObjectId from = getOldRevisionId(pushResult);
     ObjectId to = getNewRevisionId(pushResult);
@@ -302,8 +330,6 @@ public class SourceControlUtil {
     } else {
       collaborationPublishResult = getRepoData(context, dao, git);
     }
-
-
     return collaborationPublishResult;
   }
 
@@ -312,8 +338,8 @@ public class SourceControlUtil {
     CollaborationPublishResult collaborationPublishResult = new CollaborationPublishResult();
     CollaborationMergeChange mergeChange = new CollaborationMergeChange();
 
-    Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
-    ChangedElementData changedElementData;
+    Collection<ElementDataChange> changedElementInfoCollection = new ArrayList();
+    ElementDataChange changedElementData;
     ElementData elementData;
     String elementId;
     String elementPath;
@@ -334,12 +360,15 @@ public class SourceControlUtil {
         elementPath = extractElementPathFromFilePath(treeWalk.getPathString());
         if (elementId == null) {
           ItemVersion itemVersion = elementDataUtil.uploadItemVersionData(git);
-          mergeChange.setChangedVersion(itemVersion);
+          ItemVersionChange itemVersionChange = new ItemVersionChange();
+          itemVersionChange.setItemVersion(itemVersion);
+          mergeChange.setChangedVersion(itemVersionChange);
+          mergeChange.getChangedVersion().setAction(Action.CREATE);
 
         } else if (!elementDataSet.contains(elementId)) {
           elementDataSet.add(elementId);
-          changedElementData = new ChangedElementData();
-          changedElementData.setChangeType(ChangeType.ADD);
+          changedElementData = new ElementDataChange();
+          changedElementData.setAction(Action.CREATE);
           elementData = elementDataUtil.uploadElementData(git, elementPath, elementId);
           changedElementData.setElementData(elementData);
           changedElementInfoCollection.add(changedElementData);
@@ -362,7 +391,7 @@ public class SourceControlUtil {
     CollaborationPublishResult result = new CollaborationPublishResult();
     CollaborationMergeChange mergeChange =
         calculateItemVersionChangedData(context, dao, git,
-            from, to, PathSuffixFilter.create(PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME));
+            from, to, null);
     result.setChange(mergeChange);
     return result;
   }

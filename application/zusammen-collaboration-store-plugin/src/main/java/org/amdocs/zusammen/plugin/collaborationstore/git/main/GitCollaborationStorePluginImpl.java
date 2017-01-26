@@ -61,7 +61,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public void saveItemVersion(SessionContext context, Id itemId, Id versionId,
+  public void updateItemVersion(SessionContext context, Id itemId, Id versionId,
                               ItemVersionData itemVersionData) {
 
     itemVersionCollaborationStore.save(context, itemId, versionId, itemVersionData);

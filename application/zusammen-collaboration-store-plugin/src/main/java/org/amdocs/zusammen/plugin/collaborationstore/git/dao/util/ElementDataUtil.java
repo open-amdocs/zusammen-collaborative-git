@@ -96,7 +96,7 @@ public class ElementDataUtil {
             .json2Object(fileContent, new TypeToken<ArrayList<Relation>>() {
             }.getType())).orElse(null));
     Map<String,String> itemVersionInformation = JsonUtil.json2Object(getFileContent(getRepositoryPath(git), PluginConstants
-            .ZUSAMMEN_TAGGING_FILE_NAME).get(),Map.class);
+        .ZUSAMMEN_TAGGING_FILE_NAME).get(),Map.class);
     itemVersion.setBaseId(new Id(itemVersionInformation.get(PluginConstants
         .ITEM_VERSION_BASE_ID)));
     itemVersion.setId(new Id(itemVersionInformation.get(PluginConstants
@@ -215,7 +215,7 @@ public class ElementDataUtil {
       return elementIds;
     }
     for (File subfile : files) {
-      if (subfile.isDirectory()) {
+      if (subfile.isDirectory() && !subfile.isHidden()) {
         elementIds.add(subfile.getName());
       }
     }
