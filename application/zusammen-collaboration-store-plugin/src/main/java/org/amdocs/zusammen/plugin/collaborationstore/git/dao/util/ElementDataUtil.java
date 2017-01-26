@@ -57,7 +57,7 @@ public class ElementDataUtil {
       throw new RuntimeException(e);
     }
     elementData.setParentId(getParentId(namespace));
-    populateElementContent(elementData, getRepositoryPath(git) + elementPath);
+    populateElementContent(elementData, getRepositoryPath(git) +File.separator+ elementPath);
     return elementData;
   }
 
@@ -134,6 +134,7 @@ public class ElementDataUtil {
       relativePath, ElementData elementData, Action action) {
 
     if (action.equals(Action.CREATE)) {
+
       addFileContent(context, git, getRepositoryPath(git), relativePath,
           PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME, EMPTY_FILE);
     }
@@ -189,8 +190,6 @@ public class ElementDataUtil {
     } else {
       FileUtils.writeFile(basePath + File.separator + relativePath, fileName, fileContent);
     }
-    String fileToAdd = getFileRelativePath(relativePath, fileName);
-    getSourceControlDao(context).add(context, git, fileToAdd);
   }
 
   private String getFileRelativePath(String relativePath, String fileName) {

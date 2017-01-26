@@ -64,6 +64,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     dao.checkoutBranch(context, git, versionId.getValue());
     boolean commitRequired = storeItemVersionData(context, git, itemId, itemVersionData, Action.CREATE);
     if (commitRequired) {
+      dao.add(context,git,".");
       dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     }
     dao.close(context, git);
@@ -150,6 +151,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     boolean commitRequired = storeItemVersionData(context, git, itemId, itemVersionData,
         Action.UPDATE);
     if (commitRequired) {
+      dao.add(context,git,".");
       dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     }
     dao.close(context, git);

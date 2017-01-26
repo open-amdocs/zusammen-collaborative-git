@@ -47,6 +47,7 @@ public class ElementCollaborationStore extends CollaborationStore {
     elementPathFile.mkdirs();
 
     updateElementData(context, git, repositoryPath, elementPath, elementData, Action.CREATE);
+    dao.add(context, git, ".");
     dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
     //return new CollaborationNamespace(elementPath);
@@ -64,6 +65,7 @@ public class ElementCollaborationStore extends CollaborationStore {
     Git git = dao.openRepository(context, repositoryPath);
     dao.checkoutBranch(context, git, elementData.getVersionId().toString());
     updateElementData(context, git, repositoryPath, elementPath, elementData, Action.UPDATE);
+    dao.add(context, git, ".");
     dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
   }
