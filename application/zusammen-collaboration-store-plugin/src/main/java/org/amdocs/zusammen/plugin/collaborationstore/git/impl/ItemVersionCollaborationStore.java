@@ -214,6 +214,9 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
       CollaborationMergeConflict collaborationMergeConflict =
           sourceControlUtil.handleSyncResponse(context, git, syncResult);
       result.setConflict(collaborationMergeConflict);
+      if(syncResult != null && !syncResult.isSuccessful()){
+        dao.reset(context,git,oldId);
+      }
     } else {
       String publicPath = resolveTenantPath(context, PluginConstants.PUBLIC_PATH);
       git = dao.clone(context,

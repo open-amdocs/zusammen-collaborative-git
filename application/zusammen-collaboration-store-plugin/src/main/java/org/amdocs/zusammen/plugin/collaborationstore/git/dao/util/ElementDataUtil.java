@@ -29,6 +29,7 @@ import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.SourceControlDaoFactory;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.amdocs.zusammen.sdk.types.ElementData;
+import org.amdocs.zusammen.sdk.types.ElementDataConflict;
 import org.amdocs.zusammen.utils.fileutils.FileUtils;
 import org.amdocs.zusammen.utils.fileutils.json.JsonUtil;
 import org.eclipse.jgit.api.Git;
@@ -47,7 +48,8 @@ public class ElementDataUtil {
 
   private static final String EMPTY_FILE = "";
 
-  public ElementData uploadElementData(Git git, String elementPath, String elementId) {
+
+  public ElementData initElementData(Git git,String elementPath,String elementId){
     ElementData elementData;
     Namespace namespace = getNamespaceFromElementPath(elementPath, elementId);
     try {
@@ -57,6 +59,11 @@ public class ElementDataUtil {
       throw new RuntimeException(e);
     }
     elementData.setParentId(getParentId(namespace));
+    return elementData;
+  }
+
+  public ElementData uploadElementData(Git git, String elementPath, String elementId) {
+    ElementData elementData = initElementData(git,elementPath,elementId);
     populateElementContent(elementData, getRepositoryPath(git) +File.separator+ elementPath);
     return elementData;
   }
@@ -111,8 +118,10 @@ public class ElementDataUtil {
 
   private Namespace getNamespaceFromElementPath(String elementPath, String elementId) {
     Namespace namespace = new Namespace();
-    namespace.setValue(elementPath.replace(File.separator + elementId, "")
+    namespace.setValue(elementPath.replace(elementId, "")
         .replace(File.separator, Namespace.NAMESPACE_DELIMITER));
+    namespace.setValue(namespace.getValue().startsWith(File.separator)?namespace.getValue()
+        .substring(1):namespace.getValue());
     return namespace;
   }
 
@@ -223,5 +232,10 @@ public class ElementDataUtil {
 
   public GitSourceControlDao getSourceControlDao(SessionContext context) {
     return SourceControlDaoFactory.getInstance().createInterface(context);
+  }
+
+  public ElementDataConflict uploadElementConflict(String elementId,
+                                                   String elementPathFromFilePath) {
+    return null;
   }
 }

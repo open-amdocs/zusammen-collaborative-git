@@ -73,4 +73,6 @@ public interface GitSourceControlDao {
   ObjectId getHead(SessionContext context, Git git);
 
   ObjectId getRemoteHead(SessionContext context,Git git);
+
+  void reset(SessionContext context, Git git, ObjectId revisionId);
 }

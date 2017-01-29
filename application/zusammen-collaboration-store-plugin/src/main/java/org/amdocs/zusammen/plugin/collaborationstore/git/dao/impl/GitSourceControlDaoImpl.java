@@ -34,6 +34,7 @@ import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.RevertCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -217,7 +218,6 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
 
     try {
       command.setRemoteBranchName(branchId);
-      //command.setRebase(true);
       command.setStrategy(MergeStrategy.RESOLVE);
       return command.call();
 
@@ -334,7 +334,18 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     }
   }
 
+  @Override
+  public void reset(SessionContext context, Git git, ObjectId revisionId) {
+     ResetCommand command = git.reset();
+    try {
+      command.setRef(revisionId.getName());
+      command.setMode(ResetCommand.ResetType.HARD);
+      command.call();
+    } catch (GitAPIException e) {
+      throw new RuntimeException(e);
+    }
 
+  }
 
 
 }
