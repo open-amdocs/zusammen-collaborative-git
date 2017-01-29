@@ -65,9 +65,6 @@ import java.util.Set;
 
 public class SourceControlUtil {
 
-  private final String HEADER_END = "<<<<<<<";
-  private final String TRAILER_START = ">>>>>>>";
-  private final String SWITCH_FILE = "=======";
 
   private final ElementDataUtil elementDataUtil = new ElementDataUtil();
 
@@ -125,16 +122,15 @@ public class SourceControlUtil {
   }
 
 
-
   private boolean isMergeSuccesses(MergeResult mergeResult) {
     return !(mergeResult != null && mergeResult.getConflicts() != null && mergeResult.getConflicts
-        ().size()>0) ;
+        ().size() > 0);
   }
 
-  private ElementDataConflict handleElementConflict(Git git,String elementPath, String elementId) {
+  private ElementDataConflict handleElementConflict(Git git, String elementPath, String elementId) {
 
-    ElementData elementData = elementDataUtil.initElementData(git,elementPath,elementId);
-    String fullPath = git.getRepository().getWorkTree().getPath()+File.separator+elementPath;
+    ElementData elementData = elementDataUtil.initElementData(git, elementPath, elementId);
+    String fullPath = git.getRepository().getWorkTree().getPath() + File.separator + elementPath;
     elementDataUtil.getFileContent(fullPath, PluginConstants.VISUALIZATION_FILE_NAME)
         .ifPresent(elementData::setVisualization);
     elementDataUtil.getFileContent(fullPath, PluginConstants.DATA_FILE_NAME)
@@ -173,24 +169,24 @@ public class SourceControlUtil {
 
     byte[] content;
     Optional<InputStream> contentIS;
-        //info
+    //info
     contentIS = elementDataUtil.getFileContent(fullPath, PluginConstants
         .INFO_FILE_NAME);
-    if(contentIS.isPresent()) {
+    if (contentIS.isPresent()) {
       content = FileUtils.toByteArray(contentIS.get());
-      localRemoteDataConflict = splitMergedFile(content);
+      localRemoteDataConflict = GitConflictFileSplitter.splitMergedFile(content);
       elementConflicts.getLocalElement().setInfo(JsonUtil.json2Object(new ByteArrayInputStream
-          (localRemoteDataConflict.getLocal()),Info.class));
+          (localRemoteDataConflict.getLocal()), Info.class));
       elementConflicts.getLocalElement().setInfo(JsonUtil.json2Object(new ByteArrayInputStream
-          (localRemoteDataConflict.getRemote()),Info.class));
+          (localRemoteDataConflict.getRemote()), Info.class));
     }
 
     //relations
     contentIS = elementDataUtil.getFileContent(fullPath, PluginConstants
         .RELATIONS_FILE_NAME);
-    if(contentIS.isPresent()) {
+    if (contentIS.isPresent()) {
       content = FileUtils.toByteArray(contentIS.get());
-      localRemoteDataConflict = splitMergedFile(content);
+      localRemoteDataConflict = GitConflictFileSplitter.splitMergedFile(content);
       elementConflicts.getLocalElement().setRelations(JsonUtil.json2Object(new ByteArrayInputStream
           (localRemoteDataConflict.getLocal()), new TypeToken<ArrayList<Relation>>() {
       }.getType()));
@@ -205,52 +201,8 @@ public class SourceControlUtil {
 
   public LocalRemoteDataConflict splitMergedFile(InputStream is) {
     byte[] mergedFile = FileUtils.toByteArray(is);
-    return splitMergedFile(mergedFile);
+    return GitConflictFileSplitter.splitMergedFile(mergedFile);
   }
-
-  public LocalRemoteDataConflict splitMergedFile(byte[] mergedFile) {
-    LocalRemoteDataConflict localRemoteDataConflict = new LocalRemoteDataConflict();
-    String content = new String (mergedFile);
-    String[] lines = content.split("\\r\\n|\\r|\\n");
-
-    boolean headerEnd = false; //until <<<<<<<
-    boolean trailerStart = false; // from >>>>>>>
-    boolean switchFile = false; // from =======
-    for (String line : lines) {
-      if (line.startsWith(HEADER_END)) {
-        headerEnd = true;
-        continue;
-      }
-      if (line.startsWith(TRAILER_START)) {
-        trailerStart = true;
-        continue;
-      }
-      if (line.startsWith(SWITCH_FILE)) {
-        switchFile = true;
-        continue;
-      }
-      if (!switchFile || trailerStart) {
-        localRemoteDataConflict.appendL(line);
-      }
-      if (switchFile || trailerStart || !headerEnd) {
-        localRemoteDataConflict.appendR(line);
-      }
-    }
-    return localRemoteDataConflict;
-  }
-
-  /*public ItemVersionChangedData handlePublishResponse(SessionContext context,
-                                                      GitSourceControlDao dao,
-                                                      Git git,
-                                                      Collection<PushResult> pushResult) {
-    ObjectId from =
-        pushResult.iterator().next().getRemoteUpdates().iterator().next().getExpectedOldObjectId();
-    ObjectId to =
-        pushResult.iterator().next().getRemoteUpdates().iterator().next().getNewObjectId();
-    return handlePublishFileDiff(context, dao, git,
-        from, to);
-  }*/
-
 
   public CollaborationMergeChange handlePublishFileDiff(SessionContext
                                                             context,
@@ -277,7 +229,7 @@ public class SourceControlUtil {
     CollaborationMergeChange collaborationMergeChange = new CollaborationMergeChange();
 
     Collection<DiffEntry> diffs = dao.revisionDiff(context, git, from, to, treeFilter);
-    //Collection<ChangedElementData> changedElementInfoCollection = new ArrayList<>();
+
 
     if (diffs != null) {
       Map<String, ElementDataChange> elementDataMap = new HashMap();
@@ -312,8 +264,6 @@ public class SourceControlUtil {
             elementDataMap.get(elementId).setAction(getAction(diff.getChangeType()));
           }
         }
-
-
       }
       collaborationMergeChange.setChangedElements(elementDataMap.values());
     }
@@ -322,17 +272,6 @@ public class SourceControlUtil {
     return collaborationMergeChange;
   }
 
-  private Action getAction(DiffEntry.ChangeType changeType) {
-    switch (changeType) {
-      case ADD:
-        return Action.CREATE;
-      case DELETE:
-        return Action.DELETE;
-      case MODIFY:
-        return Action.UPDATE;
-    }
-    throw new RuntimeException("Action[" + changeType + "] not supported");
-  }
 
   protected String extractElementIdFromFilePath(String path) {
 
@@ -354,7 +293,6 @@ public class SourceControlUtil {
                                                           Git git,
                                                           Collection<PushResult> pushResult) {
     CollaborationPublishResult collaborationPublishResult;
-    Collection<ElementDataChange> changedElementInfoCollection;
 
     ObjectId from = getOldRevisionId(pushResult);
     ObjectId to = getNewRevisionId(pushResult);
@@ -366,6 +304,19 @@ public class SourceControlUtil {
     }
     return collaborationPublishResult;
   }
+
+  private CollaborationPublishResult getChangeData(SessionContext context,
+                                                   GitSourceControlDao dao, Git git,
+                                                   ObjectId from, ObjectId to) {
+
+    CollaborationPublishResult result = new CollaborationPublishResult();
+    CollaborationMergeChange mergeChange =
+        calculateItemVersionChangedData(context, dao, git,
+            from, to, null);
+    result.setChange(mergeChange);
+    return result;
+  }
+
 
   public CollaborationPublishResult getRepoData(SessionContext context,
                                                 GitSourceControlDao dao, Git git) {
@@ -418,17 +369,7 @@ public class SourceControlUtil {
 
   }
 
-  private CollaborationPublishResult getChangeData(SessionContext context,
-                                                   GitSourceControlDao dao, Git git,
-                                                   ObjectId from, ObjectId to) {
 
-    CollaborationPublishResult result = new CollaborationPublishResult();
-    CollaborationMergeChange mergeChange =
-        calculateItemVersionChangedData(context, dao, git,
-            from, to, null);
-    result.setChange(mergeChange);
-    return result;
-  }
 
   private ObjectId getNewRevisionId(Collection<PushResult> pushResults) {
 
@@ -471,4 +412,18 @@ public class SourceControlUtil {
       return null;
     }
   }
+
+  private Action getAction(DiffEntry.ChangeType changeType) {
+    switch (changeType) {
+      case ADD:
+        return Action.CREATE;
+      case DELETE:
+        return Action.DELETE;
+      case MODIFY:
+        return Action.UPDATE;
+    }
+    throw new RuntimeException("Action[" + changeType + "] not supported");
+  }
+
+
 }
