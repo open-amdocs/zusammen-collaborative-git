@@ -160,7 +160,7 @@ public class ItemVersionCollaborationStoreTest {
 
     verify(gitSourceControlDaoMock).checkoutBranch(context, null, VERSION_ID.getValue().toString());
     //verify(itemVersionCollaborationStore).(anyObject());
-    verify(sourceControlUtil).handlePublishFileDiff(anyObject(), anyObject(),
+    verify(sourceControlUtil).handleMergeFileDiff(anyObject(), anyObject(),
         anyObject(), anyObject());
 
   }

@@ -204,12 +204,12 @@ public class SourceControlUtil {
     return GitConflictFileSplitter.splitMergedFile(mergedFile);
   }
 
-  public CollaborationMergeChange handlePublishFileDiff(SessionContext
+  public CollaborationMergeChange handleMergeFileDiff(SessionContext
                                                             context,
-                                                        GitSourceControlDao dao,
-                                                        Git git,
-                                                        ObjectId from,
-                                                        ObjectId to) {
+                                                      GitSourceControlDao dao,
+                                                      Git git,
+                                                      ObjectId from,
+                                                      ObjectId to) {
     to = to != null ? to : dao.getHead(context, git);
 
 
@@ -288,10 +288,10 @@ public class SourceControlUtil {
     return file.getParentFile() != null ? file.getParentFile().getPath() : "";
   }
 
-  public CollaborationPublishResult handlePublishFileDiff(SessionContext context,
-                                                          GitSourceControlDao dao,
-                                                          Git git,
-                                                          Collection<PushResult> pushResult) {
+  public CollaborationPublishResult handleMergeFileDiff(SessionContext context,
+                                                        GitSourceControlDao dao,
+                                                        Git git,
+                                                        Collection<PushResult> pushResult) {
     CollaborationPublishResult collaborationPublishResult;
 
     ObjectId from = getOldRevisionId(pushResult);
