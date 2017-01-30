@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
@@ -49,7 +50,7 @@ public class ElementDataUtil {
   private static final String EMPTY_FILE = "";
 
 
-  public ElementData initElementData(Git git,String elementPath,String elementId){
+  public ElementData initElementData(Git git, String elementPath, String elementId) {
     ElementData elementData;
     Namespace namespace = getNamespaceFromElementPath(elementPath, elementId);
     try {
@@ -63,8 +64,8 @@ public class ElementDataUtil {
   }
 
   public ElementData uploadElementData(Git git, String elementPath, String elementId) {
-    ElementData elementData = initElementData(git,elementPath,elementId);
-    populateElementContent(elementData, getRepositoryPath(git) +File.separator+ elementPath);
+    ElementData elementData = initElementData(git, elementPath, elementId);
+    populateElementContent(elementData, getRepositoryPath(git) + File.separator + elementPath);
     return elementData;
   }
 
@@ -78,14 +79,31 @@ public class ElementDataUtil {
                 .json2Object(fileContent, new TypeToken<ArrayList<Relation>>() {
                 }.getType()))
         .ifPresent(elementData::setRelations);
-    getFileContent(elementPath, PluginConstants.VISUALIZATION_FILE_NAME)
-        .ifPresent(elementData::setVisualization);
-    getFileContent(elementPath, PluginConstants.DATA_FILE_NAME)
-        .ifPresent(elementData::setData);
-    getFileContent(elementPath, PluginConstants.SEARCH_DATA_FILE_NAME)
-        .ifPresent(elementData::setSearchableData);
+
+    loadElementByteArrayData(elementPath, PluginConstants.VISUALIZATION_FILE_NAME,
+        elementData::setVisualization);
+    loadElementByteArrayData(elementPath, PluginConstants.DATA_FILE_NAME, elementData::setData);
+    loadElementByteArrayData(elementPath, PluginConstants.SEARCH_DATA_FILE_NAME,
+        elementData::setSearchableData);
+
     elementData.setSubElements(
         getSubElementIds(elementPath).stream().map(Id::new).collect(Collectors.toSet()));
+  }
+
+  private void loadElementByteArrayData(String elementPath, String fileName,
+                                        Consumer<InputStream> elementDataSetter) {
+    getFileContent(elementPath, fileName)
+        .ifPresent(inputStream -> consumeAndCloseInputStream(inputStream, elementDataSetter));
+  }
+
+  private void consumeAndCloseInputStream(InputStream inputStream,
+                                          Consumer<InputStream> inputStreamConsumer) {
+    inputStreamConsumer.accept(inputStream);
+    try {
+      inputStream.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public ItemVersion uploadItemVersionData(Git git) {
@@ -102,8 +120,9 @@ public class ElementDataUtil {
         .map(fileContent -> (ArrayList<Relation>) JsonUtil
             .json2Object(fileContent, new TypeToken<ArrayList<Relation>>() {
             }.getType())).orElse(null));
-    Map<String,String> itemVersionInformation = JsonUtil.json2Object(getFileContent(getRepositoryPath(git), PluginConstants
-        .ZUSAMMEN_TAGGING_FILE_NAME).get(),Map.class);
+    Map<String, String> itemVersionInformation =
+        JsonUtil.json2Object(getFileContent(getRepositoryPath(git), PluginConstants
+            .ZUSAMMEN_TAGGING_FILE_NAME).get(), Map.class);
     itemVersion.setBaseId(new Id(itemVersionInformation.get(PluginConstants
         .ITEM_VERSION_BASE_ID)));
     itemVersion.setId(new Id(itemVersionInformation.get(PluginConstants
@@ -120,8 +139,8 @@ public class ElementDataUtil {
     Namespace namespace = new Namespace();
     namespace.setValue(elementPath.replace(elementId, "")
         .replace(File.separator, Namespace.NAMESPACE_DELIMITER));
-    namespace.setValue(namespace.getValue().startsWith(File.separator)?namespace.getValue()
-        .substring(1):namespace.getValue());
+    namespace.setValue(namespace.getValue().startsWith(File.separator) ? namespace.getValue()
+        .substring(1) : namespace.getValue());
     return namespace;
   }
 

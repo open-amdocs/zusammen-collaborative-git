@@ -174,11 +174,17 @@ public class SourceControlUtil {
         .INFO_FILE_NAME);
     if (contentIS.isPresent()) {
       content = FileUtils.toByteArray(contentIS.get());
+      try {
+        contentIS.get().close();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
       localRemoteDataConflict = GitConflictFileSplitter.splitMergedFile(content);
+      Class<Info> classOfT = Info.class;
       elementConflicts.getLocalElement().setInfo(JsonUtil.json2Object(new ByteArrayInputStream
-          (localRemoteDataConflict.getLocal()), Info.class));
-      elementConflicts.getLocalElement().setInfo(JsonUtil.json2Object(new ByteArrayInputStream
-          (localRemoteDataConflict.getRemote()), Info.class));
+          (localRemoteDataConflict.getLocal()), classOfT));
+      elementConflicts.getRemoteElement().setInfo(JsonUtil.json2Object(new ByteArrayInputStream
+          (localRemoteDataConflict.getRemote()), classOfT));
     }
 
     //relations
@@ -186,11 +192,16 @@ public class SourceControlUtil {
         .RELATIONS_FILE_NAME);
     if (contentIS.isPresent()) {
       content = FileUtils.toByteArray(contentIS.get());
+      try {
+        contentIS.get().close();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
       localRemoteDataConflict = GitConflictFileSplitter.splitMergedFile(content);
       elementConflicts.getLocalElement().setRelations(JsonUtil.json2Object(new ByteArrayInputStream
           (localRemoteDataConflict.getLocal()), new TypeToken<ArrayList<Relation>>() {
       }.getType()));
-      elementConflicts.getLocalElement().setRelations(JsonUtil.json2Object(new ByteArrayInputStream
+      elementConflicts.getRemoteElement().setRelations(JsonUtil.json2Object(new ByteArrayInputStream
           (localRemoteDataConflict.getRemote()), new TypeToken<ArrayList<Relation>>() {
       }.getType()));
     }
@@ -205,7 +216,7 @@ public class SourceControlUtil {
   }
 
   public CollaborationMergeChange handleMergeFileDiff(SessionContext
-                                                            context,
+                                                          context,
                                                       GitSourceControlDao dao,
                                                       Git git,
                                                       ObjectId from,
@@ -368,7 +379,6 @@ public class SourceControlUtil {
     }
 
   }
-
 
 
   private ObjectId getNewRevisionId(Collection<PushResult> pushResults) {
