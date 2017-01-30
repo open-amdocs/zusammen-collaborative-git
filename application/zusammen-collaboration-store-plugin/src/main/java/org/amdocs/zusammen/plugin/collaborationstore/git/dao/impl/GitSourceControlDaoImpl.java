@@ -34,7 +34,6 @@ import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.ResetCommand;
-import org.eclipse.jgit.api.RevertCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -219,7 +218,9 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     try {
       command.setRemoteBranchName(branchId);
       command.setStrategy(MergeStrategy.RESOLVE);
-      return command.call();
+      PullResult result = command.call();
+
+      return result;
 
     } catch (GitAPIException e) {
       throw new RuntimeException(e);
@@ -228,11 +229,18 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public MergeResult merge(SessionContext context, Git git, String branchId, MergeCommand.FastForwardMode mode) {
+  public MergeResult merge(SessionContext context, Git git, String branchId,
+                           MergeCommand.FastForwardMode fastForwardMode,
+                           MergeStrategy mergeStrategy, String message) {
     MergeCommand command = git.merge();
     try {
       command.include(git.getRepository().findRef(branchId));
-      command.setFastForward(mode);
+      if(fastForwardMode != null)
+        command.setFastForward(fastForwardMode);
+      if(mergeStrategy != null)
+        command.setStrategy(mergeStrategy);
+      if(message!= null)
+        command.setMessage(message);
       return command.call();
     } catch (GitAPIException | IOException e) {
       throw new RuntimeException(e);

@@ -25,6 +25,7 @@ import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
@@ -55,7 +56,8 @@ public interface GitSourceControlDao {
 
   PullResult sync(SessionContext context, Git git, String branchId);
 
-  MergeResult merge(SessionContext context, Git git, String branchId, MergeCommand.FastForwardMode mode);
+  MergeResult merge(SessionContext context, Git git, String branchId,
+                    MergeCommand.FastForwardMode mode, MergeStrategy mergeStrategy, String message);
 
   void close(SessionContext context, Git git);
 

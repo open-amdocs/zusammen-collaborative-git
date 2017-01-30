@@ -35,6 +35,7 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.transport.PushResult;
 
 import java.io.File;
@@ -62,9 +63,10 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     Git git = dao.openRepository(context, repositoryPath);
     createInt(context, git, baseBranchId, versionId.getValue());
     dao.checkoutBranch(context, git, versionId.getValue());
-    boolean commitRequired = storeItemVersionData(context, git, itemId, itemVersionData, Action.CREATE);
+    boolean commitRequired =
+        storeItemVersionData(context, git, itemId, itemVersionData, Action.CREATE);
     if (commitRequired) {
-      dao.add(context,git,".");
+      dao.add(context, git, ".");
       dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     }
     dao.close(context, git);
@@ -86,8 +88,8 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
         .getRelations() == null)) {
       return false;
     }
-    if(action.equals(Action.CREATE)) {
-      storeZusammenTaggingInfo(context, git,itemId);
+    if (action.equals(Action.CREATE)) {
+      storeZusammenTaggingInfo(context, git, itemId);
     }
     if (itemVersionData.getInfo() != null) {
       storeData(context, git, itemId, ITEM_VERSION_INFO_FILE_NAME, itemVersionData.getInfo());
@@ -99,28 +101,28 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     return true;
   }
 
-  private void storeZusammenTaggingInfo(SessionContext context, Git git,Id itemId) {
+  private void storeZusammenTaggingInfo(SessionContext context, Git git, Id itemId) {
 
 
-      try {
-        Optional<InputStream> is = FileUtils.readFile(git.getRepository().getDirectory
-                ().getPath(),
-            ZUSAMMEN_TAGGING_FILE_NAME);
-        String baseId;
-        Map<String,String>  itemVersionInformation;
-        if(is.isPresent()){
-          itemVersionInformation = JsonUtil.json2Object(is.get(),Map.class);
-          baseId = itemVersionInformation.get(PluginConstants.ITEM_VERSION_ID);
-        }else{
-          itemVersionInformation = new HashMap<>();
-          baseId=null;
-        }
-        itemVersionInformation.put(PluginConstants.ITEM_VERSION_ID,git.getRepository().getBranch());
-        itemVersionInformation.put(PluginConstants.ITEM_VERSION_BASE_ID,baseId);
-        storeData(context, git, itemId, ZUSAMMEN_TAGGING_FILE_NAME, itemVersionInformation);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+    try {
+      Optional<InputStream> is = FileUtils.readFile(git.getRepository().getDirectory
+              ().getPath(),
+          ZUSAMMEN_TAGGING_FILE_NAME);
+      String baseId;
+      Map<String, String> itemVersionInformation;
+      if (is.isPresent()) {
+        itemVersionInformation = JsonUtil.json2Object(is.get(), Map.class);
+        baseId = itemVersionInformation.get(PluginConstants.ITEM_VERSION_ID);
+      } else {
+        itemVersionInformation = new HashMap<>();
+        baseId = null;
       }
+      itemVersionInformation.put(PluginConstants.ITEM_VERSION_ID, git.getRepository().getBranch());
+      itemVersionInformation.put(PluginConstants.ITEM_VERSION_BASE_ID, baseId);
+      storeData(context, git, itemId, ZUSAMMEN_TAGGING_FILE_NAME, itemVersionInformation);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
   }
 
@@ -151,7 +153,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     boolean commitRequired = storeItemVersionData(context, git, itemId, itemVersionData,
         Action.UPDATE);
     if (commitRequired) {
-      dao.add(context,git,".");
+      dao.add(context, git, ".");
       dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     }
     dao.close(context, git);
@@ -171,27 +173,13 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     repositoryPath = resolveTenantPath(context, repositoryPath);
     Git git = dao.openRepository(context, repositoryPath);
     String branchId = versionId.toString();
-    //ObjectId from = dao.getRemoteHead(context, git);
 
     Collection<PushResult> pushResult = dao.publish(context, git, branchId);
-    //ObjectId to = dao.getRemoteHead(context, git);
     dao.checkoutBranch(context, git, branchId);
-//    dao.inComing(context,git,versionId.getValue());
-
     CollaborationPublishResult publishResult = sourceControlUtil
         .handleMergeFileDiff(context, dao, git,
-            pushResult);//handlePublishResponse(context, dao, git,
-
+            pushResult);
     dao.close(context, git);
-
-
-
-    /*if (itemVersionChangedData != null) {
-      elementPublishResult.setChangedElements(itemVersionChangedData.getChangedElements());
-      publishResult.setItemVersionInfo(itemVersionChangedData.getItemVersionInfo());
-    }
-    publishResult.setElementsPublishResult(elementPublishResult);*/
-
     return publishResult;
   }
 
@@ -214,8 +202,9 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
       CollaborationMergeConflict collaborationMergeConflict =
           sourceControlUtil.handleSyncResponse(context, git, syncResult);
       result.setConflict(collaborationMergeConflict);
-      if(syncResult != null && !syncResult.isSuccessful()){
-        dao.reset(context,git,oldId);
+      if (syncResult != null && !syncResult.isSuccessful()) {
+        dao.merge(context,git,versionId.getValue(), MergeCommand.FastForwardMode.FF,
+            MergeStrategy.OURS,null);
       }
     } else {
       String publicPath = resolveTenantPath(context, PluginConstants.PUBLIC_PATH);
@@ -227,7 +216,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
 
 
     CollaborationMergeChange changedData = sourceControlUtil.handleMergeFileDiff(context, dao, git,
-        oldId,null);
+        oldId, null);
     result.setChange(changedData);
     dao.close(context, git);
 
@@ -252,7 +241,8 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
       dao.checkoutBranch(context, git, branch);
       oldId = dao.getHead(context, git);
       MergeResult mergeResult =
-          dao.merge(context, git, sourceBranch, MergeCommand.FastForwardMode.FF);
+          dao.merge(context, git, sourceBranch, MergeCommand.FastForwardMode.FF, null,
+              null);
       CollaborationMergeConflict conflict =
           sourceControlUtil.handleMergeResponse(context, git, mergeResult);
       result.setConflict(conflict);

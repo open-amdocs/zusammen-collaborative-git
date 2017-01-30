@@ -204,6 +204,6 @@ public class ItemVersionCollaborationStoreTest {
     verify(gitSourceControlDaoMock).checkoutBranch(context, null, VERSION_ID.getValue().toString());
     verify(gitSourceControlDaoMock, times(2)).getHead(context, null);
     verify(gitSourceControlDaoMock).merge(context, null, BASE_VERSION_ID.toString(),
-        MergeCommand.FastForwardMode.FF);
+        MergeCommand.FastForwardMode.FF, null, null);
   }
 }
