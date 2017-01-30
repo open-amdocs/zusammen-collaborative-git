@@ -203,8 +203,10 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
           sourceControlUtil.handleSyncResponse(context, git, syncResult);
       result.setConflict(collaborationMergeConflict);
       if (syncResult != null && !syncResult.isSuccessful()) {
-        dao.merge(context,git,versionId.getValue(), MergeCommand.FastForwardMode.FF,
-            MergeStrategy.OURS,null);
+        ElementCollaborationStore elementCollaborationStore = new ElementCollaborationStore();
+        collaborationMergeConflict.getElementConflicts().stream().forEach
+            (elementData->elementCollaborationStore.update(context,elementData.getLocalElement()));
+
       }
     } else {
       String publicPath = resolveTenantPath(context, PluginConstants.PUBLIC_PATH);
