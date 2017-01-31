@@ -113,7 +113,7 @@ public class ElementCollaborationStore extends CollaborationStore {
                                    String basePath,
                                    String relativePath,
                                    ElementData elementData, Action action) {
-    elementDataUtil.updateElementData(context, git, basePath, relativePath, elementData, action);
+    elementDataUtil.updateElementData(git, basePath, relativePath, elementData, action);
   }
 
   protected ElementData uploadElementData(SessionContext context, Git git, String elementPath,

@@ -41,7 +41,7 @@ public class CollaborationStore {
 
   protected void addFileContent(SessionContext context, Git git, String basePath,String
       relativePath,String fileName, Object fileContent) {
-    this.elementDataUtil.addFileContent(context, git, basePath,relativePath, fileName, fileContent);
+    this.elementDataUtil.addFileContent(basePath,relativePath, fileName, fileContent);
   }
 
   protected String resolveTenantPath(SessionContext context, String path) {

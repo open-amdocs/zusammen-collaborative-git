@@ -35,7 +35,6 @@ import org.amdocs.zusammen.sdk.types.CollaborationPublishResult;
 import org.amdocs.zusammen.sdk.types.ElementData;
 import org.amdocs.zusammen.sdk.types.ElementDataChange;
 import org.amdocs.zusammen.sdk.types.ElementDataConflict;
-import org.amdocs.zusammen.utils.fileutils.FileUtils;
 import org.amdocs.zusammen.utils.fileutils.json.JsonUtil;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
@@ -55,13 +54,14 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class SourceControlUtil {
 
@@ -128,106 +128,69 @@ public class SourceControlUtil {
   }
 
   private ElementDataConflict handleElementConflict(Git git, String elementPath, String elementId) {
-
     ElementData elementData = elementDataUtil.initElementData(git, elementPath, elementId);
+    ElementDataConflict elementConflict = new ElementDataConflict();
+    elementConflict.setLocalElement(new ElementData(elementData.getItemId(), elementData
+        .getVersionId(), elementData.getNamespace(), elementData.getId()));
+    elementConflict.setRemoteElement(new ElementData(elementData.getItemId(), elementData
+        .getVersionId(), elementData.getNamespace(), elementData.getId()));
+
     String fullPath = git.getRepository().getWorkTree().getPath() + File.separator + elementPath;
-    elementDataUtil.getFileContent(fullPath, PluginConstants.VISUALIZATION_FILE_NAME)
-        .ifPresent(elementData::setVisualization);
-    elementDataUtil.getFileContent(fullPath, PluginConstants.DATA_FILE_NAME)
-        .ifPresent(elementData::setData);
-    elementDataUtil.getFileContent(fullPath, PluginConstants.SEARCH_DATA_FILE_NAME)
-        .ifPresent(elementData::setSearchableData);
 
+    elementDataUtil.getFileContentAsByteArray(fullPath, PluginConstants.DATA_FILE_NAME)
+        .ifPresent(fileContent -> consumeConflictContentAsInputStream(fileContent,
+            elementConflict.getLocalElement()::setData,
+            elementConflict.getRemoteElement()::setData));
 
-    ElementDataConflict elementConflicts = new ElementDataConflict();
-    elementConflicts.setLocalElement(new ElementData(elementData.getItemId(), elementData
-        .getVersionId(), elementData.getNamespace(), elementData.getId()));
-    elementConflicts.setRemoteElement(new ElementData(elementData.getItemId(), elementData
-        .getVersionId(), elementData.getNamespace(), elementData.getId()));
+    elementDataUtil.getFileContentAsByteArray(fullPath, PluginConstants.SEARCH_DATA_FILE_NAME)
+        .ifPresent(fileContent -> consumeConflictContentAsInputStream(fileContent,
+            elementConflict.getLocalElement()::setSearchableData,
+            elementConflict.getRemoteElement()::setSearchableData));
 
-    //data
-    LocalRemoteDataConflict localRemoteDataConflict = splitMergedFile(elementData.getData());
-    elementConflicts.getLocalElement().setData(new ByteArrayInputStream
-        (localRemoteDataConflict.getLocal()));
-    elementConflicts.getRemoteElement().setData(new ByteArrayInputStream
-        (localRemoteDataConflict.getRemote()));
+    elementDataUtil.getFileContentAsByteArray(fullPath, PluginConstants.VISUALIZATION_FILE_NAME)
+        .ifPresent(fileContent -> consumeConflictContentAsInputStream(fileContent,
+            elementConflict.getLocalElement()::setVisualization,
+            elementConflict.getRemoteElement()::setVisualization));
 
-    //search data
-    localRemoteDataConflict = splitMergedFile(elementData.getSearchableData());
-    elementConflicts.getLocalElement().setSearchableData(new ByteArrayInputStream
-        (localRemoteDataConflict.getLocal()));
-    elementConflicts.getRemoteElement().setSearchableData(new ByteArrayInputStream
-        (localRemoteDataConflict.getRemote()));
+    elementDataUtil.getFileContentAsByteArray(fullPath, PluginConstants.INFO_FILE_NAME)
+        .ifPresent(fileContent -> consumeConflictContentAsObjects(fileContent, Info.class,
+            elementConflict.getLocalElement()::setInfo,
+            elementConflict.getRemoteElement()::setInfo));
 
-    //visualisation data
-    localRemoteDataConflict = splitMergedFile(elementData.getVisualization());
-    elementConflicts.getLocalElement().setSearchableData(new ByteArrayInputStream
-        (localRemoteDataConflict.getLocal()));
-    elementConflicts.getRemoteElement().setSearchableData(new ByteArrayInputStream
-        (localRemoteDataConflict.getRemote()));
+    elementDataUtil.getFileContentAsByteArray(fullPath, PluginConstants.RELATIONS_FILE_NAME)
+        .ifPresent(fileContent -> consumeConflictContentAsObjects(fileContent,
+            new TypeToken<ArrayList<Relation>>() {
+            }.getType(),
+            elementConflict.getLocalElement()::setRelations,
+            elementConflict.getRemoteElement()::setRelations));
 
-
-    byte[] content;
-    Optional<InputStream> contentIS;
-    //info
-    contentIS = elementDataUtil.getFileContent(fullPath, PluginConstants
-        .INFO_FILE_NAME);
-    if (contentIS.isPresent()) {
-      content = FileUtils.toByteArray(contentIS.get());
-      try {
-        contentIS.get().close();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-      localRemoteDataConflict = GitConflictFileSplitter.splitMergedFile(content);
-      Class<Info> classOfT = Info.class;
-      elementConflicts.getLocalElement().setInfo(JsonUtil.json2Object(new ByteArrayInputStream
-          (localRemoteDataConflict.getLocal()), classOfT));
-      elementConflicts.getRemoteElement().setInfo(JsonUtil.json2Object(new ByteArrayInputStream
-          (localRemoteDataConflict.getRemote()), classOfT));
-    }
-
-    //relations
-    contentIS = elementDataUtil.getFileContent(fullPath, PluginConstants
-        .RELATIONS_FILE_NAME);
-    if (contentIS.isPresent()) {
-      content = FileUtils.toByteArray(contentIS.get());
-      try {
-        contentIS.get().close();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-      localRemoteDataConflict = GitConflictFileSplitter.splitMergedFile(content);
-      elementConflicts.getLocalElement().setRelations(JsonUtil.json2Object(new ByteArrayInputStream
-          (localRemoteDataConflict.getLocal()), new TypeToken<ArrayList<Relation>>() {
-      }.getType()));
-      elementConflicts.getRemoteElement().setRelations(JsonUtil.json2Object(new ByteArrayInputStream
-          (localRemoteDataConflict.getRemote()), new TypeToken<ArrayList<Relation>>() {
-      }.getType()));
-    }
-
-
-    return elementConflicts;
+    return elementConflict;
   }
 
-  public LocalRemoteDataConflict splitMergedFile(InputStream is) {
-    byte[] mergedFile = FileUtils.toByteArray(is);
-    return GitConflictFileSplitter.splitMergedFile(mergedFile);
+  private <T> void consumeConflictContentAsObjects(byte[] conflictContent,
+                                                   Type classOfContent,
+                                                   Consumer<T> conflictLocalContentSetter,
+                                                   Consumer<T> conflictRemoteContentSetter) {
+    LocalRemoteDataConflict conflict = GitConflictFileSplitter.splitMergedFile(conflictContent);
+    conflictLocalContentSetter.accept(
+        JsonUtil.json2Object(new ByteArrayInputStream(conflict.getLocal()), classOfContent));
+    conflictRemoteContentSetter.accept(
+        JsonUtil.json2Object(new ByteArrayInputStream(conflict.getRemote()), classOfContent));
   }
 
-  public CollaborationMergeChange handleMergeFileDiff(SessionContext
-                                                          context,
-                                                      GitSourceControlDao dao,
-                                                      Git git,
-                                                      ObjectId from,
-                                                      ObjectId to) {
+  private void consumeConflictContentAsInputStream(byte[] conflictContent,
+                                                   Consumer<InputStream> conflictLocalContentSetter,
+                                                   Consumer<InputStream> conflictRemoteContentSetter) {
+    LocalRemoteDataConflict conflict = GitConflictFileSplitter.splitMergedFile(conflictContent);
+    conflictLocalContentSetter.accept(new ByteArrayInputStream(conflict.getLocal()));
+    conflictRemoteContentSetter.accept(new ByteArrayInputStream(conflict.getRemote()));
+  }
+
+  public CollaborationMergeChange handleMergeFileDiff(SessionContext context,
+                                                      GitSourceControlDao dao, Git git,
+                                                      ObjectId from, ObjectId to) {
     to = to != null ? to : dao.getHead(context, git);
-
-
-    CollaborationMergeChange collaborationPublishResult =
-        calculateItemVersionChangedData(context, dao, git,
-            from, to, null);
-    return collaborationPublishResult;
+    return calculateItemVersionChangedData(context, dao, git, from, to, null);
   }
 
   private CollaborationMergeChange calculateItemVersionChangedData(SessionContext context,
@@ -236,14 +199,11 @@ public class SourceControlUtil {
                                                                    ObjectId from,
                                                                    ObjectId to,
                                                                    TreeFilter treeFilter) {
-
     CollaborationMergeChange collaborationMergeChange = new CollaborationMergeChange();
 
     Collection<DiffEntry> diffs = dao.revisionDiff(context, git, from, to, treeFilter);
-
-
     if (diffs != null) {
-      Map<String, ElementDataChange> elementDataMap = new HashMap();
+      Map<String, ElementDataChange> elementDataMap = new HashMap<>();
       String elementId;
       ElementData elementData;
       ElementDataChange changedElementData;
@@ -278,15 +238,11 @@ public class SourceControlUtil {
       }
       collaborationMergeChange.setChangedElements(elementDataMap.values());
     }
-
-
     return collaborationMergeChange;
   }
 
 
   protected String extractElementIdFromFilePath(String path) {
-
-
     File file = new File(path);
     if (file.getParentFile() == null) {
       return null;
@@ -300,8 +256,7 @@ public class SourceControlUtil {
   }
 
   public CollaborationPublishResult handleMergeFileDiff(SessionContext context,
-                                                        GitSourceControlDao dao,
-                                                        Git git,
+                                                        GitSourceControlDao dao, Git git,
                                                         Collection<PushResult> pushResult) {
     CollaborationPublishResult collaborationPublishResult;
 
@@ -334,7 +289,7 @@ public class SourceControlUtil {
     CollaborationPublishResult collaborationPublishResult = new CollaborationPublishResult();
     CollaborationMergeChange mergeChange = new CollaborationMergeChange();
 
-    Collection<ElementDataChange> changedElementInfoCollection = new ArrayList();
+    Collection<ElementDataChange> changedElementInfoCollection = new ArrayList<>();
     ElementDataChange changedElementData;
     ElementData elementData;
     String elementId;

@@ -19,17 +19,13 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.dao.util;
 import com.google.gson.reflect.TypeToken;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.Namespace;
-import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.datatypes.item.ItemVersion;
 import org.amdocs.zusammen.datatypes.item.ItemVersionData;
 import org.amdocs.zusammen.datatypes.item.Relation;
-import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
-import org.amdocs.zusammen.plugin.collaborationstore.git.dao.SourceControlDaoFactory;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.amdocs.zusammen.sdk.types.ElementData;
-import org.amdocs.zusammen.sdk.types.ElementDataConflict;
 import org.amdocs.zusammen.utils.fileutils.FileUtils;
 import org.amdocs.zusammen.utils.fileutils.json.JsonUtil;
 import org.eclipse.jgit.api.Git;
@@ -38,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,63 +67,50 @@ public class ElementDataUtil {
   }
 
   private void populateElementContent(ElementData elementData, String elementPath) {
-    getFileContent(elementPath, PluginConstants.INFO_FILE_NAME)
-        .map(fileContent -> JsonUtil.json2Object(fileContent, Info.class))
+    getFileContentAsInputStream(elementPath, PluginConstants.INFO_FILE_NAME).map(fileContent ->
+        JsonUtil.json2Object(fileContent, Info.class))
         .ifPresent(elementData::setInfo);
-    getFileContent(elementPath, PluginConstants.RELATIONS_FILE_NAME)
+
+    getFileContentAsInputStream(elementPath, PluginConstants.RELATIONS_FILE_NAME)
         .map(fileContent ->
             (ArrayList<Relation>) JsonUtil
                 .json2Object(fileContent, new TypeToken<ArrayList<Relation>>() {
                 }.getType()))
         .ifPresent(elementData::setRelations);
 
-    loadElementByteArrayData(elementPath, PluginConstants.VISUALIZATION_FILE_NAME,
+    consumeFileContentAsInputStream(elementPath, PluginConstants.VISUALIZATION_FILE_NAME,
         elementData::setVisualization);
-    loadElementByteArrayData(elementPath, PluginConstants.DATA_FILE_NAME, elementData::setData);
-    loadElementByteArrayData(elementPath, PluginConstants.SEARCH_DATA_FILE_NAME,
+    consumeFileContentAsInputStream(elementPath, PluginConstants.DATA_FILE_NAME,
+        elementData::setData);
+    consumeFileContentAsInputStream(elementPath, PluginConstants.SEARCH_DATA_FILE_NAME,
         elementData::setSearchableData);
 
     elementData.setSubElements(
         getSubElementIds(elementPath).stream().map(Id::new).collect(Collectors.toSet()));
   }
 
-  private void loadElementByteArrayData(String elementPath, String fileName,
-                                        Consumer<InputStream> elementDataSetter) {
-    getFileContent(elementPath, fileName)
-        .ifPresent(inputStream -> consumeAndCloseInputStream(inputStream, elementDataSetter));
-  }
-
-  private void consumeAndCloseInputStream(InputStream inputStream,
-                                          Consumer<InputStream> inputStreamConsumer) {
-    inputStreamConsumer.accept(inputStream);
-    try {
-      inputStream.close();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public ItemVersion uploadItemVersionData(Git git) {
     ItemVersion itemVersion = new ItemVersion();
 
     ItemVersionData itemVersionData = new ItemVersionData();
-    itemVersionData
-        .setInfo(getFileContent(getRepositoryPath(git), PluginConstants.ITEM_VERSION_INFO_FILE_NAME)
-            .map(fileContent -> JsonUtil.json2Object(fileContent, Info.class))
-            .orElse(null));
+    itemVersionData.setInfo(getFileContentAsInputStream(getRepositoryPath(git),
+        PluginConstants.ITEM_VERSION_INFO_FILE_NAME)
+        .map(fileContent -> JsonUtil.json2Object(fileContent, Info.class))
+        .orElse(null));
 
-    itemVersionData.setRelations(getFileContent(getRepositoryPath(git), PluginConstants
-        .RELATIONS_FILE_NAME)
+    itemVersionData.setRelations(getFileContentAsInputStream(getRepositoryPath(git),
+        PluginConstants.RELATIONS_FILE_NAME)
         .map(fileContent -> (ArrayList<Relation>) JsonUtil
             .json2Object(fileContent, new TypeToken<ArrayList<Relation>>() {
             }.getType())).orElse(null));
+
     Map<String, String> itemVersionInformation =
-        JsonUtil.json2Object(getFileContent(getRepositoryPath(git), PluginConstants
-            .ZUSAMMEN_TAGGING_FILE_NAME).get(), Map.class);
-    itemVersion.setBaseId(new Id(itemVersionInformation.get(PluginConstants
-        .ITEM_VERSION_BASE_ID)));
-    itemVersion.setId(new Id(itemVersionInformation.get(PluginConstants
-        .ITEM_VERSION_ID)));
+        getFileContentAsInputStream(getRepositoryPath(git),
+            PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME)
+            .map(inputStream -> JsonUtil.json2Object(inputStream, Map.class
+            )).orElse(new HashMap<String, String>());
+    itemVersion.setBaseId(new Id(itemVersionInformation.get(PluginConstants.ITEM_VERSION_BASE_ID)));
+    itemVersion.setId(new Id(itemVersionInformation.get(PluginConstants.ITEM_VERSION_ID)));
     itemVersion.setData(itemVersionData);
     return itemVersion;
   }
@@ -158,83 +142,90 @@ public class ElementDataUtil {
         .substring(fromIndex, toIndex));
   }
 
-  public void updateElementData(SessionContext context, Git git, String basePath, String
-      relativePath, ElementData elementData, Action action) {
-
+  public void updateElementData(Git git, String basePath, String relativePath,
+                                ElementData elementData, Action action) {
     if (action.equals(Action.CREATE)) {
-
-      addFileContent(context, git, getRepositoryPath(git), relativePath,
+      addFileContent(getRepositoryPath(git), relativePath,
           PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME, EMPTY_FILE);
     }
 
     if (elementData.getId().getValue().equals(Id.ZERO.getValue())) {
-      updateItemVersionDataFromElementData(context, git, basePath, elementData);
+      updateItemVersionDataFromElementData(basePath, elementData);
     }
 
     if (elementData.getVisualization() != null) {
-      addFileContent(context, git, getRepositoryPath(git), relativePath,
+      addFileContent(getRepositoryPath(git), relativePath,
           PluginConstants.VISUALIZATION_FILE_NAME, elementData.getVisualization());
     }
 
     if (elementData.getData() != null) {
-      addFileContent(context, git,
+      addFileContent(
           basePath, relativePath, PluginConstants.DATA_FILE_NAME, elementData.getData());
     }
 
     if (elementData.getSearchableData() != null) {
-      addFileContent(context, git,
+      addFileContent(
           basePath, relativePath, PluginConstants.SEARCH_DATA_FILE_NAME,
           elementData.getSearchableData());
     }
 
     Info info = elementData.getInfo();
     if (info != null) {
-      addFileContent(context, git,
+      addFileContent(
           basePath, relativePath, PluginConstants.INFO_FILE_NAME, info);
     }
   }
 
-  private void updateItemVersionDataFromElementData(SessionContext context, Git git,
-                                                    String basePath, ElementData elementData) {
+  private void updateItemVersionDataFromElementData(String basePath, ElementData elementData) {
     Info info = elementData.getInfo();
     if (info != null) {
-      addFileContent(context, git,
-          basePath, null, PluginConstants.ITEM_VERSION_INFO_FILE_NAME, info);
+      addFileContent(basePath, null, PluginConstants.ITEM_VERSION_INFO_FILE_NAME, info);
     }
   }
 
-  public void addFileContent(SessionContext context, Git git, String basePath, String
-      relativePath, String fileName,
+  public void addFileContent(String basePath, String relativePath, String fileName,
                              Object fileContent) {
-    relativePath = relativePath == null ? "" : relativePath;
     if (fileContent == null) {
       return;
     }
+    relativePath = relativePath == null ? "" : relativePath;
     if (fileContent instanceof InputStream) {
-      FileUtils
-          .writeFileFromInputStream(basePath + File.separator + relativePath, fileName,
-              (InputStream)
-                  fileContent);
+      FileUtils.writeFileFromInputStream(basePath + File.separator + relativePath, fileName,
+          (InputStream) fileContent);
     } else {
       FileUtils.writeFile(basePath + File.separator + relativePath, fileName, fileContent);
     }
   }
 
-  private String getFileRelativePath(String relativePath, String fileName) {
-    if (relativePath == null || "".equals(relativePath)) {
-      return fileName;
-    } else {
-      relativePath = relativePath.startsWith(File.separator) ? relativePath.substring(1)
-          : relativePath;
-      return relativePath + File.separator + fileName;
-    }
+  private void consumeFileContentAsInputStream(String filePath, String fileName,
+                                               Consumer<InputStream> inputStreamConsumer) {
+    getFileContentAsInputStream(filePath, fileName).ifPresent(inputStream -> {
+      inputStreamConsumer.accept(inputStream);
+      try {
+        inputStream.close();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
-  protected Optional<InputStream> getFileContent(String path, String fileName) {
+  Optional<byte[]> getFileContentAsByteArray(String filePath, String fileName) {
+    return getFileContentAsInputStream(filePath, fileName).map(inputStream -> {
+      byte[] bytes = FileUtils.toByteArray(inputStream);
+      try {
+        inputStream.close();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      return bytes;
+    });
+  }
+
+  private Optional<InputStream> getFileContentAsInputStream(String path, String fileName) {
     return FileUtils.readFile(path, fileName);
   }
 
-  protected List<String> getSubElementIds(String path) {
+  List<String> getSubElementIds(String path) {
     List<String> elementIds = new ArrayList<>();
     File file = new File(path);
     File[] files = file.listFiles();
@@ -247,14 +238,5 @@ public class ElementDataUtil {
       }
     }
     return elementIds;
-  }
-
-  public GitSourceControlDao getSourceControlDao(SessionContext context) {
-    return SourceControlDaoFactory.getInstance().createInterface(context);
-  }
-
-  public ElementDataConflict uploadElementConflict(String elementId,
-                                                   String elementPathFromFilePath) {
-    return null;
   }
 }
