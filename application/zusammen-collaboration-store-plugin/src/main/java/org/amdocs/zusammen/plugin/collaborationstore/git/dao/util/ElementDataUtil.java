@@ -153,27 +153,16 @@ public class ElementDataUtil {
       updateItemVersionDataFromElementData(basePath, elementData);
     }
 
-    if (elementData.getVisualization() != null) {
-      addFileContent(getRepositoryPath(git), relativePath,
-          PluginConstants.VISUALIZATION_FILE_NAME, elementData.getVisualization());
+    addFileContent(basePath, relativePath, PluginConstants.INFO_FILE_NAME, elementData.getInfo());
+    if (elementData.getRelations() != null && elementData.getRelations().size() > 0) {
+      addFileContent(basePath, relativePath, PluginConstants.RELATIONS_FILE_NAME,
+          elementData.getRelations());
     }
-
-    if (elementData.getData() != null) {
-      addFileContent(
-          basePath, relativePath, PluginConstants.DATA_FILE_NAME, elementData.getData());
-    }
-
-    if (elementData.getSearchableData() != null) {
-      addFileContent(
-          basePath, relativePath, PluginConstants.SEARCH_DATA_FILE_NAME,
-          elementData.getSearchableData());
-    }
-
-    Info info = elementData.getInfo();
-    if (info != null) {
-      addFileContent(
-          basePath, relativePath, PluginConstants.INFO_FILE_NAME, info);
-    }
+    addFileContent(getRepositoryPath(git), relativePath, PluginConstants.VISUALIZATION_FILE_NAME,
+        elementData.getVisualization());
+    addFileContent(basePath, relativePath, PluginConstants.DATA_FILE_NAME, elementData.getData());
+    addFileContent(basePath, relativePath, PluginConstants.SEARCH_DATA_FILE_NAME,
+        elementData.getSearchableData());
   }
 
   private void updateItemVersionDataFromElementData(String basePath, ElementData elementData) {

@@ -35,7 +35,6 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.transport.PushResult;
 
 import java.io.File;
@@ -72,14 +71,11 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     dao.close(context, git);
   }
 
-
   protected void createInt(SessionContext context, Git git, String baseBranch,
                            String branch) {
     GitSourceControlDao dao = getSourceControlDao(context);
     dao.createBranch(context, git, baseBranch, branch);
-
   }
-
 
   protected boolean storeItemVersionData(SessionContext context, Git git, Id itemId,
                                          ItemVersionData itemVersionData, Action action) {
@@ -94,20 +90,17 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     if (itemVersionData.getInfo() != null) {
       storeData(context, git, itemId, ITEM_VERSION_INFO_FILE_NAME, itemVersionData.getInfo());
     }
-    if (itemVersionData.getRelations() != null) {
-      storeData(context, git, itemId, RELATIONS_FILE_NAME, itemVersionData.getInfo());
+    if (itemVersionData.getRelations() != null && itemVersionData.getRelations().size() > 0) {
+      storeData(context, git, itemId, RELATIONS_FILE_NAME, itemVersionData.getRelations());
     }
 
     return true;
   }
 
   private void storeZusammenTaggingInfo(SessionContext context, Git git, Id itemId) {
-
-
     try {
-      Optional<InputStream> is = FileUtils.readFile(git.getRepository().getDirectory
-              ().getPath(),
-          ZUSAMMEN_TAGGING_FILE_NAME);
+      Optional<InputStream> is = FileUtils
+          .readFile(git.getRepository().getDirectory().getPath(), ZUSAMMEN_TAGGING_FILE_NAME);
       String baseId;
       Map<String, String> itemVersionInformation;
       if (is.isPresent()) {
@@ -126,9 +119,8 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
 
   }
 
-  protected boolean storeData(SessionContext context, Git git, Id itemId, String fileName, Object
-      data) {
-
+  protected boolean storeData(SessionContext context, Git git, Id itemId, String fileName,
+                              Object data) {
     addFileContent(
         context,
         git,
@@ -204,8 +196,9 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
       result.setConflict(collaborationMergeConflict);
       if (syncResult != null && !syncResult.isSuccessful()) {
         ElementCollaborationStore elementCollaborationStore = new ElementCollaborationStore();
-        collaborationMergeConflict.getElementConflicts().stream().forEach
-            (elementData->elementCollaborationStore.update(context,elementData.getLocalElement()));
+        collaborationMergeConflict.getElementConflicts().forEach(
+            elementData -> elementCollaborationStore
+                .update(context, elementData.getLocalElement()));
 
       }
     } else {
