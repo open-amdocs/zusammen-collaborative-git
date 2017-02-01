@@ -100,7 +100,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
   private void storeZusammenTaggingInfo(SessionContext context, Git git, Id itemId) {
     try {
       Optional<InputStream> is = FileUtils
-          .readFile(git.getRepository().getDirectory().getPath(), ZUSAMMEN_TAGGING_FILE_NAME);
+          .readFile(git.getRepository().getWorkTree().getPath(), ZUSAMMEN_TAGGING_FILE_NAME);
       String baseId;
       Map<String, String> itemVersionInformation;
       if (is.isPresent()) {
