@@ -56,7 +56,7 @@ public class ElementDataUtil {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    elementData.setParentId(getParentId(namespace));
+    elementData.setParentId(namespace.getParentElementId());
     return elementData;
   }
 
@@ -120,26 +120,19 @@ public class ElementDataUtil {
   }
 
   private Namespace getNamespaceFromElementPath(String elementPath, String elementId) {
-    Namespace namespace = new Namespace();
-    namespace.setValue(elementPath.replace(elementId, "")
-        .replace(File.separator, Namespace.NAMESPACE_DELIMITER));
-    namespace.setValue(namespace.getValue().startsWith(File.separator) ? namespace.getValue()
-        .substring(1) : namespace.getValue());
-    return namespace;
-  }
-
-  private Id getParentId(Namespace namespace) {
-
-    if (Namespace.ROOT_NAMESPACE.equals(namespace)) {
-      return null;
+    String namespaceValue = elementPath
+        .replace(elementId, "")
+        .replace(File.separator, Namespace.NAMESPACE_DELIMITER);
+    if (namespaceValue.startsWith(Namespace.NAMESPACE_DELIMITER)) {
+      namespaceValue = namespaceValue.substring(1);
+    }
+    if (namespaceValue.endsWith(Namespace.NAMESPACE_DELIMITER)) {
+      namespaceValue = namespaceValue.substring(0, namespaceValue.length() - 1);
     }
 
-    int fromIndex = namespace.getValue().contains(Namespace.NAMESPACE_DELIMITER) ? namespace
-        .getValue().lastIndexOf(Namespace.NAMESPACE_DELIMITER) : 0;
-    int toIndex = namespace.getValue().length();
-
-    return new Id(namespace.getValue()
-        .substring(fromIndex, toIndex));
+    Namespace namespace = new Namespace();
+    namespace.setValue(namespaceValue);
+    return namespace;
   }
 
   public void updateElementData(Git git, String basePath, String relativePath,
