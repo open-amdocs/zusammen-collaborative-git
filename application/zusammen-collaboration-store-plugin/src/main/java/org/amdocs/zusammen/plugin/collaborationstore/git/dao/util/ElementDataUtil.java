@@ -115,7 +115,7 @@ public class ElementDataUtil {
     return itemVersion;
   }
 
-  private String getRepositoryPath(Git git) {
+  protected String getRepositoryPath(Git git) {
     return git.getRepository().getWorkTree().getPath();
   }
 

@@ -34,6 +34,7 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ElementDataUtilTest {
 
@@ -58,6 +59,9 @@ public class ElementDataUtilTest {
         anyObject(),
         anyObject(),
         anyObject());
+
+    Mockito.doReturn(null).when(elementDataUtil).getRepositoryPath(anyObject());
+
     /*Mockito.doNothing().when(elementDataUtil).getSubElementIds(anyObject(), anyObject(),
         anyObject());*/
   }
@@ -115,7 +119,7 @@ public class ElementDataUtilTest {
             .toString()  , NAME_SPACE, elementData, Action.UPDATE);
 
 
-    verify(elementDataUtil, times(1)).addFileContent(anyObject(),
+    verify(elementDataUtil, times(4)).addFileContent(anyObject(),
         anyObject(),
         anyObject(),
         anyObject());
@@ -139,7 +143,7 @@ public class ElementDataUtilTest {
             .toString()  , NAME_SPACE, elementData, Action.UPDATE);
 
 
-    verify(elementDataUtil, times(2)).addFileContent(anyObject(),
+    verify(elementDataUtil, times(4)).addFileContent(anyObject(),
         anyObject(),
         anyObject(),
         anyObject());
