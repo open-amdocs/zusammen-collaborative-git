@@ -17,6 +17,9 @@ before_install:
   - mvn clean install
   - popd
 
+services:
+  - cassandra
+  
 # safelist
 branches:
   only:
