@@ -34,6 +34,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -105,10 +106,10 @@ public class ItemVersionCollaborationStoreTest {
     verify(gitSourceControlDaoMock).openRepository(context,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
     verify(itemVersionCollaborationStore).createInt(context, null, "main", VERSION_ID.getValue()
-            .toString()
-        );
-    verify(itemVersionCollaborationStore).storeItemVersionData(context,null,ITEM_ID,
-        itemVersionData,Action.CREATE);
+        .toString()
+    );
+    verify(itemVersionCollaborationStore).storeItemVersionData(context, null, ITEM_ID,
+        itemVersionData, Action.CREATE);
   }
 
   @Test
@@ -120,15 +121,16 @@ public class ItemVersionCollaborationStoreTest {
     itemVersionData.setInfo(info);
     info.setName("createItemVersion");
 
-    itemVersionCollaborationStore.create(context, ITEM_ID, BASE_VERSION_ID, VERSION_ID, itemVersionData);
+    itemVersionCollaborationStore
+        .create(context, ITEM_ID, BASE_VERSION_ID, VERSION_ID, itemVersionData);
     verify(gitSourceControlDaoMock).openRepository(context,
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
     verify(itemVersionCollaborationStore).createInt(context, null, BASE_VERSION_ID.getValue()
             .toString(),
         VERSION_ID.getValue()
             .toString());
-    verify(itemVersionCollaborationStore).storeItemVersionData(context,null,ITEM_ID,
-        itemVersionData,Action.CREATE);
+    verify(itemVersionCollaborationStore).storeItemVersionData(context, null, ITEM_ID,
+        itemVersionData, Action.CREATE);
   }
 
   @Test
@@ -144,8 +146,9 @@ public class ItemVersionCollaborationStoreTest {
         "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
 
     verify(gitSourceControlDaoMock).checkoutBranch(context, null, VERSION_ID.getValue().toString());
-    verify(itemVersionCollaborationStore).storeItemVersionData(context, null, ITEM_ID,itemVersionData,
-        Action.UPDATE);
+    verify(itemVersionCollaborationStore)
+        .storeItemVersionData(context, null, ITEM_ID, itemVersionData,
+            Action.UPDATE);
 
   }
 
@@ -170,6 +173,9 @@ public class ItemVersionCollaborationStoreTest {
     doReturn(".").when(itemVersionCollaborationStore).resolveTenantPath(context,
         "/git/{tenant}/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
 
+    doReturn(true).when(gitSourceControlDaoMock)
+        .checkoutBranch(eq(context), anyObject(), eq(VERSION_ID.toString()));
+
     itemVersionCollaborationStore.sync(context, ITEM_ID, VERSION_ID);
     verify(gitSourceControlDaoMock).openRepository(context,
         ".");
@@ -180,8 +186,21 @@ public class ItemVersionCollaborationStoreTest {
   }
 
   @Test
-  public void testSyncFirstTime() throws Exception {
+  public void testSyncFirstTimeOnVersion() throws Exception {
+    doReturn(".").when(itemVersionCollaborationStore).resolveTenantPath(context,
+        "/git/{tenant}/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.getValue().toString());
 
+    itemVersionCollaborationStore.sync(context, ITEM_ID, VERSION_ID);
+    verify(gitSourceControlDaoMock).openRepository(context,
+        ".");
+
+    verify(gitSourceControlDaoMock).checkoutBranch(context, null, VERSION_ID.getValue().toString());
+    verify(gitSourceControlDaoMock).getHead(context, null);
+    verify(gitSourceControlDaoMock).sync(context, null, VERSION_ID.getValue().toString());
+  }
+
+  @Test
+  public void testSyncFirstTimeOnItem() throws Exception {
     itemVersionCollaborationStore.sync(context, ITEM_ID, VERSION_ID);
     verify(gitSourceControlDaoMock).clone(context,
         "/git/test/public\\" + ITEM_ID.toString(),

@@ -40,7 +40,7 @@ public interface GitSourceControlDao {
 
   void createBranch(SessionContext context, Git git, String baseBranch, String branch);
 
-  void checkoutBranch(SessionContext context, Git git, String branch);
+  boolean checkoutBranch(SessionContext context, Git git, String branch);
 
   Git openRepository(SessionContext context, String repositoryPath);
 

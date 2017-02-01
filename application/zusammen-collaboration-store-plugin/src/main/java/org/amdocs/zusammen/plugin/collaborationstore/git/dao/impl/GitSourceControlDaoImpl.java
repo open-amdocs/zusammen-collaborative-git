@@ -18,8 +18,8 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.dao.impl;
 
 
 import org.amdocs.zusammen.datatypes.SessionContext;
-import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.commands.RevisionDiffCommand;
+import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -37,6 +37,7 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Constants;
@@ -82,7 +83,9 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   @Override
   public void createBranch(SessionContext context, Git git, String baseBranch, String branch) {
 
-    if(baseBranch!= null) checkoutBranch(context, git, baseBranch);
+    if (baseBranch != null) {
+      checkoutBranch(context, git, baseBranch);
+    }
     //CheckoutCommand command = git.checkout();
     CreateBranchCommand command = git.branchCreate();
 
@@ -107,18 +110,23 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public void checkoutBranch(SessionContext context, Git git, String branch) {
-    if(branch == null) branch="master";
+  public boolean checkoutBranch(SessionContext context, Git git, String branch) {
+    if (branch == null) {
+      branch = "master";
+    }
     try {
       if (branch.equals(git.getRepository().getBranch())) {
-        return;
+        return true;
       }
       CheckoutCommand command = git.checkout();
       command.setName(branch);
       command.call();
+    } catch (RefNotFoundException noSuchBranch) {
+      return false;
     } catch (IOException | GitAPIException e) {
       throw new RuntimeException(e);
     }
+    return true;
   }
 
   @Override
@@ -153,9 +161,9 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   @Override
   public void delete(SessionContext context, Git git, String... files) {
 
-    if(files != null && files.length>0){
+    if (files != null && files.length > 0) {
       RmCommand command = git.rm();
-      for(String file:files){
+      for (String file : files) {
         command.addFilepattern(file);
       }
 
@@ -180,7 +188,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public void resetMerge(SessionContext context, Git git){
+  public void resetMerge(SessionContext context, Git git) {
     ResetCommand command = git.reset();
 
     try {
@@ -200,7 +208,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
 
       command.setRefSpecs(refSpec);
       Iterable<PushResult> pushResults = command.call();
-      for(PushResult result:pushResults){
+      for (PushResult result : pushResults) {
         results.add(result);
       }
     } catch (GitAPIException e) {
@@ -235,12 +243,15 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     MergeCommand command = git.merge();
     try {
       command.include(git.getRepository().findRef(branchId));
-      if(fastForwardMode != null)
+      if (fastForwardMode != null) {
         command.setFastForward(fastForwardMode);
-      if(mergeStrategy != null)
+      }
+      if (mergeStrategy != null) {
         command.setStrategy(mergeStrategy);
-      if(message!= null)
+      }
+      if (message != null) {
         command.setMessage(message);
+      }
       return command.call();
     } catch (GitAPIException | IOException e) {
       throw new RuntimeException(e);
@@ -296,7 +307,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public Status status(SessionContext context, Git git){
+  public Status status(SessionContext context, Git git) {
     try {
       return git.status().call();
     } catch (GitAPIException e) {
@@ -312,8 +323,9 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     try {
       command.from(from);
       command.to(to);
-      if(treeFilter!= null)
+      if (treeFilter != null) {
         command.filter(treeFilter);
+      }
       return command.call();
 
     } catch (GitAPIException e) {
@@ -326,7 +338,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     try {
       return git.getRepository().resolve(Constants.HEAD);
 
-    }catch (IOException e){
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -334,17 +346,17 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   @Override
   public ObjectId getRemoteHead(SessionContext context, Git git) {
     try {
-      return git.getRepository().exactRef(Constants.R_HEADS+"/"+git.getRepository().getBranch())
+      return git.getRepository().exactRef(Constants.R_HEADS + "/" + git.getRepository().getBranch())
           .getObjectId();
 
-    }catch (IOException e){
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
   public void reset(SessionContext context, Git git, ObjectId revisionId) {
-     ResetCommand command = git.reset();
+    ResetCommand command = git.reset();
     try {
       command.setRef(revisionId.getName());
       command.setMode(ResetCommand.ResetType.HARD);

@@ -188,17 +188,17 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     ObjectId oldId = null;
     if (FileUtils.exists(repositoryPath)) {
       git = dao.openRepository(context, repositoryPath);
-      dao.checkoutBranch(context, git, branch);
-      oldId = dao.getHead(context, git);
+      if (dao.checkoutBranch(context, git, branch)) {
+        oldId = dao.getHead(context, git);
+      }
       PullResult syncResult = dao.sync(context, git, branch);
-      CollaborationMergeConflict collaborationMergeConflict =
+      CollaborationMergeConflict mergeConflict =
           sourceControlUtil.handleSyncResponse(context, git, syncResult);
-      result.setConflict(collaborationMergeConflict);
+      result.setConflict(mergeConflict);
       if (syncResult != null && !syncResult.isSuccessful()) {
         ElementCollaborationStore elementCollaborationStore = new ElementCollaborationStore();
-        collaborationMergeConflict.getElementConflicts().forEach(
-            elementData -> elementCollaborationStore
-                .update(context, elementData.getLocalElement()));
+        mergeConflict.getElementConflicts().forEach(elementData ->
+            elementCollaborationStore.update(context, elementData.getLocalElement()));
 
       }
     } else {
@@ -208,7 +208,6 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
           repositoryPath, branch);
 
     }
-
 
     CollaborationMergeChange changedData = sourceControlUtil.handleMergeFileDiff(context, dao, git,
         oldId, null);
