@@ -26,7 +26,8 @@ branches:
   - master
 
 after_success:
-
+  - bash <(curl -s https://codecov.io/bash)
+  
 #Build notification messages , upun build status 
 notifications: 
   email:
