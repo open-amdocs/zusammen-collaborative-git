@@ -1,0 +1,29 @@
+language: java
+
+sudo: false
+
+script: mvn clean install
+
+jdk:
+  - oraclejdk8
+  
+before_install: 
+  - git clone https://github.com/open-amdocs/zusammen-commons.git ~/builds/open-amdocs/zusammen-commons 
+  - pushd ~/builds/open-amdocs/zusammen-commons
+  - mvn clean install
+  - popd
+  - git clone https://github.com/open-amdocs/zusammen.git ~/builds/open-amdocs/zusammen 
+  - pushd ~/builds/open-amdocs/zusammen
+  - mvn clean install
+  - popd
+
+services:
+  - cassandra
+  
+# safelist
+branches:
+  only:
+  - master
+
+after_success:
+
