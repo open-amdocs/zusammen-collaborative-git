@@ -26,4 +26,3 @@ branches:
   - master
 
 after_success:
-
