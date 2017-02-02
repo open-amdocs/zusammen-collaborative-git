@@ -27,7 +27,6 @@ branches:
 
 after_success:
 
-
 #Build notification messages , upun build status 
 notifications: 
   email:
