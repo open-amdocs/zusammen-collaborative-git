@@ -29,14 +29,16 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class ElementDataUtilTest {
+  private static final String PRIVATE_PATH = "/git/test/private" + File.separator
+      + "users" + File.separator + "COLLABORATION_TEST" + File.separator;
 
   //@Spy
   private ElementDataUtil elementDataUtil;
@@ -71,15 +73,15 @@ public class ElementDataUtilTest {
     /*Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-   when(elementDataUtil.getSubElementIds(context, null,"/git/test/private\\users\\COLLABORATION_TEST\\"+ITEM_ID
+   when(elementDataUtil.getSubElementIds(context, null,PRIVATE_PATH+ITEM_ID
         .toString()+"\\"+NAME_SPACE)).thenReturn(null);
 
     when(elementDataUtil
-        .uploadElementInfo(context, null, "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
+        .uploadElementInfo(context, null, PRIVATE_PATH + ITEM_ID
             .toString() + "\\" + NAME_SPACE)).thenReturn(new ElementInfo(new Id()));
 
     elementDataUtil
-        .uploadElementData(context, null, "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
+        .uploadElementData(context, null, PRIVATE_PATH + ITEM_ID
             .toString() + "\\" + NAME_SPACE);
 
     verify(elementDataUtil, times(1)).getFileContent(anyObject(), anyObject(), anyObject(),
@@ -95,7 +97,7 @@ public class ElementDataUtilTest {
     namespace.setValue(NAME_SPACE);
 
     elementDataUtil.uploadElementInfo(context,null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\"+ITEM_ID
+        PRIVATE_PATH+ITEM_ID
         .toString()+"\\"+NAME_SPACE);
 
     verify(elementDataUtil,times(1)).getFileContent(anyObject(),anyObject(),anyObject(),
@@ -115,8 +117,8 @@ public class ElementDataUtilTest {
     elementData.setData(new ByteArrayInputStream("testUpdateElementData()".getBytes()));
 
     elementDataUtil
-        .updateElementData(null, "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
-            .toString()  , NAME_SPACE, elementData, Action.UPDATE);
+        .updateElementData(null, PRIVATE_PATH + ITEM_ID
+            .toString(), NAME_SPACE, elementData, Action.UPDATE);
 
 
     verify(elementDataUtil, times(4)).addFileContent(anyObject(),
@@ -139,8 +141,8 @@ public class ElementDataUtilTest {
     info.setDescription("testUpdateElementDataContainDataAndInfo");
     elementData.setInfo(info);
     elementDataUtil
-        .updateElementData(null, "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID
-            .toString()  , NAME_SPACE, elementData, Action.UPDATE);
+        .updateElementData(null, PRIVATE_PATH + ITEM_ID
+            .toString(), NAME_SPACE, elementData, Action.UPDATE);
 
 
     verify(elementDataUtil, times(4)).addFileContent(anyObject(),

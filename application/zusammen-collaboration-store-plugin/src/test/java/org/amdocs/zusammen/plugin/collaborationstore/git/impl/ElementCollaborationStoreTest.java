@@ -38,11 +38,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ElementCollaborationStoreTest {
-
+  private static final String PRIVATE_PATH = "/git/test/private" + File.separator
+      + "users" + File.separator + "COLLABORATION_TEST" + File.separator;
 
   @Spy
-  private ElementCollaborationStore elementCollaborationStore;//
-  // = spy(new ItemVersionCollaborationStore());
+  private ElementCollaborationStore elementCollaborationStore;
   @Mock
   private GitSourceControlDao gitSourceControlDaoMock;
   @Mock
@@ -57,10 +57,7 @@ public class ElementCollaborationStoreTest {
 
   @BeforeMethod
   public void init() {
-
     MockitoAnnotations.initMocks(this);
-
-
     Mockito.doNothing().when(elementCollaborationStore).addFileContent(anyObject(), anyObject(),
         anyObject(),
         anyObject(),
@@ -68,7 +65,7 @@ public class ElementCollaborationStoreTest {
         anyObject());
 
     Mockito.doNothing().when(elementCollaborationStore).updateElementData(anyObject(), anyObject()
-        , anyObject(), anyObject(), anyObject(),anyObject() );
+        , anyObject(), anyObject(), anyObject(), anyObject());
 
     when(elementCollaborationStore.getSourceControlDao(anyObject())).thenReturn
         (gitSourceControlDaoMock);
@@ -98,12 +95,11 @@ public class ElementCollaborationStoreTest {
     elementCollaborationStore.create(context, elementData);
 
     verify(gitSourceControlDaoMock).openRepository(context,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString());
+        PRIVATE_PATH + ITEM_ID.toString());
 
-    verify(elementCollaborationStore).updateElementData(context, null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() , NAME_SPACE+File
-            .separator+ELEMENT_ID,
-        elementData, Action.CREATE);
+    verify(elementCollaborationStore)
+        .updateElementData(context, null, PRIVATE_PATH + ITEM_ID.toString(),
+            NAME_SPACE + File.separator + ELEMENT_ID, elementData, Action.CREATE);
 
   }
 
@@ -119,12 +115,12 @@ public class ElementCollaborationStoreTest {
     elementCollaborationStore.update(context, elementData);
 
     verify(gitSourceControlDaoMock).openRepository(context,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString());
+        PRIVATE_PATH + ITEM_ID.toString());
 
-    verify(elementCollaborationStore).updateElementData(context, null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() , NAME_SPACE+File
-            .separator+ELEMENT_ID,
-        elementData, Action.UPDATE);
+    verify(elementCollaborationStore)
+        .updateElementData(context, null, PRIVATE_PATH + ITEM_ID.toString(),
+            NAME_SPACE + File.separator + ELEMENT_ID,
+            elementData, Action.UPDATE);
   }
 
   @Test
@@ -137,12 +133,11 @@ public class ElementCollaborationStoreTest {
     elementCollaborationStore.delete(context, elementData);
 
     verify(gitSourceControlDaoMock).openRepository(context,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString());
+        PRIVATE_PATH + ITEM_ID.toString());
 
-    verify(gitSourceControlDaoMock).delete(context,
-        null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\" + ITEM_ID.toString() + "\\" + NAME_SPACE +
-            "\\" + ELEMENT_ID);
+    verify(gitSourceControlDaoMock).delete(context, null,
+        PRIVATE_PATH + ITEM_ID.toString() + File.separator + NAME_SPACE + File.separator +
+            ELEMENT_ID);
   }
 
   @Test

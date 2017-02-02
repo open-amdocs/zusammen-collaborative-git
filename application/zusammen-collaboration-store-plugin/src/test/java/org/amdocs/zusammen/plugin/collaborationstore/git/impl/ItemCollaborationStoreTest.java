@@ -21,15 +21,14 @@ import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
-import org.amdocs.zusammen.sdk.types.ElementData;
-import org.eclipse.jgit.api.Git;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static org.mockito.Matchers.any;
+import java.io.File;
+
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -37,6 +36,10 @@ import static org.mockito.Mockito.when;
 
 public class ItemCollaborationStoreTest {
 
+  private static final String BP_PATH = "/git/test/public/BP";
+  private static final String PUBLIC_PATH = "/git/test/public" + File.separator;
+  private static final String PRIVATE_PATH_USER = "/git/test/private" + File.separator + "users"
+      + File.separator + "COLLABORATION_TEST" + File.separator;
   private final ItemCollaborationStore itemCollaborationStore = spy(new ItemCollaborationStore());
   @Mock
   private GitSourceControlDao gitSourceControlDaoMock;
@@ -49,7 +52,7 @@ public class ItemCollaborationStoreTest {
     MockitoAnnotations.initMocks(this);
 
 
-    Mockito.doNothing().when(itemCollaborationStore).addFileContent(anyObject(),anyObject(),
+    Mockito.doNothing().when(itemCollaborationStore).addFileContent(anyObject(), anyObject(),
         anyObject(),
         anyObject(),
         anyObject(),
@@ -58,10 +61,10 @@ public class ItemCollaborationStoreTest {
     when(itemCollaborationStore.getSourceControlDao(anyObject())).thenReturn
         (gitSourceControlDaoMock);
     when(gitSourceControlDaoMock.clone
-        (anyObject(),anyObject(),anyObject(),anyObject())).thenReturn(null);
+        (anyObject(), anyObject(), anyObject(), anyObject())).thenReturn(null);
 
     when(gitSourceControlDaoMock.clone
-        (anyObject(),anyObject(),anyObject())).thenReturn(null);
+        (anyObject(), anyObject(), anyObject())).thenReturn(null);
   }
 
   @Test
@@ -73,20 +76,18 @@ public class ItemCollaborationStoreTest {
     itemCollaborationStore.create(context, ITEM_ID, info);
 
     verify(itemCollaborationStore.getSourceControlDao(context)).clone(context,
-        "/git/test/public/BP",
-        "/git/test/public\\" + ITEM_ID.toString(), "main");
+        BP_PATH,
+        PUBLIC_PATH + ITEM_ID.toString(), "main");
 
 
-    verify(itemCollaborationStore).addFileContent(context,null,
-        "/git/test/private\\users\\COLLABORATION_TEST\\"+ITEM_ID.getValue().toString(),
-        null,
-        "info.json",
-        info);
+    verify(itemCollaborationStore)
+        .addFileContent(context, null, PRIVATE_PATH_USER + ITEM_ID.getValue(), null,
+            "info.json", info);
   }
 
   @Test
   public void testDelete() throws Exception {
-      //todo - method not implemented
+    //todo - method not implemented
   }
 
 }
