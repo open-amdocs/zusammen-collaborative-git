@@ -44,13 +44,13 @@
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <scope>test</scope>
-            <version>${testng.version}</version>
+            <version>6.9.10</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
-            <version>${mockito.version}</version>
+            <version>1.10.19</version>
         </dependency>
     </dependencies>
     
