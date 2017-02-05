@@ -16,15 +16,20 @@
 
 package org.amdocs.zusammen.plugin.collaborationstore.git.impl;
 
+import javafx.scene.control.TextFormatter;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.datatypes.item.ItemVersionData;
+import org.amdocs.zusammen.datatypes.itemversion.Change;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.util.SourceControlUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
 import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -34,10 +39,13 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,13 +61,17 @@ public class ItemVersionCollaborationStoreTest {
   private static final String PRIVATE_PATH_TENANT_USER =
       "/git/{tenant}/private" + File.separator + "users" + File.separator + context.getUser().getUserName() + File.separator;
 
+
   @Spy
   private SourceControlUtil sourceControlUtil;
   @Mock
   private GitSourceControlDao gitSourceControlDaoMock;
+
   @Spy
   @InjectMocks
   private ItemVersionCollaborationStore itemVersionCollaborationStore;
+
+
 
   private static final Id ITEM_ID = new Id();
   private static final Id VERSION_ID = new Id();
@@ -84,6 +96,7 @@ public class ItemVersionCollaborationStoreTest {
     when(gitSourceControlDaoMock.openRepository(anyObject(), anyObject())).thenReturn(null);
     when(gitSourceControlDaoMock.getHead(anyObject(), anyObject())).thenReturn(null);
     when(gitSourceControlDaoMock.clone(anyObject(), anyObject(), anyObject())).thenReturn(null);
+
   }
 
   @Test
@@ -201,4 +214,32 @@ public class ItemVersionCollaborationStoreTest {
     verify(gitSourceControlDaoMock).merge(context, null, BASE_VERSION_ID.toString(),
         MergeCommand.FastForwardMode.FF, null, null);
   }
+
+  @Test
+  public void testListHistory(){
+
+
+    Collection<RevCommit> revCommits = new ArrayList<>();
+
+    RevCommit revCommit1 = Mockito.mock(RevCommit.class);
+    RevCommit revCommit2 = Mockito.mock(RevCommit.class);
+    revCommits.add(revCommit1);
+    revCommits.add(revCommit2);
+    when(gitSourceControlDaoMock.listHistory(anyObject(),anyObject())).thenReturn(revCommits);
+
+    Change change = new Change();
+    Mockito.doReturn(change).when(itemVersionCollaborationStore).getChange(anyObject());
+
+    itemVersionCollaborationStore.listHistory(context,ITEM_ID,VERSION_ID);
+    verify(gitSourceControlDaoMock).listHistory(context,null);
+  }
+
+  @Test
+  public void testResetHistory(){
+    Mockito.doNothing().when(gitSourceControlDaoMock).revert(context,null,ObjectId
+        .zeroId());
+    itemVersionCollaborationStore.resetHistory(context,ITEM_ID,VERSION_ID,new Id(ObjectId.zeroId
+        ().getName()));
+  }
+
 }

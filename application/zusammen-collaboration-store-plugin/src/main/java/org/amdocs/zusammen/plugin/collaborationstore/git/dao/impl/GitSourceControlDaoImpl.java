@@ -28,6 +28,7 @@ import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullCommand;
@@ -40,13 +41,19 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 import java.io.File;
@@ -86,22 +93,13 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     if (baseBranch != null) {
       checkoutBranch(context, git, baseBranch);
     }
-    //CheckoutCommand command = git.checkout();
     CreateBranchCommand command = git.branchCreate();
 
     try {
-      //command.setCreateBranch(true);
+
       command.setName(branch);
       command.call();
-/*
-      StoredConfig config = git.getRepository().getConfig();
-      config.setString( CONFIG_BRANCH_SECTION, branch, baseBranch, baseBranch );
-      config.setString( CONFIG_BRANCH_SECTION, "branch", "merge",
-          "refs/heads/"+baseBranch );
-*/
-      /*config.setString( CONFIG_REMOTE_SECTION, baseBranch, "url", git.getRepository().get );
-      config.setString( CONFIG_REMOTE_SECTION, "remote-alias-name", "fetch", "ref-spec" );
-      config.update();*/
+
     } catch (GitAPIException /*| IOException*/ e) {
       throw new RuntimeException(e);
     }
@@ -181,6 +179,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
 
     try {
       command.setMessage(message);
+      command.setAuthor(context.getUser().getUserName(),"zusammen@amdocs.com");
       return command.call();
     } catch (GitAPIException e) {
       throw new RuntimeException(e);
@@ -280,10 +279,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   @Override
   public PullResult inComing(SessionContext context, Git git, String branch) {
     PullCommand command = git.pull();
-    FetchCommand fetchCommand = git.fetch();
-    PushCommand pushCommand = git.push();
-    //fetchCommand.setRemote("origin").setDryRun(true).call().getTrackingRefUpdate(git
-    //    .getRepository().getBranch()).getResult().
+
     try {
       command.setRemoteBranchName(branch);
       return command.call();
@@ -355,7 +351,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public void reset(SessionContext context, Git git, ObjectId revisionId) {
+  public void revert(SessionContext context, Git git, ObjectId revisionId) {
     ResetCommand command = git.reset();
     try {
       command.setRef(revisionId.getName());
@@ -367,5 +363,39 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
 
   }
 
+  @Override
+  public Collection<String> getBranchFileList(SessionContext context, Git git, String branch) {
 
+    Collection<String> files = new ArrayList<>();
+
+    try {
+      RevWalk walk = new RevWalk(git.getRepository());
+      Ref head = git.getRepository().getRef("HEAD");
+      RevCommit commit = walk.parseCommit(head.getObjectId());
+      RevTree tree = commit.getTree();
+
+      TreeWalk treeWalk = new TreeWalk(git.getRepository());
+
+      treeWalk.addTree(tree);
+      treeWalk.setRecursive(true);
+      while (treeWalk.next()) {
+
+        files.add(treeWalk.getPathString());
+      }
+      return files;
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public Iterable<RevCommit> listHistory(SessionContext context, Git git) {
+    LogCommand command = git.log();
+    try {
+      return command.call();
+    } catch (GitAPIException  e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

@@ -22,7 +22,7 @@ import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
-import org.amdocs.zusammen.sdk.types.ElementData;
+import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElement;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -36,12 +36,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class ElementDataUtilTest {
+public class ElementUtilTest {
   private static final String PRIVATE_PATH = "/git/test/private" + File.separator
       + "users" + File.separator + "COLLABORATION_TEST" + File.separator;
 
   //@Spy
-  private ElementDataUtil elementDataUtil;
+  private ElementUtil elementUtil;
   // = spy(new ItemVersionCollaborationStore());
   private static final Id ITEM_ID = new Id();
   private static final Id VERSION_ID = new Id();
@@ -55,36 +55,36 @@ public class ElementDataUtilTest {
   public void init() {
 
     MockitoAnnotations.initMocks(this);
-    elementDataUtil = spy(new ElementDataUtil());
-    Mockito.doNothing().when(elementDataUtil).addFileContent(
+    elementUtil = spy(new ElementUtil());
+    Mockito.doNothing().when(elementUtil).addFileContent(
         anyObject(),
         anyObject(),
         anyObject(),
         anyObject());
 
-    Mockito.doReturn(null).when(elementDataUtil).getRepositoryPath(anyObject());
+    Mockito.doReturn(null).when(elementUtil).getRepositoryPath(anyObject());
 
-    /*Mockito.doNothing().when(elementDataUtil).getSubElementIds(anyObject(), anyObject(),
+    /*Mockito.doNothing().when(elementUtil).getSubElementIds(anyObject(), anyObject(),
         anyObject());*/
   }
 
   @Test
-  public void testUploadElementData() throws Exception {
+  public void testUploadCollaborationElement() throws Exception {
     /*Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-   when(elementDataUtil.getSubElementIds(context, null,PRIVATE_PATH+ITEM_ID
+   when(elementUtil.getSubElementIds(context, null,PRIVATE_PATH+ITEM_ID
         .toString()+"\\"+NAME_SPACE)).thenReturn(null);
 
-    when(elementDataUtil
+    when(elementUtil
         .uploadElementInfo(context, null, PRIVATE_PATH + ITEM_ID
             .toString() + "\\" + NAME_SPACE)).thenReturn(new ElementInfo(new Id()));
 
-    elementDataUtil
-        .uploadElementData(context, null, PRIVATE_PATH + ITEM_ID
+    elementUtil
+        .uploadCollaborationElement(context, null, PRIVATE_PATH + ITEM_ID
             .toString() + "\\" + NAME_SPACE);
 
-    verify(elementDataUtil, times(1)).getFileContent(anyObject(), anyObject(), anyObject(),
+    verify(elementUtil, times(1)).getFileContent(anyObject(), anyObject(), anyObject(),
         anyObject());
 */
   }
@@ -96,32 +96,33 @@ public class ElementDataUtilTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-    elementDataUtil.uploadElementInfo(context,null,
+    elementUtil.uploadElementInfo(context,null,
         PRIVATE_PATH+ITEM_ID
         .toString()+"\\"+NAME_SPACE);
 
-    verify(elementDataUtil,times(1)).getFileContent(anyObject(),anyObject(),anyObject(),
+    verify(elementUtil,times(1)).getFileContent(anyObject(),anyObject(),anyObject(),
         anyObject());
 */
 
   }
 
   @Test
-  public void testUpdateElementDataContainData() throws Exception {
+  public void testUpdateCollaborationElementContainData() throws Exception {
 
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-    ElementData elementData = new ElementData(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
+    CollaborationElement element =
+        new CollaborationElement(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
 
-    elementData.setData(new ByteArrayInputStream("testUpdateElementData()".getBytes()));
+    element.setData(new ByteArrayInputStream("testUpdateCollaborationElement()".getBytes()));
 
-    elementDataUtil
-        .updateElementData(null, PRIVATE_PATH + ITEM_ID
-            .toString(), NAME_SPACE, elementData, Action.UPDATE);
+    elementUtil
+        .updateCollaborationElement(null, PRIVATE_PATH + ITEM_ID
+            .toString(), NAME_SPACE, element, Action.UPDATE);
 
 
-    verify(elementDataUtil, times(4)).addFileContent(anyObject(),
+    verify(elementUtil, times(4)).addFileContent(anyObject(),
         anyObject(),
         anyObject(),
         anyObject());
@@ -129,23 +130,24 @@ public class ElementDataUtilTest {
   }
 
   @Test
-  public void testUpdateElementDataContainDataAndInfo() throws Exception {
+  public void testUpdateCollaborationElementContainDataAndInfo() throws Exception {
 
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-    ElementData elementData = new ElementData(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
+    CollaborationElement element =
+        new CollaborationElement(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
 
-    elementData.setData(new ByteArrayInputStream("testUpdateElementData()".getBytes()));
+    element.setData(new ByteArrayInputStream("testUpdateCollaborationElement()".getBytes()));
     Info info = new Info();
-    info.setDescription("testUpdateElementDataContainDataAndInfo");
-    elementData.setInfo(info);
-    elementDataUtil
-        .updateElementData(null, PRIVATE_PATH + ITEM_ID
-            .toString(), NAME_SPACE, elementData, Action.UPDATE);
+    info.setDescription("testUpdateCollaborationElementContainDataAndInfo");
+    element.setInfo(info);
+    elementUtil
+        .updateCollaborationElement(null, PRIVATE_PATH + ITEM_ID
+            .toString(), NAME_SPACE, element, Action.UPDATE);
 
 
-    verify(elementDataUtil, times(4)).addFileContent(anyObject(),
+    verify(elementUtil, times(4)).addFileContent(anyObject(),
         anyObject(),
         anyObject(),
         anyObject());

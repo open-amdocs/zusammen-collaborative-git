@@ -23,71 +23,71 @@ import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.ElementContext;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
-import org.amdocs.zusammen.sdk.types.ElementData;
+import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElement;
 import org.eclipse.jgit.api.Git;
 
 import java.io.File;
 
 public class ElementCollaborationStore extends CollaborationStore {
 
-  public void create(SessionContext context, ElementData elementData) {
+  public void create(SessionContext context, CollaborationElement element) {
     String repositoryPath =
         sourceControlUtil.getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH,
-            elementData.getItemId());
+            element.getItemId());
     repositoryPath = resolveTenantPath(context, repositoryPath);
     GitSourceControlDao dao = getSourceControlDao(context);
     Git git = dao.openRepository(context, repositoryPath);
-    dao.checkoutBranch(context, git, elementData.getVersionId().toString());
+    dao.checkoutBranch(context, git, element.getVersionId().toString());
     String elementPath =
-        sourceControlUtil.getElementRelativePath(elementData.getNamespace(), elementData.getId());
+        sourceControlUtil.getElementRelativePath(element.getNamespace(), element.getId());
     String fullPath = repositoryPath + File.separator + elementPath;
 
 
     File elementPathFile = new File(fullPath);
     elementPathFile.mkdirs();
 
-    updateElementData(context, git, repositoryPath, elementPath, elementData, Action.CREATE);
+    updateCollaborationElement(context, git, repositoryPath, elementPath, element, Action.CREATE);
     dao.add(context, git, ".");
     dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
     //return new CollaborationNamespace(elementPath);
   }
 
-  public void update(SessionContext context, ElementData elementData) {
+  public void update(SessionContext context, CollaborationElement element) {
     GitSourceControlDao dao = getSourceControlDao(context);
     String repositoryPath = sourceControlUtil.getPrivateRepositoryPath(context,
         PluginConstants.PRIVATE_PATH.replace(PluginConstants.TENANT, context.getTenant()),
-        elementData.getItemId());
+        element.getItemId());
     String elementPath =
-        sourceControlUtil.getElementRelativePath(elementData.getNamespace(), elementData.getId());
+        sourceControlUtil.getElementRelativePath(element.getNamespace(), element.getId());
     /*String fullPath = repositoryPath + File.separator +
-        sourceControlUtil.getElementRelativePath(elementData.getNamespace(), elementData.getId());*/
+        sourceControlUtil.getElementRelativePath(element.getNamespace(), element.getId());*/
     Git git = dao.openRepository(context, repositoryPath);
-    dao.checkoutBranch(context, git, elementData.getVersionId().toString());
-    updateElementData(context, git, repositoryPath, elementPath, elementData, Action.UPDATE);
+    dao.checkoutBranch(context, git, element.getVersionId().toString());
+    updateCollaborationElement(context, git, repositoryPath, elementPath, element, Action.UPDATE);
     dao.add(context, git, ".");
     dao.commit(context, git, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
   }
 
-  public void delete(SessionContext context, ElementData elementData) {
+  public void delete(SessionContext context, CollaborationElement element) {
     GitSourceControlDao dao = getSourceControlDao(context);
     String repositoryPath =
         sourceControlUtil
             .getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH,
-                elementData.getItemId());
+                element.getItemId());
     repositoryPath = resolveTenantPath(context, repositoryPath);
     String fullPath = repositoryPath + File.separator +
-        sourceControlUtil.getElementRelativePath(elementData.getNamespace(), elementData.getId());
+        sourceControlUtil.getElementRelativePath(element.getNamespace(), element.getId());
     Git git = dao.openRepository(context, repositoryPath);
-    dao.checkoutBranch(context, git, elementData.getVersionId().toString());
+    dao.checkoutBranch(context, git, element.getVersionId().toString());
     dao.delete(context, git, fullPath);
     dao.commit(context, git, PluginConstants.DELETE_ITEM_VERSION_MESSAGE);
     dao.close(context, git);
   }
 
-  public ElementData get(SessionContext context, ElementContext elementContext,
-                         Namespace namespace, Id elementId) {
+  public CollaborationElement get(SessionContext context, ElementContext elementContext,
+                                  Namespace namespace, Id elementId) {
     GitSourceControlDao dao = getSourceControlDao(context);
     Git git;
 
@@ -100,7 +100,7 @@ public class ElementCollaborationStore extends CollaborationStore {
     git = dao.openRepository(context, repositoryPath);
     try {
       dao.checkoutBranch(context, git, elementContext.getVersionId().toString());
-      return uploadElementData(context, git, elementPath, elementId);
+      return uploadCollaborationElement(context, git, elementPath, elementId);
     } finally {
       if (git != null) {
         dao.close(context, git);
@@ -109,16 +109,17 @@ public class ElementCollaborationStore extends CollaborationStore {
 
   }
 
-  protected void updateElementData(SessionContext context, Git git,
-                                   String basePath,
-                                   String relativePath,
-                                   ElementData elementData, Action action) {
-    elementDataUtil.updateElementData(git, basePath, relativePath, elementData, action);
+  protected void updateCollaborationElement(SessionContext context, Git git,
+                                            String basePath,
+                                            String relativePath,
+                                            CollaborationElement element, Action action) {
+    elementUtil.updateCollaborationElement(git, basePath, relativePath, element, action);
   }
 
-  protected ElementData uploadElementData(SessionContext context, Git git, String elementPath,
-                                          Id elementId) {
-    return elementDataUtil.uploadElementData(git, elementPath, elementId.toString());
+  protected CollaborationElement uploadCollaborationElement(SessionContext context, Git git,
+                                                            String elementPath,
+                                                            Id elementId) {
+    return elementUtil.uploadCollaborationElement(git, elementPath, elementId.toString());
 
   }
 

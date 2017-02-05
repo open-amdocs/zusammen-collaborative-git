@@ -25,7 +25,7 @@ import org.amdocs.zusammen.datatypes.item.ItemVersion;
 import org.amdocs.zusammen.datatypes.item.ItemVersionData;
 import org.amdocs.zusammen.datatypes.item.Relation;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
-import org.amdocs.zusammen.sdk.types.ElementData;
+import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElement;
 import org.amdocs.zusammen.utils.fileutils.FileUtils;
 import org.amdocs.zusammen.utils.fileutils.json.JsonUtil;
 import org.eclipse.jgit.api.Git;
@@ -42,50 +42,60 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
-public class ElementDataUtil {
+public class ElementUtil {
 
   private static final String EMPTY_FILE = "";
 
 
-  public ElementData initElementData(Git git, String elementPath, String elementId) {
-    ElementData elementData;
+  public CollaborationElement initCollaborationElement(Git git, String elementPath,
+                                                       String elementId) {
     Namespace namespace = getNamespaceFromElementPath(elementPath, elementId);
+
+    CollaborationElement element = createCollaborationElement(git, namespace, elementId);
+    element.setParentId(namespace.getParentElementId());
+    return element;
+  }
+
+  protected CollaborationElement createCollaborationElement(Git git, Namespace namespace,
+                                                            String elementId) {
     try {
-      elementData = new ElementData(new Id((new File(getRepositoryPath(git))).getName()), new Id(git
+      return new CollaborationElement(new Id((new File(getRepositoryPath(git)))
+          .getName()), new Id(git
           .getRepository().getBranch()), namespace, new Id(elementId));
+
     } catch (IOException e) {
       throw new RuntimeException(e);
+
     }
-    elementData.setParentId(namespace.getParentElementId());
-    return elementData;
   }
 
-  public ElementData uploadElementData(Git git, String elementPath, String elementId) {
-    ElementData elementData = initElementData(git, elementPath, elementId);
-    populateElementContent(elementData, getRepositoryPath(git) + File.separator + elementPath);
-    return elementData;
+  public CollaborationElement uploadCollaborationElement(Git git, String elementPath,
+                                                         String elementId) {
+    CollaborationElement element = initCollaborationElement(git, elementPath, elementId);
+    populateElementContent(element, getRepositoryPath(git) + File.separator + elementPath);
+    return element;
   }
 
-  private void populateElementContent(ElementData elementData, String elementPath) {
+  private void populateElementContent(CollaborationElement element, String elementPath) {
     getFileContentAsInputStream(elementPath, PluginConstants.INFO_FILE_NAME).map(fileContent ->
         JsonUtil.json2Object(fileContent, Info.class))
-        .ifPresent(elementData::setInfo);
+        .ifPresent(element::setInfo);
 
     getFileContentAsInputStream(elementPath, PluginConstants.RELATIONS_FILE_NAME)
         .map(fileContent ->
             (ArrayList<Relation>) JsonUtil
                 .json2Object(fileContent, new TypeToken<ArrayList<Relation>>() {
                 }.getType()))
-        .ifPresent(elementData::setRelations);
+        .ifPresent(element::setRelations);
 
     consumeFileContentAsInputStream(elementPath, PluginConstants.VISUALIZATION_FILE_NAME,
-        elementData::setVisualization);
+        element::setVisualization);
     consumeFileContentAsInputStream(elementPath, PluginConstants.DATA_FILE_NAME,
-        elementData::setData);
+        element::setData);
     consumeFileContentAsInputStream(elementPath, PluginConstants.SEARCH_DATA_FILE_NAME,
-        elementData::setSearchableData);
+        element::setSearchableData);
 
-    elementData.setSubElements(
+    element.setSubElements(
         getSubElementIds(elementPath).stream().map(Id::new).collect(Collectors.toSet()));
   }
 
@@ -135,31 +145,32 @@ public class ElementDataUtil {
     return namespace;
   }
 
-  public void updateElementData(Git git, String basePath, String relativePath,
-                                ElementData elementData, Action action) {
+  public void updateCollaborationElement(Git git, String basePath, String relativePath,
+                                         CollaborationElement element, Action action) {
     if (action.equals(Action.CREATE)) {
       addFileContent(getRepositoryPath(git), relativePath,
           PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME, EMPTY_FILE);
     }
 
-    if (elementData.getId().getValue().equals(Id.ZERO.getValue())) {
-      updateItemVersionDataFromElementData(basePath, elementData);
+    if (element.getId().getValue().equals(Id.ZERO.getValue())) {
+      updateItemVersionDataFromCollaborationElement(basePath, element);
     }
 
-    addFileContent(basePath, relativePath, PluginConstants.INFO_FILE_NAME, elementData.getInfo());
-    if (elementData.getRelations() != null && elementData.getRelations().size() > 0) {
+    addFileContent(basePath, relativePath, PluginConstants.INFO_FILE_NAME, element.getInfo());
+    if (element.getRelations() != null && element.getRelations().size() > 0) {
       addFileContent(basePath, relativePath, PluginConstants.RELATIONS_FILE_NAME,
-          elementData.getRelations());
+          element.getRelations());
     }
     addFileContent(getRepositoryPath(git), relativePath, PluginConstants.VISUALIZATION_FILE_NAME,
-        elementData.getVisualization());
-    addFileContent(basePath, relativePath, PluginConstants.DATA_FILE_NAME, elementData.getData());
+        element.getVisualization());
+    addFileContent(basePath, relativePath, PluginConstants.DATA_FILE_NAME, element.getData());
     addFileContent(basePath, relativePath, PluginConstants.SEARCH_DATA_FILE_NAME,
-        elementData.getSearchableData());
+        element.getSearchableData());
   }
 
-  private void updateItemVersionDataFromElementData(String basePath, ElementData elementData) {
-    Info info = elementData.getInfo();
+  private void updateItemVersionDataFromCollaborationElement(String basePath,
+                                                             CollaborationElement element) {
+    Info info = element.getInfo();
     if (info != null) {
       addFileContent(basePath, null, PluginConstants.ITEM_VERSION_INFO_FILE_NAME, info);
     }

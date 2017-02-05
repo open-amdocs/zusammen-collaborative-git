@@ -23,9 +23,9 @@ import org.amdocs.zusammen.plugin.collaborationstore.git.types.LocalRemoteDataCo
 
 public class GitConflictFileSplitter {
 
-  private static final String HEADER_END = "<<<<<<<";
-  private static final String TRAILER_START = ">>>>>>>";
-  private static final String SWITCH_FILE = "=======";
+  protected static final String HEADER_END = "<<<<<<<";
+  protected static final String TRAILER_START = ">>>>>>>";
+  protected static final String SWITCH_FILE = "=======";
 
   public static LocalRemoteDataConflict splitMergedFile(byte[] mergedFile) {
     LocalRemoteDataConflict localRemoteDataConflict = new LocalRemoteDataConflict();

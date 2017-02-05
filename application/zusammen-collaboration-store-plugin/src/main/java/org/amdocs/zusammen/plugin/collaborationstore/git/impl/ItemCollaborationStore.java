@@ -22,7 +22,7 @@ import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
-import org.amdocs.zusammen.sdk.utils.SdkConstants;
+import org.amdocs.zusammen.sdk.SdkConstants;
 import org.eclipse.jgit.api.Git;
 
 import java.io.File;

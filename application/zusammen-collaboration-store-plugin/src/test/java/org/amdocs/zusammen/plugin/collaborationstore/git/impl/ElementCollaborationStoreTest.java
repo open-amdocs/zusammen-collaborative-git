@@ -23,7 +23,7 @@ import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.util.SourceControlUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
-import org.amdocs.zusammen.sdk.types.ElementData;
+import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElement;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -64,8 +64,9 @@ public class ElementCollaborationStoreTest {
         anyObject(),
         anyObject());
 
-    Mockito.doNothing().when(elementCollaborationStore).updateElementData(anyObject(), anyObject()
-        , anyObject(), anyObject(), anyObject(), anyObject());
+    Mockito.doNothing().when(elementCollaborationStore)
+        .updateCollaborationElement(anyObject(), anyObject()
+            , anyObject(), anyObject(), anyObject(), anyObject());
 
     when(elementCollaborationStore.getSourceControlDao(anyObject())).thenReturn
         (gitSourceControlDaoMock);
@@ -90,16 +91,16 @@ public class ElementCollaborationStoreTest {
 
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
-    ElementData elementData =
-        new ElementData(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
-    elementCollaborationStore.create(context, elementData);
+    CollaborationElement element =
+        new CollaborationElement(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
+    elementCollaborationStore.create(context, element);
 
     verify(gitSourceControlDaoMock).openRepository(context,
         PRIVATE_PATH + ITEM_ID.toString());
 
     verify(elementCollaborationStore)
-        .updateElementData(context, null, PRIVATE_PATH + ITEM_ID.toString(),
-            NAME_SPACE + File.separator + ELEMENT_ID, elementData, Action.CREATE);
+        .updateCollaborationElement(context, null, PRIVATE_PATH + ITEM_ID.toString(),
+            NAME_SPACE + File.separator + ELEMENT_ID, element, Action.CREATE);
 
   }
 
@@ -108,19 +109,19 @@ public class ElementCollaborationStoreTest {
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
 
-    ElementData elementData =
-        new ElementData(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
+    CollaborationElement element =
+        new CollaborationElement(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
 
 
-    elementCollaborationStore.update(context, elementData);
+    elementCollaborationStore.update(context, element);
 
     verify(gitSourceControlDaoMock).openRepository(context,
         PRIVATE_PATH + ITEM_ID.toString());
 
     verify(elementCollaborationStore)
-        .updateElementData(context, null, PRIVATE_PATH + ITEM_ID.toString(),
+        .updateCollaborationElement(context, null, PRIVATE_PATH + ITEM_ID.toString(),
             NAME_SPACE + File.separator + ELEMENT_ID,
-            elementData, Action.UPDATE);
+            element, Action.UPDATE);
   }
 
   @Test
@@ -128,9 +129,9 @@ public class ElementCollaborationStoreTest {
 
     Namespace namespace = new Namespace();
     namespace.setValue(NAME_SPACE);
-    ElementData elementData =
-        new ElementData(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
-    elementCollaborationStore.delete(context, elementData);
+    CollaborationElement element =
+        new CollaborationElement(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
+    elementCollaborationStore.delete(context, element);
 
     verify(gitSourceControlDaoMock).openRepository(context,
         PRIVATE_PATH + ITEM_ID.toString());

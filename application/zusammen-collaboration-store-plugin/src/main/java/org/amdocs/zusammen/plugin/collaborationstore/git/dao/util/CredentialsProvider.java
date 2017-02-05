@@ -18,7 +18,7 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.dao.util;
 
 import org.amdocs.zusammen.commons.configuration.impl.ConfigurationAccessor;
 import org.amdocs.zusammen.datatypes.SessionContext;
-import org.amdocs.zusammen.sdk.utils.SdkConstants;
+import org.amdocs.zusammen.sdk.SdkConstants;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
 import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.URIish;
@@ -46,7 +46,7 @@ public class CredentialsProvider {
               .getPluginProperty(SdkConstants.ZUSAMMEN_COLLABORATIVE_STORE,
                   GIT_USERNAME);
 
-          private final String password = ConfigurationAccessor.getPluginProperty( SdkConstants
+          private final String password = ConfigurationAccessor.getPluginProperty(SdkConstants
                   .ZUSAMMEN_COLLABORATIVE_STORE,
               GIT_PASSWORD);
 

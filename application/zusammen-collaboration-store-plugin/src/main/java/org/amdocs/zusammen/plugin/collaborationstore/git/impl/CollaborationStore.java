@@ -19,18 +19,18 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.impl;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.SourceControlDaoFactory;
-import org.amdocs.zusammen.plugin.collaborationstore.git.dao.util.ElementDataUtil;
+import org.amdocs.zusammen.plugin.collaborationstore.git.dao.util.ElementUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.util.SourceControlUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.eclipse.jgit.api.Git;
 
 public class CollaborationStore {
 
-  protected ElementDataUtil elementDataUtil;
+  protected ElementUtil elementUtil;
   protected SourceControlUtil sourceControlUtil;
 
   public CollaborationStore(){
-    elementDataUtil = new ElementDataUtil();
+    elementUtil = new ElementUtil();
     sourceControlUtil = new SourceControlUtil();
   }
 
@@ -41,7 +41,7 @@ public class CollaborationStore {
 
   protected void addFileContent(SessionContext context, Git git, String basePath,String
       relativePath,String fileName, Object fileContent) {
-    this.elementDataUtil.addFileContent(basePath,relativePath, fileName, fileContent);
+    this.elementUtil.addFileContent(basePath,relativePath, fileName, fileContent);
   }
 
   protected String resolveTenantPath(SessionContext context, String path) {

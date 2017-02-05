@@ -17,7 +17,7 @@
 package org.amdocs.zusammen.plugin.collaborationstore.git.utils;
 
 import org.amdocs.zusammen.commons.configuration.impl.ConfigurationAccessor;
-import org.amdocs.zusammen.sdk.utils.SdkConstants;
+import org.amdocs.zusammen.sdk.SdkConstants;
 
 public class PluginConstants {
   public static final String PUBLIC_PATH_PROP = "public.path";

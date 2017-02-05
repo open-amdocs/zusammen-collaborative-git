@@ -22,13 +22,15 @@ import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.ElementContext;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.datatypes.item.ItemVersionData;
+import org.amdocs.zusammen.datatypes.itemversion.ItemVersionHistory;
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ElementCollaborationStore;
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemCollaborationStore;
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemVersionCollaborationStore;
-import org.amdocs.zusammen.sdk.CollaborationStore;
-import org.amdocs.zusammen.sdk.types.CollaborationMergeResult;
-import org.amdocs.zusammen.sdk.types.CollaborationPublishResult;
-import org.amdocs.zusammen.sdk.types.ElementData;
+import org.amdocs.zusammen.sdk.collaboration.CollaborationStore;
+import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElement;
+import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeChange;
+import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeResult;
+import org.amdocs.zusammen.sdk.collaboration.types.CollaborationPublishResult;
 
 public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
@@ -56,60 +58,86 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   public void createItemVersion(SessionContext context, Id itemId, Id baseVersionId,
                                 Id versionId,
                                 ItemVersionData itemVersionData) {
-    itemVersionCollaborationStore
+    getItemVersionCollaborationStore()
         .create(context, itemId, baseVersionId, versionId, itemVersionData);
   }
 
   @Override
   public void updateItemVersion(SessionContext context, Id itemId, Id versionId,
-                              ItemVersionData itemVersionData) {
+                                ItemVersionData itemVersionData) {
 
-    itemVersionCollaborationStore.save(context, itemId, versionId, itemVersionData);
+    getItemVersionCollaborationStore().save(context, itemId, versionId, itemVersionData);
   }
 
   @Override
-  public void createElement(SessionContext context, ElementData elementData) {
-    elementCollaborationStore.create(context, elementData);
+  public void createElement(SessionContext context, CollaborationElement element) {
+    getElementCollaborationStore().create(context, element);
   }
 
   @Override
-  public void updateElement(SessionContext context, ElementData elementData) {
-    elementCollaborationStore.update(context, elementData);
+  public void updateElement(SessionContext context, CollaborationElement element) {
+    getElementCollaborationStore().update(context, element);
   }
 
   @Override
-  public void deleteElement(SessionContext context, ElementData elementData) {
+  public void deleteElement(SessionContext context, CollaborationElement element) {
 
-    elementCollaborationStore.delete(context, elementData);
+    getElementCollaborationStore().delete(context, element);
   }
 
   @Override
   public void deleteItemVersion(SessionContext context, Id itemId, Id versionId) {
-    itemVersionCollaborationStore.delete(context, itemId, versionId);
+    getItemVersionCollaborationStore().delete(context, itemId, versionId);
   }
 
   @Override
   public CollaborationPublishResult publishItemVersion(SessionContext context, Id itemId,
                                                        Id versionId,
                                                        String message) {
-    return itemVersionCollaborationStore.publish(context, itemId, versionId, message);
+    return getItemVersionCollaborationStore().publish(context, itemId, versionId, message);
   }
 
   @Override
   public CollaborationMergeResult syncItemVersion(SessionContext context, Id itemId, Id versionId) {
-    return itemVersionCollaborationStore.sync(context, itemId, versionId);
+    return getItemVersionCollaborationStore().sync(context, itemId, versionId);
   }
 
   @Override
   public CollaborationMergeResult mergeItemVersion(SessionContext context, Id itemId, Id
       versionId, Id sourceVersionId) {
-    return itemVersionCollaborationStore.merge(context, itemId, versionId, sourceVersionId);
+    return getItemVersionCollaborationStore().merge(context, itemId, versionId, sourceVersionId);
   }
 
   @Override
-  public ElementData getElement(SessionContext context, ElementContext elementContext,
-                                Namespace namespace, Id elementId) {
-    return elementCollaborationStore.get(context, elementContext, namespace, elementId);
+  public CollaborationElement getElement(SessionContext context, ElementContext elementContext,
+                                         Namespace namespace, Id elementId) {
+    return getElementCollaborationStore().get(context, elementContext, namespace, elementId);
   }
+
+  @Override
+  public ItemVersionHistory listItemVersionHistory(SessionContext context, Id itemId,
+                                                   Id versionId) {
+    return getItemVersionCollaborationStore().listHistory(context, itemId, versionId);
+  }
+
+  @Override
+  public CollaborationMergeChange revertItemVersionHistory(SessionContext context, Id itemId, Id
+      versionId, Id changeId) {
+    return getItemVersionCollaborationStore().resetHistory(context, itemId, versionId, changeId);
+  }
+
+
+  protected ItemCollaborationStore getItemCollaborationStore() {
+    return this.itemCollaborationStore;
+  }
+
+  protected ItemVersionCollaborationStore getItemVersionCollaborationStore() {
+    return this.itemVersionCollaborationStore;
+  }
+
+  protected ElementCollaborationStore getElementCollaborationStore() {
+    return this.elementCollaborationStore;
+  }
+
 
 }

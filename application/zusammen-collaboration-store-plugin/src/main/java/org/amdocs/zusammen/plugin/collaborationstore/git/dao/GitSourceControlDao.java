@@ -76,5 +76,9 @@ public interface GitSourceControlDao {
 
   ObjectId getRemoteHead(SessionContext context,Git git);
 
-  void reset(SessionContext context, Git git, ObjectId revisionId);
+  void revert(SessionContext context, Git git, ObjectId revisionId);
+
+  Collection<String> getBranchFileList(SessionContext context, Git git,String branch);
+
+  Iterable<RevCommit> listHistory(SessionContext context, Git git);
 }
