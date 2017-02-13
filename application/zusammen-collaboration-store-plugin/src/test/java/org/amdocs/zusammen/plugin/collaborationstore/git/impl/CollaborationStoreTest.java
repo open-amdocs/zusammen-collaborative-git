@@ -23,13 +23,12 @@ import org.testng.annotations.Test;
 public class CollaborationStoreTest {
 
 
-
   @Test
   public void testResolveTenantPath() throws Exception {
     CollaborationStore collaborationStore = new CollaborationStore();
     String path = collaborationStore.resolveTenantPath(TestUtil.createSessionContext(),
         "/prefixPath/{tenant}/suffixPath");
-    Assert.assertEquals(path,"/prefixPath/test/suffixPath");
+    Assert.assertEquals(path, "/prefixPath/test/suffixPath");
   }
 
 }
