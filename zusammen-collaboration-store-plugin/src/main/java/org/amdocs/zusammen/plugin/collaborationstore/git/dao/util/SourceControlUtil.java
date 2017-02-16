@@ -285,7 +285,7 @@ public class SourceControlUtil {
     String elementId;
     String elementPath;
     Set<String> elementSet = new HashSet<>();
-    Collection<String> files = dao.getBranchFileList(context, git, null);
+    Collection<String> files = dao.getBranchFileList(context, git);
 
     for (String file : files) {
 

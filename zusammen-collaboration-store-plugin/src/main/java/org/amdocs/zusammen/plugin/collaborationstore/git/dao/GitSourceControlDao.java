@@ -78,7 +78,7 @@ public interface GitSourceControlDao {
 
   void revert(SessionContext context, Git git, ObjectId revisionId);
 
-  Collection<String> getBranchFileList(SessionContext context, Git git,String branch);
+  Collection<String> getBranchFileList(SessionContext context, Git git);
 
   Iterable<RevCommit> listHistory(SessionContext context, Git git);
 }

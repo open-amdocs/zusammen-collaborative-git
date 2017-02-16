@@ -364,7 +364,7 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
   }
 
   @Override
-  public Collection<String> getBranchFileList(SessionContext context, Git git, String branch) {
+  public Collection<String> getBranchFileList(SessionContext context, Git git) {
 
     Collection<String> files = new ArrayList<>();
 

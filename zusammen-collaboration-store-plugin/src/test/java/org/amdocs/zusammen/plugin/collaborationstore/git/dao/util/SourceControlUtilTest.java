@@ -212,7 +212,7 @@ public class SourceControlUtilTest {
     files.add("2");
 
     Mockito.doReturn(files).when(gitSourceControlDaoMock).getBranchFileList(anyObject(), anyObject
-        (), anyObject());
+        ());
     Mockito.doReturn(elementId).when(sourceControlUtil).extractElementIdFromFilePath((anyObject()));
 
     Mockito.doReturn(elementPath).when(sourceControlUtil).extractElementPathFromFilePath(
