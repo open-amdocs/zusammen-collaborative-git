@@ -63,10 +63,6 @@ public interface GitSourceControlDao {
 
   FetchResult fetch(SessionContext contaxt, Git git, String branch);
 
-  PullResult inComing(SessionContext context, Git git, String branch);
-
-  Iterable<PushResult> outGoing(SessionContext context, Git git, String branch);
-
   Status status(SessionContext context,Git git);
 
   Collection<DiffEntry> revisionDiff(SessionContext context, Git git, ObjectId from, ObjectId to,

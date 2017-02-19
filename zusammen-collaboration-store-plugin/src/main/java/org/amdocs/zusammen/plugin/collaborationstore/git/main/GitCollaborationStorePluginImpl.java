@@ -23,7 +23,11 @@ import org.amdocs.zusammen.datatypes.item.ElementContext;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.datatypes.item.ItemVersionData;
 import org.amdocs.zusammen.datatypes.itemversion.ItemVersionHistory;
+import org.amdocs.zusammen.datatypes.response.ErrorCode;
+import org.amdocs.zusammen.datatypes.response.Module;
 import org.amdocs.zusammen.datatypes.response.Response;
+import org.amdocs.zusammen.datatypes.response.ReturnCode;
+import org.amdocs.zusammen.datatypes.response.ZusammenException;
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ElementCollaborationStore;
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemCollaborationStore;
 import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemVersionCollaborationStore;
@@ -46,106 +50,188 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   @Override
   public Response<Void> createItem(SessionContext context, Id itemId, Info info) {
 
-    itemCollaborationStore.create(context, itemId, info);
-    return new Response(Void.TYPE);
+    try {
+      itemCollaborationStore.create(context, itemId, info);
+      return new Response(Void.TYPE);
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ITEM_CREATE, Module.COL, null, ze
+          .getReturnCode()));
+    }
   }
 
   @Override
   public Response<Void> deleteItem(SessionContext context, Id itemId) {
-    itemCollaborationStore.delete(context, itemId);
-    return new Response(Void.TYPE);
+    try {
+      itemCollaborationStore.delete(context, itemId);
+      return new Response(Void.TYPE);
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ITEM_DELETE, Module.COL, null, ze
+          .getReturnCode()));
+    }
+
 
   }
 
   @Override
   public Response<Void> createItemVersion(SessionContext context, Id itemId, Id baseVersionId,
-                                Id versionId,
-                                ItemVersionData itemVersionData) {
-    getItemVersionCollaborationStore()
-        .create(context, itemId, baseVersionId, versionId, itemVersionData);
-    return new Response(Void.TYPE);
+                                          Id versionId,
+                                          ItemVersionData itemVersionData) {
+    try {
+      getItemVersionCollaborationStore()
+          .create(context, itemId, baseVersionId, versionId, itemVersionData);
+      return new Response(Void.TYPE);
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_CREATE, Module.COL, null, ze
+          .getReturnCode()));
+    }
+
   }
 
   @Override
   public Response<Void> updateItemVersion(SessionContext context, Id itemId, Id versionId,
-                                ItemVersionData itemVersionData) {
+                                          ItemVersionData itemVersionData) {
 
-    getItemVersionCollaborationStore().save(context, itemId, versionId, itemVersionData);
-    return new Response(Void.TYPE);
+    try {
+      getItemVersionCollaborationStore().save(context, itemId, versionId, itemVersionData);
+      return new Response(Void.TYPE);
+    } catch (ZusammenException ze) {
+      return
+          new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_UPDATE, Module.COL, null, ze
+              .getReturnCode()));
+    }
+
   }
 
   @Override
   public Response<Void> createElement(SessionContext context, CollaborationElement element) {
-    getElementCollaborationStore().create(context, element);
-    return new Response(Void.TYPE);
+    try {
+      getElementCollaborationStore().create(context, element);
+      return new Response(Void.TYPE);
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ELEMENT_CREATE, Module.COL, null, ze
+          .getReturnCode()));
+    }
+
   }
 
   @Override
   public Response<Void> updateElement(SessionContext context, CollaborationElement element) {
-    getElementCollaborationStore().update(context, element);
-    return new Response(Void.TYPE);
+    try {
+      getElementCollaborationStore().update(context, element);
+      return new Response(Void.TYPE);
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ELEMENT_UPDATE, Module.COL, null, ze
+          .getReturnCode()));
+    }
+
   }
 
   @Override
   public Response<Void> deleteElement(SessionContext context, CollaborationElement element) {
 
-    getElementCollaborationStore().delete(context, element);
-    return new Response(Void.TYPE);
+    try {
+      getElementCollaborationStore().delete(context, element);
+      return new Response(Void.TYPE);
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ELEMENT_DELETE, Module.COL, null, ze
+          .getReturnCode()));
+    }
+
   }
 
   @Override
   public Response<Void> deleteItemVersion(SessionContext context, Id itemId, Id versionId) {
-    getItemVersionCollaborationStore().delete(context, itemId, versionId);
-    return new Response(Void.TYPE);
+    try {
+      getItemVersionCollaborationStore().delete(context, itemId, versionId);
+      return new Response(Void.TYPE);
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_DELETE, Module.COL, null, ze
+          .getReturnCode()));
+    }
+
   }
 
   @Override
   public Response<CollaborationPublishResult> publishItemVersion(SessionContext context, Id itemId,
-                                                       Id versionId,
-                                                       String message) {
+                                                                 Id versionId, String message) {
 
-    return new Response(getItemVersionCollaborationStore().publish(context, itemId, versionId,
-        message));
+    try {
+      CollaborationPublishResult collaborationPublishResult = getItemVersionCollaborationStore()
+          .publish(context, itemId, versionId, message);
+      return new Response(collaborationPublishResult);
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_PUBLISH, Module.COL, null, ze
+          .getReturnCode()));
+    }
   }
 
   @Override
   public Response<CollaborationMergeResult> syncItemVersion(SessionContext context, Id itemId, Id
       versionId) {
-    return new Response(getItemVersionCollaborationStore().sync(context, itemId, versionId));
+    try {
+      return new Response(getItemVersionCollaborationStore().sync(context, itemId, versionId));
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_SYNC, Module.COL, null, ze
+          .getReturnCode()));
+    }
   }
 
   @Override
   public Response<CollaborationMergeResult> mergeItemVersion(SessionContext context, Id itemId, Id
       versionId, Id sourceVersionId) {
-    return new Response(getItemVersionCollaborationStore().merge(context, itemId, versionId,
-        sourceVersionId));
+    try {
+      return new Response(getItemVersionCollaborationStore().merge(context, itemId, versionId,
+          sourceVersionId));
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_MERGE, Module.COL, null, ze
+          .getReturnCode()));
+    }
   }
 
   @Override
   public Response<CollaborationElement> getElement(SessionContext context, ElementContext
       elementContext,
-                                         Namespace namespace, Id elementId) {
-    return new Response(getElementCollaborationStore().get(context, elementContext, namespace,
-        elementId));
+                                                   Namespace namespace, Id elementId) {
+    try {
+      return new Response(getElementCollaborationStore().get(context, elementContext, namespace,
+          elementId));
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ELEMENT_GET, Module.COL, null, ze
+          .getReturnCode()));
+    }
   }
 
   @Override
   public Response<ItemVersionHistory> listItemVersionHistory(SessionContext context, Id itemId,
-                                                   Id versionId) {
-    return new Response(getItemVersionCollaborationStore().listHistory(context, itemId, versionId));
+                                                             Id versionId) {
+    try {
+      return new Response(
+          getItemVersionCollaborationStore().listHistory(context, itemId, versionId));
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_HISTORY, Module.COL,
+          null, ze
+          .getReturnCode()));
+    }
   }
 
   @Override
   public Response<CollaborationMergeChange> revertItemVersionHistory(SessionContext context, Id
       itemId, Id
-      versionId, Id changeId) {
-    return new Response(getItemVersionCollaborationStore().resetHistory(context, itemId,
-        versionId, changeId));
+                                                                         versionId, Id changeId) {
+    try {
+      return new Response(getItemVersionCollaborationStore().resetHistory(context, itemId,
+          versionId, changeId));
+    } catch (ZusammenException ze) {
+      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_REVERT_HISTORY, Module.COL,
+          null, ze
+          .getReturnCode()));
+    }
   }
 
 
   protected ItemCollaborationStore getItemCollaborationStore() {
     return this.itemCollaborationStore;
+
   }
 
   protected ItemVersionCollaborationStore getItemVersionCollaborationStore() {
