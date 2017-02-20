@@ -17,8 +17,12 @@
 package org.amdocs.zusammen.plugin.collaborationstore.git.dao.impl;
 
 
+import org.amdocs.zusammen.commons.log.ZusammenLogger;
+import org.amdocs.zusammen.commons.log.ZusammenLoggerFactory;
 import org.amdocs.zusammen.datatypes.SessionContext;
+import org.amdocs.zusammen.datatypes.response.ErrorCode;
 import org.amdocs.zusammen.datatypes.response.Module;
+import org.amdocs.zusammen.datatypes.response.ReturnCode;
 import org.amdocs.zusammen.datatypes.response.ZusammenException;
 import org.amdocs.zusammen.plugin.collaborationstore.git.commands.RevisionDiffCommand;
 import org.amdocs.zusammen.plugin.collaborationstore.git.dao.GitSourceControlDao;
@@ -64,6 +68,10 @@ import java.util.Collection;
 import java.util.List;
 
 public class GitSourceControlDaoImpl implements GitSourceControlDao {
+
+
+  private static ZusammenLogger logger = ZusammenLoggerFactory.getLogger
+      (GitSourceControlDaoImpl.class.getName());
   @Override
   public Git clone(SessionContext context, String source, String target, String... branch) {
     File targetRepositoryDir = FileUtils.getFile(target);
@@ -81,8 +89,11 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       }
       command.setBare(false);
       return command.call();
-    } catch (GitAPIException e) {
-      throw new RuntimeException(e);
+    } catch (GitAPIException gae) {
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_CLONE,Module.COL,gae.getMessage(),null);
+      logger.error(returnCode.toString());
+
+      throw new ZusammenException(returnCode);
     }
   }
 
@@ -99,8 +110,12 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       command.setName(branch);
       command.call();
 
-    } catch (GitAPIException /*| IOException*/ e) {
-      throw new RuntimeException(e);
+    } catch (GitAPIException /*| IOException*/ gae) {
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_CREATE_BRANCH,Module.COL,gae
+          .getMessage(),null);
+      logger.error(returnCode.toString());
+
+      throw new ZusammenException(returnCode);
     }
 
 
@@ -120,8 +135,12 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       command.call();
     } catch (RefNotFoundException noSuchBranch) {
       return false;
-    } catch (IOException | GitAPIException e) {
-      throw new RuntimeException(e);
+    } catch (IOException | GitAPIException gae) {
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_CHECKOUT_BRANCH,Module.COL,gae
+          .getMessage(),null);
+      logger.error(returnCode.toString());
+
+      throw new ZusammenException(returnCode);
     }
     return true;
   }
@@ -132,8 +151,12 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
 
     try {
       return Git.open(repositoryDir);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    } catch (IOException ioe) {
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_OPEN,Module.COL,ioe
+          .getMessage(),null);
+      logger.error(returnCode.toString());
+
+      throw new ZusammenException(returnCode);
     }
 
   }
@@ -150,7 +173,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
         filesAdded.add(file);
       }
     } catch (GitAPIException gae) {
-      throw new ZusammenException(GitErrorCode.GI_ADD, Module.COL, gae.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_ADD,Module.COL,gae
+          .getMessage(),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
     return filesAdded;
   }
@@ -167,7 +193,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       try {
         DirCache ret = command.call();
       } catch (GitAPIException gae) {
-        throw new ZusammenException(GitErrorCode.GI_DELETE, Module.COL, gae.getMessage());
+        ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_DELETE, Module.COL, gae.getMessage
+            (),null);
+        logger.error(returnCode.toString());
+        throw new ZusammenException(returnCode);
       }
     }
   }
@@ -181,7 +210,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       command.setAuthor(context.getUser().getUserName(), "zusammen@amdocs.com");
       return command.call();
     } catch (GitAPIException gae) {
-      throw new ZusammenException(GitErrorCode.GI_COMMIT, Module.COL, gae.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_COMMIT, Module.COL, gae.getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
   }
 
@@ -193,7 +225,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       command.setMode(ResetCommand.ResetType.MERGE);
       command.call();
     } catch (GitAPIException gae) {
-      throw new ZusammenException(GitErrorCode.GI_RESET_MERGE, Module.COL, gae.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_RESET_MERGE, Module.COL, gae.getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
   }
 
@@ -210,7 +245,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
         results.add(result);
       }
     } catch (GitAPIException gae) {
-      throw new ZusammenException(GitErrorCode.GI_PUBLISH, Module.COL, gae.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_PUBLISH, Module.COL, gae.getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
     return results;
   }
@@ -229,7 +267,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       return result;
 
     } catch (GitAPIException gae) {
-      throw new ZusammenException(GitErrorCode.GI_SYNC, Module.COL, gae.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_SYNC, Module.COL, gae.getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
 
   }
@@ -252,7 +293,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       }
       return command.call();
     } catch (GitAPIException | IOException ex) {
-      throw new ZusammenException(GitErrorCode.GI_MERGE, Module.COL, ex.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_MERGE, Module.COL, ex.getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
   }
 
@@ -271,7 +315,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       }
       return command.call();
     } catch (GitAPIException gae) {
-      throw new ZusammenException(GitErrorCode.GI_CLOSE, Module.COL, gae.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_CLOSE, Module.COL, gae.getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
   }
 
@@ -280,7 +327,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     try {
       return git.status().call();
     } catch (GitAPIException gae) {
-      throw new ZusammenException(GitErrorCode.GI_STATUS, Module.COL, gae.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_STATUS, Module.COL, gae.getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
   }
 
@@ -298,7 +348,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       return command.call();
 
     } catch (GitAPIException gae) {
-      throw new ZusammenException(GitErrorCode.GI_REV_DIFF, Module.COL, gae.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_REV_DIFF, Module.COL, gae.getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
   }
 
@@ -308,7 +361,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       return git.getRepository().resolve(Constants.HEAD);
 
     } catch (IOException ioe) {
-      throw new ZusammenException(GitErrorCode.GI_GET_HEAD, Module.COL, ioe.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_GET_HEAD, Module.COL, ioe.getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
   }
 
@@ -319,7 +375,11 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
           .getObjectId();
 
     } catch (IOException ioe) {
-      throw new ZusammenException(GitErrorCode.GI_GET_REMOTE_HEAD, Module.COL, ioe.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_GET_REMOTE_HEAD, Module.COL, ioe
+          .getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
   }
 
@@ -331,7 +391,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       command.setMode(ResetCommand.ResetType.HARD);
       command.call();
     } catch (GitAPIException gae) {
-      throw new ZusammenException(GitErrorCode.GI_REVERT, Module.COL, gae.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_REVERT, Module.COL, gae.getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
 
   }
@@ -358,8 +421,11 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
       return files;
 
     } catch (IOException ioe) {
-      throw new ZusammenException(GitErrorCode.GI_GET_BRANCH_FILE_LIST, Module.COL, ioe.getMessage
-          ());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_GET_BRANCH_FILE_LIST, Module.COL, ioe
+          .getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
   }
 
@@ -369,7 +435,10 @@ public class GitSourceControlDaoImpl implements GitSourceControlDao {
     try {
       return command.call();
     } catch (GitAPIException gae) {
-      throw new ZusammenException(GitErrorCode.GI_LIST_HISTORY, Module.COL, gae.getMessage());
+      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_LIST_HISTORY, Module.COL, gae.getMessage
+          (),null);
+      logger.error(returnCode.toString());
+      throw new ZusammenException(returnCode);
     }
   }
 }

@@ -32,4 +32,8 @@ public class GitErrorCode {
   public static final int GI_REVERT = 61300;
   public static final int GI_GET_BRANCH_FILE_LIST = 61400;
   public static final int GI_LIST_HISTORY = 61500;
+  public static final int GI_CLONE = 61600;
+  public static final int GI_CREATE_BRANCH = 61700;
+  public static final int GI_CHECKOUT_BRANCH = 61800;
+  public static final int GI_OPEN = 61900;
 }

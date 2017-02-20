@@ -45,8 +45,6 @@ public class ElementCollaborationStoreTest {
   private ElementCollaborationStore elementCollaborationStore;
   @Mock
   private GitSourceControlDao gitSourceControlDaoMock;
-  @Mock
-  private SourceControlUtil sourceControlUtil;
 
   private static final Id ITEM_ID = new Id();
   private static final Id VERSION_ID = new Id();
