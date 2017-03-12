@@ -16,22 +16,17 @@
 
 package org.amdocs.zusammen.plugin.collaborationstore.git.commands;
 
-import org.amdocs.zusammen.plugin.collaborationstore.git.utils.PluginConstants;
 import org.amdocs.zusammen.utils.common.CommonMethods;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
-import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -63,15 +58,15 @@ public class RevisionDiffCommand {
     return this;
   }
 
-
   public Collection<DiffEntry> call()
       throws GitAPIException {
 
     if(this.from==null){
-      from = getFirstCommit(git);
+      from = getFirstCommit();
     }
     List<DiffEntry> returnDiffs = new ArrayList<>();
     if(from!= null && from.getName().equals(to.getName())) return returnDiffs;
+
     try {
       RevWalk walk = new RevWalk(git.getRepository());
       RevCommit last = walk.parseCommit(to);
@@ -79,14 +74,10 @@ public class RevisionDiffCommand {
       Iterable<RevCommit> revCommitIter = git.log().addRange(this.from,this.to).call();
       List<RevCommit> revCommitList = CommonMethods.iteratorToList(revCommitIter);
       revCommitList.add(fromCommit);
-      TreeWalk tw = new TreeWalk(git.getRepository());
-      tw.addTree(fromCommit.getTree());
-      tw.addTree(last.getTree());
-      tw.setRecursive(true);
-      if(this.treeFilter != null)
-      tw.setFilter(this.treeFilter);
+      TreeWalk tw = getTreeWalk(last, fromCommit);
       List<DiffEntry> diffs = DiffEntry.scan(tw);
       returnDiffs.addAll(diffs);
+
     } catch (java.io.IOException e) {
       throw new RuntimeException(e);
     }
@@ -94,7 +85,17 @@ public class RevisionDiffCommand {
     return returnDiffs;
   }
 
-  private ObjectId getFirstCommit(Git git) {
+  private TreeWalk getTreeWalk(RevCommit last, RevCommit fromCommit) throws IOException {
+    TreeWalk tw = new TreeWalk(git.getRepository());
+    tw.addTree(fromCommit.getTree());
+    tw.addTree(last.getTree());
+    tw.setRecursive(true);
+    if(this.treeFilter != null)
+      tw.setFilter(this.treeFilter);
+    return tw;
+  }
+
+  private ObjectId getFirstCommit() {
     try {
       Iterable<RevCommit> commitsIterator = git.log().call();
       Iterator<RevCommit> iterator = commitsIterator.iterator();
