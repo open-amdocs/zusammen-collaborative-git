@@ -28,9 +28,10 @@ import org.amdocs.zusammen.datatypes.response.Module;
 import org.amdocs.zusammen.datatypes.response.Response;
 import org.amdocs.zusammen.datatypes.response.ReturnCode;
 import org.amdocs.zusammen.datatypes.response.ZusammenException;
-import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ElementCollaborationStore;
-import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemCollaborationStore;
-import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemVersionCollaborationStore;
+import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
+import org.amdocs.zusammen.plugin.collaborationstore.impl.ElementCollaborationStore;
+import org.amdocs.zusammen.plugin.collaborationstore.impl.ItemCollaborationStore;
+import org.amdocs.zusammen.plugin.collaborationstore.impl.ItemVersionCollaborationStore;
 import org.amdocs.zusammen.sdk.collaboration.CollaborationStore;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElement;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeChange;
@@ -40,11 +41,11 @@ import org.amdocs.zusammen.sdk.collaboration.types.CollaborationPublishResult;
 public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   private final ItemCollaborationStore itemCollaborationStore =
-      new ItemCollaborationStore();
+      new ItemCollaborationStore(SourceControlDaoFactory.getInstance());
   private final ItemVersionCollaborationStore itemVersionCollaborationStore =
-      new ItemVersionCollaborationStore();
+      new ItemVersionCollaborationStore(SourceControlDaoFactory.getInstance());
   private final ElementCollaborationStore elementCollaborationStore =
-      new ElementCollaborationStore();
+      new ElementCollaborationStore(SourceControlDaoFactory.getInstance());
 
 
   @Override
@@ -219,8 +220,8 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       itemId, Id
                                                                          versionId, Id changeId) {
     try {
-      return new Response(getItemVersionCollaborationStore().resetHistory(context, itemId,
-          versionId, changeId));
+      ElementContext elementContext = new ElementContext(itemId, versionId);
+      return new Response(getItemVersionCollaborationStore().resetHistory(context,elementContext, changeId));
     } catch (ZusammenException ze) {
       return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_REVERT_HISTORY, Module.ZCSP,
           null, ze

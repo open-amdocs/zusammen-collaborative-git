@@ -1,6 +1,8 @@
 {
-  "org.amdocs.zusammen.plugin.collaborationstore.git.dao.SourceControlDaoFactory":
-  "org.amdocs.zusammen.plugin.collaborationstore.git.dao.impl.SourceControlDaoFactoryImpl"
+  "org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory":
+  "org.amdocs.zusammen.plugin.collaborationstore.dao.impl.git.GitSourceControlDaoFactoryImpl",
+  "org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlCommandFactory":
+  "org.amdocs.zusammen.plugin.collaborationstore.dao.impl.git.GitSourceControlCommandFactoryImpl"
 
 
 }

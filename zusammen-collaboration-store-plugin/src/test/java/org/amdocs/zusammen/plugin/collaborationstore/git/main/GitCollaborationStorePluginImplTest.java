@@ -18,12 +18,12 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.main;
 
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.SessionContext;
-import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ElementCollaborationStore;
-import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemCollaborationStore;
-import org.amdocs.zusammen.plugin.collaborationstore.git.impl.ItemVersionCollaborationStore;
+import org.amdocs.zusammen.datatypes.item.ElementContext;
+import org.amdocs.zusammen.plugin.collaborationstore.impl.ElementCollaborationStore;
+import org.amdocs.zusammen.plugin.collaborationstore.impl.ItemCollaborationStore;
+import org.amdocs.zusammen.plugin.collaborationstore.impl.ItemVersionCollaborationStore;
 import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -159,8 +159,8 @@ public class GitCollaborationStorePluginImplTest {
     Id changeId = new Id("changeId");
 
     gitCollaborationStorePluginMock.revertItemVersionHistory(context, itemId, versionId, changeId);
-    verify(itemVersionCollaborationStore).resetHistory(context, itemId,
-        versionId,
+    verify(itemVersionCollaborationStore).resetHistory(context, new ElementContext(itemId,
+        versionId),
         changeId);
   }
 
