@@ -151,28 +151,6 @@ public class ElementUtil {
     return namespace;
   }
 
-  public void updateCollaborationElement(Git git, String basePath, String relativePath,
-                                         CollaborationElement element, Action action) {
-    if (action.equals(Action.CREATE)) {
-      addFileContent(getRepositoryPath(git), relativePath,
-          PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME, EMPTY_FILE);
-    }
-
-    if (element.getId().getValue().equals(Id.ZERO.getValue())) {
-      updateItemVersionDataFromCollaborationElement(basePath, element);
-    }
-
-    addFileContent(basePath, relativePath, PluginConstants.INFO_FILE_NAME, element.getInfo());
-    if (element.getRelations() != null && element.getRelations().size() > 0) {
-      addFileContent(basePath, relativePath, PluginConstants.RELATIONS_FILE_NAME,
-          element.getRelations());
-    }
-    addFileContent(getRepositoryPath(git), relativePath, PluginConstants.VISUALIZATION_FILE_NAME,
-        element.getVisualization());
-    addFileContent(basePath, relativePath, PluginConstants.DATA_FILE_NAME, element.getData());
-    addFileContent(basePath, relativePath, PluginConstants.SEARCH_DATA_FILE_NAME,
-        element.getSearchableData());
-  }
 
   public void updateCollaborationElement( String basePath, String relativePath,
                                          CollaborationElement element, Action action) {

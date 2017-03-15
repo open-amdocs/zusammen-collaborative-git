@@ -21,6 +21,7 @@ import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.Info;
+import org.amdocs.zusammen.plugin.collaborationstore.dao.util.ElementUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElement;
 import org.mockito.Mockito;
@@ -47,7 +48,7 @@ public class ElementUtilTest {
   private static final Id VERSION_ID = new Id();
   private static final Id ELEMENT_ID = new Id();
 
-  private static final SessionContext context = TestUtil.createSessionContext();
+
 
   private static final String NAME_SPACE = (new Id()).toString();
 
@@ -62,72 +63,14 @@ public class ElementUtilTest {
         anyObject(),
         anyObject());
 
-    Mockito.doReturn(null).when(elementUtil).getRepositoryPath(anyObject());
 
-    /*Mockito.doNothing().when(elementUtil).getSubElementIds(anyObject(), anyObject(),
-        anyObject());*/
-  }
 
-  @Test
-  public void testUploadCollaborationElement() throws Exception {
-    /*Namespace namespace = new Namespace();
-    namespace.setValue(NAME_SPACE);
-
-   when(elementUtil.getSubElementIds(context, null,PRIVATE_PATH+ITEM_ID
-        .toString()+"\\"+NAME_SPACE)).thenReturn(null);
-
-    when(elementUtil
-        .uploadElementInfo(context, null, PRIVATE_PATH + ITEM_ID
-            .toString() + "\\" + NAME_SPACE)).thenReturn(new ElementInfo(new Id()));
-
-    elementUtil
-        .uploadCollaborationElement(context, null, PRIVATE_PATH + ITEM_ID
-            .toString() + "\\" + NAME_SPACE);
-
-    verify(elementUtil, times(1)).getFileContent(anyObject(), anyObject(), anyObject(),
-        anyObject());
-*/
-  }
-
-  @Test
-  public void testUploadElementInfo() throws Exception {
-
-/*
-    Namespace namespace = new Namespace();
-    namespace.setValue(NAME_SPACE);
-
-    elementUtil.uploadElementInfo(context,null,
-        PRIVATE_PATH+ITEM_ID
-        .toString()+"\\"+NAME_SPACE);
-
-    verify(elementUtil,times(1)).getFileContent(anyObject(),anyObject(),anyObject(),
-        anyObject());
-*/
 
   }
 
-  @Test
-  public void testUpdateCollaborationElementContainData() throws Exception {
-
-    Namespace namespace = new Namespace();
-    namespace.setValue(NAME_SPACE);
-
-    CollaborationElement element =
-        new CollaborationElement(ITEM_ID, VERSION_ID, namespace, ELEMENT_ID);
-
-    element.setData(new ByteArrayInputStream("testUpdateCollaborationElement()".getBytes()));
-
-    elementUtil
-        .updateCollaborationElement(null, PRIVATE_PATH + ITEM_ID
-            .toString(), NAME_SPACE, element, Action.UPDATE);
 
 
-    verify(elementUtil, times(4)).addFileContent(anyObject(),
-        anyObject(),
-        anyObject(),
-        anyObject());
 
-  }
 
   @Test
   public void testUpdateCollaborationElementContainDataAndInfo() throws Exception {
@@ -144,7 +87,7 @@ public class ElementUtilTest {
     element.setInfo(info);
     elementUtil
         .updateCollaborationElement(null, PRIVATE_PATH + ITEM_ID
-            .toString(), NAME_SPACE, element, Action.UPDATE);
+            .toString(),  element, Action.UPDATE);
 
 
     verify(elementUtil, times(4)).addFileContent(anyObject(),
