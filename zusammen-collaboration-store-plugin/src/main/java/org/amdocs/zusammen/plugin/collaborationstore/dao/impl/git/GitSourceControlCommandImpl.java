@@ -66,6 +66,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git> {
+  private static final String GIT_FILE_SEPARATOR = "/";
   private SourceControlUtil sourceControlUtil;
 
   private static ZusammenLogger logger = ZusammenLoggerFactory.getLogger
@@ -371,7 +372,8 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
     if (files != null && files.length > 0) {
       RmCommand command = git.rm();
       for (String file : files) {
-        command.addFilepattern(file);
+
+        command.addFilepattern(file.replace(File.separator,GIT_FILE_SEPARATOR));
       }
 
       try {
