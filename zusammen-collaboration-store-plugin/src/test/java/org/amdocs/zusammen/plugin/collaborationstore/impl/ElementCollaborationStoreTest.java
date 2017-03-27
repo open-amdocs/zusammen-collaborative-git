@@ -136,7 +136,7 @@ public class ElementCollaborationStoreTest {
         ITEM_ID);
 
     verify(sourceControlDaoMock).delete(context, null,
-        PRIVATE_PATH + ITEM_ID.toString() + File.separator + NAME_SPACE + File.separator +
+         NAME_SPACE + File.separator +
             ELEMENT_ID);
   }
 

@@ -74,16 +74,9 @@ public class ElementCollaborationStore extends CollaborationStore {
 
   public void delete(SessionContext context, CollaborationElement element) {
     SourceControlDao dao = getSourceControlDao(context);
-    String repositoryPath =
-        getSourceControlUtil()
-            .getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH,
-                element.getItemId());
-    repositoryPath = resolveTenantPath(context, repositoryPath);
-    String fullPath = repositoryPath + File.separator +
-        getSourceControlUtil().getElementRelativePath(element.getNamespace(), element.getId());
     Repository repository = dao.initRepository(context, element.getItemId());
     dao.checkoutBranch(context, repository, element.getVersionId());
-    dao.delete(context, repository, fullPath);
+    dao.delete(context, repository, getSourceControlUtil().getElementRelativePath(element.getNamespace(), element.getId()));
     dao.commit(context, repository, PluginConstants.DELETE_ELEMENT_MESSAGE);
     dao.close(context, repository);
   }
