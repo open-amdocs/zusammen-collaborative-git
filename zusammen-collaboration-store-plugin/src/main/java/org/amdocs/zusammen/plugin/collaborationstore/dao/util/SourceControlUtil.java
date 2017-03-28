@@ -84,8 +84,12 @@ public class SourceControlUtil {
   }
 
   public String getElementRelativePath(Namespace namespace, Id elementId) {
-    return namespace.getValue().replace(Namespace.NAMESPACE_DELIMITER, File.separator)
-        + File.separator + elementId.toString();
+    if(namespace == null || "".equals(namespace.getValue())){
+      return elementId.getValue();
+    }else {
+      return namespace.getValue().replace(Namespace.NAMESPACE_DELIMITER, File.separator)
+          + File.separator + elementId.getValue();
+    }
   }
 
  /* public CollaborationMergeConflict handleSyncResponse(SessionContext context, Git git, PullResult
