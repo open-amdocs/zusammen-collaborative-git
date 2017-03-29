@@ -42,7 +42,7 @@ public interface SourceControlDao<T> {
 
   boolean checkoutBranch(SessionContext context, Repository<T> repository, Id versionId);
 
-  void store(SessionContext context, Repository<T> repository, String... files);
+  void  store(SessionContext context, Repository<T> repository, Collection<String> files);
 
   void commit(SessionContext context, Repository<T> repository, String message);
 

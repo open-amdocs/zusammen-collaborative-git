@@ -24,6 +24,7 @@ import org.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConfli
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.Repository;
+import org.eclipse.jgit.api.Git;
 
 import java.util.Collection;
 import java.util.List;
@@ -103,7 +104,7 @@ public class ItemVersionCollaborationStoreTestMock {
   }
 
 
-  public static class SourceControlDaoMockBase implements SourceControlDao {
+  public static class SourceControlDaoMockBase implements SourceControlDao<Git> {
     @Override
     public Repository initRepository(SessionContext context, Id ItemId) {
       return null;
@@ -136,7 +137,9 @@ public class ItemVersionCollaborationStoreTestMock {
     }
 
     @Override
-    public void store(SessionContext context, Repository repository, String... files) {
+    public void store(SessionContext context, Repository<Git
+        > repository, Collection<String>
+        files) {
 
     }
 

@@ -20,10 +20,11 @@ import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.itemversion.Change;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
-import org.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
+import org.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
 import org.amdocs.zusammen.plugin.collaborationstore.types.Repository;
+import org.eclipse.jgit.api.Git;
 
 import java.util.Collection;
 import java.util.List;
@@ -31,15 +32,7 @@ import java.util.List;
 public class ItemCollaborationStoreTestMock {
 
 
-  public static class SourceControlDaoMock extends SourceControlDaoMockBase {
-
-
-
-
-  }
-
-
-  public static class SourceControlDaoMockBase implements SourceControlDao {
+  public static class SourceControlDaoMockBase implements SourceControlDao<Git> {
     @Override
     public Repository initRepository(SessionContext context, Id ItemId) {
       return null;
@@ -72,7 +65,8 @@ public class ItemCollaborationStoreTestMock {
     }
 
     @Override
-    public void store(SessionContext context, Repository repository, String... files) {
+    public void store(SessionContext context, Repository<Git> repository, Collection<String>
+        files) {
 
     }
 
@@ -128,4 +122,6 @@ public class ItemCollaborationStoreTestMock {
   }
 
 
+  public static class SourceControlDaoMock extends SourceControlDaoMockBase{
+  }
 }

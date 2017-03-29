@@ -31,6 +31,8 @@ import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.spy;
@@ -57,7 +59,9 @@ public class ElementUtilTest {
 
     MockitoAnnotations.initMocks(this);
     elementUtil = spy(new ElementUtil());
-    Mockito.doNothing().when(elementUtil).addFileContent(
+    Collection<String> files = new ArrayList<>();
+    files.add("info.json");
+    Mockito.doReturn(true).when(elementUtil).addFileContent(
         anyObject(),
         anyObject(),
         anyObject(),

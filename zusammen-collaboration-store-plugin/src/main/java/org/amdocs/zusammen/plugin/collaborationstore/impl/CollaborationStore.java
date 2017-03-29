@@ -43,9 +43,9 @@ public class CollaborationStore {
   }
 
 
-  protected void addFileContent(SessionContext context, String basePath, String
+  protected boolean addFileContent(SessionContext context, String basePath, String
       relativePath, String fileName, Object fileContent) {
-    getElementUtil().addFileContent(basePath,relativePath, fileName, fileContent);;
+    return getElementUtil().addFileContent(basePath,relativePath, fileName, fileContent);
 
   }
 

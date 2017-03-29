@@ -46,6 +46,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -72,39 +73,44 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     Repository repository = dao.initRepository(context, itemId);
     dao.createBranch(context, repository, baseBranchId, versionId);
     dao.checkoutBranch(context, repository, versionId);
-    storeItemVersionData(context, itemId, versionId, dao.getRepositoryLocation(context, repository),
+    Collection<String> files = storeItemVersionData(context, itemId, versionId, dao
+        .getRepositoryLocation(context,
+        repository),
         itemVersionData,
         Action.CREATE);
-    dao.store(context, repository );
+    dao.store(context, repository,files);
     dao.commit(context, repository, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
 
     dao.close(context, repository);
   }
 
-  protected boolean storeItemVersionData(SessionContext context, Id itemId, Id versionId,
+  protected Collection<String> storeItemVersionData(SessionContext context, Id itemId, Id versionId,
                                          String rootPath, ItemVersionData itemVersionData, Action
                                              action) {
+    List<String> files  =new ArrayList<>();
     if (itemVersionData == null || (itemVersionData.getInfo() == null && itemVersionData
         .getRelations() == null)) {
-      return false;
+      return files;
     }
     if (action.equals(Action.CREATE)) {
-      storeZusammenTaggingInfo(context, rootPath, itemId, versionId);
+      if(storeZusammenTaggingInfo(context, rootPath, itemId, versionId))
+        files.add(PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME);
     }
     if (itemVersionData.getInfo() != null) {
-      storeData(context, itemId, ITEM_VERSION_INFO_FILE_NAME, itemVersionData
-          .getInfo
-              ());
+      if(storeData(context, itemId, ITEM_VERSION_INFO_FILE_NAME, itemVersionData
+          .getInfo()))
+      files.add(PluginConstants.ITEM_VERSION_INFO_FILE_NAME);
     }
     if (itemVersionData.getRelations() != null && itemVersionData.getRelations().size() > 0) {
-      storeData(context, itemId, RELATIONS_FILE_NAME, itemVersionData.getRelations());
+      if(storeData(context, itemId, RELATIONS_FILE_NAME, itemVersionData.getRelations()))
+        files.add(PluginConstants.RELATIONS_FILE_NAME);
     }
 
-    return true;
+    return files;
   }
 
 
-  private void storeZusammenTaggingInfo(SessionContext context, String path, Id itemId, Id
+  private boolean storeZusammenTaggingInfo(SessionContext context, String path, Id itemId, Id
       versionId) {
 
     Optional<InputStream> is = FileUtils
@@ -120,13 +126,13 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     }
     itemVersionInformation.put(PluginConstants.ITEM_VERSION_ID, versionId.getValue());
     itemVersionInformation.put(PluginConstants.ITEM_VERSION_BASE_ID, baseId);
-    storeData(context, itemId, ZUSAMMEN_TAGGING_FILE_NAME, itemVersionInformation);
+    return storeData(context, itemId, ZUSAMMEN_TAGGING_FILE_NAME, itemVersionInformation);
   }
 
 
   protected boolean storeData(SessionContext context, Id itemId, String fileName,
                               Object data) {
-    addFileContent(
+    return addFileContent(
         context,
 
         getSourceControlUtil().getPrivateRepositoryPath(context, PluginConstants.PRIVATE_PATH,
@@ -135,7 +141,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
         null,
         fileName,
         data);
-    return true;
+
   }
 
 
@@ -145,12 +151,12 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     SourceControlDao dao = getSourceControlDao(context);
     Repository repository = dao.initRepository(context, itemId);
     dao.checkoutBranch(context, repository, versionId);
-    boolean commitRequired = storeItemVersionData(context, itemId, versionId, dao
+    Collection<String> files = storeItemVersionData(context, itemId, versionId, dao
             .getRepositoryLocation(context, repository),
         itemVersionData,
         Action.UPDATE);
-    if (commitRequired) {
-      dao.store(context, repository, ".");
+    if (files!=null && files.size()>0) {
+      dao.store(context, repository, files);
       dao.commit(context, repository, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     }
     dao.close(context, repository);

@@ -93,7 +93,7 @@ public class ItemVersionCollaborationStoreTest {
     MockitoAnnotations.initMocks(this);
     //doReturn(null).when(sourceControlUtil).getRepoData(anyObject(), anyObject(), anyObject());
     doReturn(null).when(sourceControlDaoMock).initRepository(anyObject(), anyObject());
-    Mockito.doNothing().when(itemVersionCollaborationStore)
+    Mockito.doReturn(true).when(itemVersionCollaborationStore)
         .addFileContent(anyObject(), anyObject(), anyObject(), anyObject(),
             anyObject());
   }
@@ -123,7 +123,7 @@ public class ItemVersionCollaborationStoreTest {
     itemVersionData.setInfo(info);
     info.setName("createItemVersion");
 
-    doReturn(true).when(itemVersionCollaborationStoreTest).storeItemVersionData(anyObject(),
+    doReturn(new ArrayList<>()).when(itemVersionCollaborationStoreTest).storeItemVersionData(anyObject(),
         anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
 
     itemVersionCollaborationStoreTest.create(context, ITEM_ID, null, VERSION_ID, itemVersionData);
@@ -156,7 +156,7 @@ public class ItemVersionCollaborationStoreTest {
     Info info = new Info();
     itemVersionData.setInfo(info);
     info.setName("createItemVersion");
-    doReturn(true).when(itemVersionCollaborationStoreTest).storeItemVersionData(anyObject(),
+    doReturn(new ArrayList<>()).when(itemVersionCollaborationStoreTest).storeItemVersionData(anyObject(),
         anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
 
 
@@ -192,7 +192,7 @@ public class ItemVersionCollaborationStoreTest {
     itemVersionData.setInfo(info);
     info.setName("saveItemVersion");
 
-    doReturn(true).when(itemVersionCollaborationStoreTest).storeItemVersionData(anyObject(),
+    doReturn(new ArrayList<>()).when(itemVersionCollaborationStoreTest).storeItemVersionData(anyObject(),
         anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
 
 

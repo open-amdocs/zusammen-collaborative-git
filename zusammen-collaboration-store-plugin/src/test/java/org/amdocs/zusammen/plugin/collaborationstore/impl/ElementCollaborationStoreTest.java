@@ -32,6 +32,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.doNothing;
@@ -58,13 +60,14 @@ public class ElementCollaborationStoreTest {
   @BeforeMethod
   public void init() {
     MockitoAnnotations.initMocks(this);
-    Mockito.doNothing().when(elementCollaborationStore).addFileContent(anyObject(), anyObject(),
+    Mockito.doReturn(true).when(elementCollaborationStore).addFileContent(anyObject(), anyObject(),
 
         anyObject(),
         anyObject(),
         anyObject());
-
-    Mockito.doNothing().when(elementCollaborationStore)
+    Collection<String> files = new ArrayList<>();
+    files.add("info.json");
+    Mockito.doReturn(files).when(elementCollaborationStore)
         .updateCollaborationElement(anyObject(), anyObject(), anyObject(), anyObject(),
             anyObject());
 

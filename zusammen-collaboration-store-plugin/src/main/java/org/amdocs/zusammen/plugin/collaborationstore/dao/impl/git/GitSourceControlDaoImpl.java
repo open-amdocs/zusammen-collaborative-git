@@ -28,12 +28,12 @@ import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlComman
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.git.GitSourceControlCommand;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.util.SourceControlUtil;
-import org.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
-import org.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationConflictResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
+import org.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
 import org.amdocs.zusammen.plugin.collaborationstore.types.Repository;
+import org.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
@@ -81,7 +81,7 @@ public class GitSourceControlDaoImpl implements SourceControlDao<Git> {
     String branch;
     try {
       branch = getSourceControlCommand(context).getBranch(context, repository.getRepository());
-      getSourceControlCommand(context).publish(context,repository.getRepository(),branch);
+      getSourceControlCommand(context).publish(context, repository.getRepository(), branch);
     } catch (IOException ioe) {
       ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_GET_BRANCH, Module.ZCSP, ioe
           .getMessage(), null);
@@ -131,7 +131,8 @@ public class GitSourceControlDaoImpl implements SourceControlDao<Git> {
 
       }
       collaborationSyncResult.setCollaborationConflictResult(collaborationConflictResult);
-      getSourceControlCommand(context).reset(context,repository.getRepository(),previousRevisionId);
+      getSourceControlCommand(context)
+          .reset(context, repository.getRepository(), previousRevisionId);
     }
 
     return collaborationSyncResult;
@@ -258,7 +259,7 @@ public class GitSourceControlDaoImpl implements SourceControlDao<Git> {
   }
 
   @Override
-  public void store(SessionContext context, Repository<Git> repository, String... files) {
+  public void  store(SessionContext context, Repository<Git> repository, Collection<String> files) {
     getSourceControlCommand(context).add(context, repository.getRepository(), files);
   }
 

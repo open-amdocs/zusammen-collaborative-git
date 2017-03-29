@@ -51,7 +51,7 @@ public interface GitSourceControlCommand<T> {
 
   boolean checkoutBranch(SessionContext context, Git git, String branch);
 
-  List<String> add(SessionContext context, Git git, String... files);
+  Collection<String> add(SessionContext context, Git git, Collection<String> files);
 
   RevCommit commit(SessionContext context, Git git, String message);
 

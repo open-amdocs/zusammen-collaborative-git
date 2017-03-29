@@ -27,7 +27,6 @@ import org.amdocs.zusammen.plugin.collaborationstore.dao.api.git.GitSourceContro
 import org.amdocs.zusammen.plugin.collaborationstore.dao.impl.git.commands.RevisionDiffCommand;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.util.SourceControlUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
-import org.amdocs.zusammen.plugin.collaborationstore.types.Repository;
 import org.amdocs.zusammen.utils.fileutils.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -63,7 +62,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git> {
   private static final String GIT_FILE_SEPARATOR = "/";
@@ -245,24 +243,24 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
   }
 
   @Override
-  public List<String> add(SessionContext context, Git git, String... files) {
-    files = files != null && files.length>0 ? files : new String[]{"."};
-    AddCommand command = git.add();
-    List<String> filesAdded = new ArrayList<>();
-    try {
-      for (String file : files) {
-        command.addFilepattern(file);
+  public Collection<String> add(SessionContext context, Git git, Collection<String> files) {
+    if (files == null) {
+      files = new ArrayList<>();
+      files.add(".");
+    }
 
-        command.call();
-        filesAdded.add(file);
-      }
+    AddCommand command = git.add();
+
+    try {
+      files.stream().forEach(file -> command.addFilepattern(file));
+      command.call();
     } catch (GitAPIException gae) {
       ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_ADD, Module.ZCSP, gae
           .getMessage(), null);
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
     }
-    return filesAdded;
+    return files;
   }
 
   @Override
@@ -373,7 +371,7 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
       RmCommand command = git.rm();
       for (String file : files) {
 
-        command.addFilepattern(file.replace(File.separator,GIT_FILE_SEPARATOR));
+        command.addFilepattern(file.replace(File.separator, GIT_FILE_SEPARATOR));
       }
 
       try {

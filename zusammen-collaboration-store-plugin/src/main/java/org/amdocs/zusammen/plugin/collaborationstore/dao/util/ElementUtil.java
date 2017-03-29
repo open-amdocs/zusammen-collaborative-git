@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,8 @@ public class ElementUtil {
   private static final String EMPTY_FILE = "";
 
 
-  public CollaborationElement initCollaborationElement(ElementContext elementContext, String elementPath,
+  public CollaborationElement initCollaborationElement(ElementContext elementContext,
+                                                       String elementPath,
                                                        Id elementId) {
     Namespace namespace = getNamespaceFromElementPath(elementPath, elementId.getValue());
 
@@ -62,16 +64,17 @@ public class ElementUtil {
       namespace,
                                                             Id elementId) {
 
-      return new CollaborationElement(elementContext.getItemId(),elementContext.getVersionId(), namespace,
-          elementId);
+    return new CollaborationElement(elementContext.getItemId(), elementContext.getVersionId(),
+        namespace,
+        elementId);
 
 
   }
 
   public CollaborationElement uploadCollaborationElement(ElementContext elementContext, String
-                                                          repositoryPath, String elementPath,
+      repositoryPath, String elementPath,
                                                          Id elementId) {
-    CollaborationElement element = initCollaborationElement( elementContext,elementPath,
+    CollaborationElement element = initCollaborationElement(elementContext, elementPath,
         elementId);
     populateElementContent(element, repositoryPath + File.separator + elementPath);
     return element;
@@ -100,7 +103,7 @@ public class ElementUtil {
         getSubElementIds(elementPath).stream().map(Id::new).collect(Collectors.toSet()));
   }
 
-  public ItemVersion uploadItemVersionData(Id itemId,Id versionId,String repositoryPath) {
+  public ItemVersion uploadItemVersionData(Id itemId, Id versionId, String repositoryPath) {
 
     return uploadItemVersionData(repositoryPath);
   }
@@ -152,42 +155,60 @@ public class ElementUtil {
   }
 
 
-  public void updateCollaborationElement( String basePath, String relativePath,
-                                         CollaborationElement element, Action action) {
+  public Collection<String> updateCollaborationElement(String basePath, String relativePath,
+                                                       CollaborationElement element,
+                                                       Action action) {
+    ArrayList<String> files = new ArrayList<>();
     if (action.equals(Action.CREATE)) {
-      addFileContent(basePath, relativePath,
-          PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME, EMPTY_FILE);
+      if (addFileContent(basePath, relativePath,
+          PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME, EMPTY_FILE)) {
+        files.add(relativePath + File.separator + PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME);
+      }
     }
 
     if (element.getId().getValue().equals(Id.ZERO.getValue())) {
       updateItemVersionDataFromCollaborationElement(basePath, element);
     }
 
-    addFileContent(basePath, relativePath, PluginConstants.INFO_FILE_NAME, element.getInfo());
-    if (element.getRelations() != null && element.getRelations().size() > 0) {
-      addFileContent(basePath, relativePath, PluginConstants.RELATIONS_FILE_NAME,
-          element.getRelations());
+    if (addFileContent(basePath, relativePath, PluginConstants.INFO_FILE_NAME, element.getInfo())) {
+      files.add(relativePath + File.separator + PluginConstants.INFO_FILE_NAME);
     }
-    addFileContent(basePath, relativePath, PluginConstants.VISUALIZATION_FILE_NAME,
-        element.getVisualization());
-    addFileContent(basePath, relativePath, PluginConstants.DATA_FILE_NAME, element.getData());
-    addFileContent(basePath, relativePath, PluginConstants.SEARCH_DATA_FILE_NAME,
-        element.getSearchableData());
+    if (element.getRelations() != null && element.getRelations().size() > 0) {
+      if (addFileContent(basePath, relativePath, PluginConstants.RELATIONS_FILE_NAME,
+          element.getRelations())) {
+        files.add(relativePath + File.separator + PluginConstants.RELATIONS_FILE_NAME);
+      }
+    }
+    if (addFileContent(basePath, relativePath, PluginConstants.VISUALIZATION_FILE_NAME,
+        element.getVisualization())) {
+      files.add(relativePath + File.separator + PluginConstants.VISUALIZATION_FILE_NAME);
+    }
+    if (addFileContent(basePath, relativePath, PluginConstants.DATA_FILE_NAME, element.getData())) {
+      files.add(relativePath + File.separator + PluginConstants.DATA_FILE_NAME);
+    }
+    if (addFileContent(basePath, relativePath, PluginConstants.SEARCH_DATA_FILE_NAME,
+        element.getSearchableData())) {
+      files.add(relativePath + File.separator + PluginConstants.SEARCH_DATA_FILE_NAME);
+    }
+    return files;
   }
 
 
-  private void updateItemVersionDataFromCollaborationElement(String basePath,
+  private Collection<String> updateItemVersionDataFromCollaborationElement(String basePath,
                                                              CollaborationElement element) {
+    List<String> files = new ArrayList<>();
     Info info = element.getInfo();
     if (info != null) {
-      addFileContent(basePath, null, PluginConstants.ITEM_VERSION_INFO_FILE_NAME, info);
+      if(addFileContent(basePath, null, PluginConstants.ITEM_VERSION_INFO_FILE_NAME, info))
+        files.add(PluginConstants.ITEM_VERSION_INFO_FILE_NAME);
     }
+    return files;
   }
 
-  public void addFileContent(String basePath, String relativePath, String fileName,
-                             Object fileContent) {
+  public boolean addFileContent(String basePath, String relativePath, String fileName,
+                                Object fileContent) {
     if (fileContent == null) {
-      return;
+      return false;
     }
     relativePath = relativePath == null ? "" : relativePath;
     if (fileContent instanceof InputStream) {
@@ -196,6 +217,7 @@ public class ElementUtil {
     } else {
       FileUtils.writeFile(basePath + File.separator + relativePath, fileName, fileContent);
     }
+    return true;
   }
 
   private void consumeFileContentAsInputStream(String filePath, String fileName,
@@ -241,10 +263,11 @@ public class ElementUtil {
     return elementIds;
   }
 
-  public CollaborationElement uploadElement(String itemId,String versionId,String elementId,String
-                                            rootPath,String elementPath) {
-    CollaborationElement element = initCollaborationElement(itemId,versionId,
-        elementPath,elementId);
+  public CollaborationElement uploadElement(String itemId, String versionId, String elementId,
+                                            String
+                                                rootPath, String elementPath) {
+    CollaborationElement element = initCollaborationElement(itemId, versionId,
+        elementPath, elementId);
     populateElementContent(element, rootPath + File.separator + elementPath);
     return element;
   }
@@ -252,8 +275,8 @@ public class ElementUtil {
   private CollaborationElement initCollaborationElement(String itemId, String versionId,
                                                         String elementPath,
                                                         String elementId) {
-    return new CollaborationElement(new Id(itemId),new Id(versionId),getNamespaceFromElementPath
-        (elementPath,elementId),new Id(elementId));
+    return new CollaborationElement(new Id(itemId), new Id(versionId), getNamespaceFromElementPath
+        (elementPath, elementId), new Id(elementId));
 
   }
 }

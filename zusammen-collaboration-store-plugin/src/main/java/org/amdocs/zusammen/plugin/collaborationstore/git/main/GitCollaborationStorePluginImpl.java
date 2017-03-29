@@ -103,6 +103,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   }
 
+
   @Override
   public Response<Void> createElement(SessionContext context, CollaborationElement element) {
     try {

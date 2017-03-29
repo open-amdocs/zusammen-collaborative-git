@@ -28,6 +28,7 @@ import org.amdocs.zusammen.plugin.collaborationstore.types.Repository;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElement;
 
 import java.io.File;
+import java.util.Collection;
 
 public class ElementCollaborationStore extends CollaborationStore {
 
@@ -47,8 +48,9 @@ public class ElementCollaborationStore extends CollaborationStore {
     String elementFullPath = repositoryPath + File.separator + elementPath;
     File elementPathFile = new File(elementFullPath);
     elementPathFile.mkdirs();
-    updateCollaborationElement(context, repositoryPath, elementPath, element, Action.CREATE);
-    dao.store(context, repository);
+    Collection<String> files = updateCollaborationElement(context, repositoryPath, elementPath,
+        element, Action.CREATE);
+    dao.store(context, repository,files);
     dao.commit(context, repository, PluginConstants.CREATE_ELEMENT_MESSAGE);
     dao.close(context, repository);
 
@@ -66,8 +68,8 @@ public class ElementCollaborationStore extends CollaborationStore {
         sourceControlUtil.getElementRelativePath(element.getNamespace(), element.getId());*/
     Repository repository = dao.initRepository(context, element.getItemId());
     dao.checkoutBranch(context, repository, element.getVersionId());
-    updateCollaborationElement(context, repositoryPath, elementPath, element, Action.UPDATE);
-    dao.store(context, repository);
+    Collection<String> files = updateCollaborationElement(context, repositoryPath, elementPath, element, Action.UPDATE);
+    dao.store(context, repository,files);
     dao.commit(context, repository, PluginConstants.UPDATE_ELEMENT_MESSAGE);
     dao.close(context, repository);
   }
@@ -105,11 +107,11 @@ public class ElementCollaborationStore extends CollaborationStore {
 
   }
 
-  protected void updateCollaborationElement(SessionContext context,
-                                            String basePath,
-                                            String relativePath,
-                                            CollaborationElement element, Action action) {
-    elementUtil.updateCollaborationElement(basePath, relativePath, element, action);
+  protected Collection<String> updateCollaborationElement(SessionContext context,
+                                                          String basePath,
+                                                          String relativePath,
+                                                          CollaborationElement element, Action action) {
+    return elementUtil.updateCollaborationElement(basePath, relativePath, element, action);
   }
 
 
