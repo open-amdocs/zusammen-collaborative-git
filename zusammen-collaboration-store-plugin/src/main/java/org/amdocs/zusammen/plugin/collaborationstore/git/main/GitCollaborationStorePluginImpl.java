@@ -103,6 +103,16 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   }
 
+  @Override
+  public Response<Void> commit(SessionContext context,Id itemId, Id versionId,String message){
+    try {
+      getElementCollaborationStore().commit(context, itemId, versionId, message);
+      return new Response(Void.TYPE);
+    }catch (ZusammenException zue){
+      return new Response(new ReturnCode(ErrorCode.CL_ELEMENT_CREATE, Module.ZCSP, null, zue
+          .getReturnCode()));
+    }
+  }
 
   @Override
   public Response<Void> createElement(SessionContext context, CollaborationElement element) {

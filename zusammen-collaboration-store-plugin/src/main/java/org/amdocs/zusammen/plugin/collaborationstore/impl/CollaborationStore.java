@@ -19,7 +19,6 @@ package org.amdocs.zusammen.plugin.collaborationstore.impl;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
-
 import org.amdocs.zusammen.plugin.collaborationstore.dao.util.ElementUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.util.SourceControlUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
@@ -29,7 +28,8 @@ public class CollaborationStore {
   ElementUtil elementUtil;
   SourceControlUtil sourceControlUtil;
   SourceControlDaoFactory sourceControlDaoFactory;
-  public CollaborationStore(){
+
+  public CollaborationStore() {
     elementUtil = new ElementUtil();
     sourceControlUtil = new SourceControlUtil();
   }
@@ -45,7 +45,7 @@ public class CollaborationStore {
 
   protected boolean addFileContent(SessionContext context, String basePath, String
       relativePath, String fileName, Object fileContent) {
-    return getElementUtil().addFileContent(basePath,relativePath, fileName, fileContent);
+    return getElementUtil().addFileContent(basePath, relativePath, fileName, fileContent);
 
   }
 

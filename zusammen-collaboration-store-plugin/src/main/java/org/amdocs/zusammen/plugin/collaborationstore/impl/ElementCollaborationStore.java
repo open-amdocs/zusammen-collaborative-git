@@ -21,6 +21,7 @@ import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.ElementContext;
+import org.amdocs.zusammen.datatypes.response.Response;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
 import org.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
@@ -34,6 +35,13 @@ public class ElementCollaborationStore extends CollaborationStore {
 
   public ElementCollaborationStore(SourceControlDaoFactory sourceControlDaoFactory) {
     this.sourceControlDaoFactory = sourceControlDaoFactory;
+  }
+
+  public void commit(SessionContext context, Id itemId, Id versionId, String message) {
+    SourceControlDao dao = getSourceControlDao(context);
+    Repository repository = dao.initRepository(context, itemId);
+    dao.checkoutBranch(context,repository,versionId);
+    dao.commit(context,repository,message);
   }
 
   public void create(SessionContext context, CollaborationElement element) {
@@ -51,7 +59,7 @@ public class ElementCollaborationStore extends CollaborationStore {
     Collection<String> files = updateCollaborationElement(context, repositoryPath, elementPath,
         element, Action.CREATE);
     dao.store(context, repository,files);
-    dao.commit(context, repository, PluginConstants.CREATE_ELEMENT_MESSAGE);
+    //dao.commit(context, repository, PluginConstants.CREATE_ELEMENT_MESSAGE);
     dao.close(context, repository);
 
     //return new CollaborationNamespace(elementPath);
@@ -70,7 +78,7 @@ public class ElementCollaborationStore extends CollaborationStore {
     dao.checkoutBranch(context, repository, element.getVersionId());
     Collection<String> files = updateCollaborationElement(context, repositoryPath, elementPath, element, Action.UPDATE);
     dao.store(context, repository,files);
-    dao.commit(context, repository, PluginConstants.UPDATE_ELEMENT_MESSAGE);
+    //dao.commit(context, repository, PluginConstants.UPDATE_ELEMENT_MESSAGE);
     dao.close(context, repository);
   }
 
@@ -79,7 +87,7 @@ public class ElementCollaborationStore extends CollaborationStore {
     Repository repository = dao.initRepository(context, element.getItemId());
     dao.checkoutBranch(context, repository, element.getVersionId());
     dao.delete(context, repository, getSourceControlUtil().getElementRelativePath(element.getNamespace(), element.getId()));
-    dao.commit(context, repository, PluginConstants.DELETE_ELEMENT_MESSAGE);
+    //dao.commit(context, repository, PluginConstants.DELETE_ELEMENT_MESSAGE);
     dao.close(context, repository);
   }
 
@@ -123,5 +131,6 @@ public class ElementCollaborationStore extends CollaborationStore {
     );
 
   }
+
 
 }
