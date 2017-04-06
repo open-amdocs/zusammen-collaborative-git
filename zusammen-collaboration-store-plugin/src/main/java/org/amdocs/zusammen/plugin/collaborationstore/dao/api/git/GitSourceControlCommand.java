@@ -19,7 +19,6 @@ package org.amdocs.zusammen.plugin.collaborationstore.dao.api.git;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
-import org.amdocs.zusammen.plugin.collaborationstore.types.Repository;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
@@ -31,7 +30,6 @@ import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 public interface GitSourceControlCommand<T> {
   String getBranch(SessionContext context, Git git) throws IOException;
@@ -49,11 +47,13 @@ public interface GitSourceControlCommand<T> {
 
   void createBranch(SessionContext context, Git git, String baseBranch, String branch);
 
-  boolean checkoutBranch(SessionContext context, Git git, String branch);
+  boolean checkoutChange(SessionContext context, Git git, String changeRef);
 
   Collection<String> add(SessionContext context, Git git, Collection<String> files);
 
   RevCommit commit(SessionContext context, Git git, String message);
+
+  void tag(SessionContext context, Git git, ObjectId revisionId, String tag, String message);
 
   PullResult sync(SessionContext context, Git git, String branchId);
 
@@ -71,7 +71,7 @@ public interface GitSourceControlCommand<T> {
 
   void delete(SessionContext context, Git git, String... files);
 
-  void reset(SessionContext context, Git git, ObjectId revisionId);
+  void reset(SessionContext context, Git git, String revisionRef);
 
   Iterable<RevCommit> listRevisionList(Git git, Id versionId);
 }

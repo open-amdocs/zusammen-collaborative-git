@@ -25,15 +25,16 @@ import org.amdocs.zusammen.datatypes.item.ItemVersionData;
 import org.amdocs.zusammen.datatypes.item.ItemVersionDataConflict;
 import org.amdocs.zusammen.datatypes.itemversion.Change;
 import org.amdocs.zusammen.datatypes.itemversion.ItemVersionHistory;
+import org.amdocs.zusammen.datatypes.itemversion.Tag;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
-import org.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationConflictResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.ElementRawData;
 import org.amdocs.zusammen.plugin.collaborationstore.types.ItemVersionRawData;
 import org.amdocs.zusammen.plugin.collaborationstore.types.Repository;
+import org.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import org.amdocs.zusammen.sdk.SdkConstants;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElementConflict;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeChange;
@@ -74,36 +75,40 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     dao.createBranch(context, repository, baseBranchId, versionId);
     dao.checkoutBranch(context, repository, versionId);
     Collection<String> files = storeItemVersionData(context, itemId, versionId, dao
-        .getRepositoryLocation(context,
-        repository),
+            .getRepositoryLocation(context,
+                repository),
         itemVersionData,
         Action.CREATE);
-    dao.store(context, repository,files);
+    dao.store(context, repository, files);
     dao.commit(context, repository, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
 
     dao.close(context, repository);
   }
 
   protected Collection<String> storeItemVersionData(SessionContext context, Id itemId, Id versionId,
-                                         String rootPath, ItemVersionData itemVersionData, Action
-                                             action) {
-    List<String> files  =new ArrayList<>();
+                                                    String rootPath,
+                                                    ItemVersionData itemVersionData, Action
+                                                        action) {
+    List<String> files = new ArrayList<>();
     if (itemVersionData == null || (itemVersionData.getInfo() == null && itemVersionData
         .getRelations() == null)) {
       return files;
     }
     if (action.equals(Action.CREATE)) {
-      if(storeZusammenTaggingInfo(context, rootPath, itemId, versionId))
+      if (storeZusammenTaggingInfo(context, rootPath, itemId, versionId)) {
         files.add(PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME);
+      }
     }
     if (itemVersionData.getInfo() != null) {
-      if(storeData(context, itemId, ITEM_VERSION_INFO_FILE_NAME, itemVersionData
-          .getInfo()))
-      files.add(PluginConstants.ITEM_VERSION_INFO_FILE_NAME);
+      if (storeData(context, itemId, ITEM_VERSION_INFO_FILE_NAME, itemVersionData
+          .getInfo())) {
+        files.add(PluginConstants.ITEM_VERSION_INFO_FILE_NAME);
+      }
     }
     if (itemVersionData.getRelations() != null && itemVersionData.getRelations().size() > 0) {
-      if(storeData(context, itemId, RELATIONS_FILE_NAME, itemVersionData.getRelations()))
+      if (storeData(context, itemId, RELATIONS_FILE_NAME, itemVersionData.getRelations())) {
         files.add(PluginConstants.RELATIONS_FILE_NAME);
+      }
     }
 
     return files;
@@ -151,11 +156,11 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     SourceControlDao dao = getSourceControlDao(context);
     Repository repository = dao.initRepository(context, itemId);
     dao.checkoutBranch(context, repository, versionId);
-    Collection<String> files = storeItemVersionData(context, itemId, versionId, dao
-            .getRepositoryLocation(context, repository),
+    Collection<String> files = storeItemVersionData(context, itemId, versionId,
+        dao.getRepositoryLocation(context, repository),
         itemVersionData,
         Action.UPDATE);
-    if (files!=null && files.size()>0) {
+    if (files != null && files.size() > 0) {
       dao.store(context, repository, files);
       dao.commit(context, repository, PluginConstants.SAVE_ITEM_VERSION_MESSAGE);
     }
@@ -163,11 +168,19 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
 
   }
 
-
   public void delete(SessionContext sessionContext, Id itemId, Id versionId) {
     /*todo*/
   }
 
+  public void tag(SessionContext context, Id itemId, Id versionId, Id changeId, Tag tag) {
+    SourceControlDao dao = getSourceControlDao(context);
+    Repository repository = dao.initRepository(context, itemId);
+    if (changeId == null) {
+      dao.checkoutBranch(context, repository, versionId);
+    }
+    dao.tag(context, repository, changeId, tag.getName(), tag.getDescription());
+    dao.close(context, repository);
+  }
 
   public CollaborationPublishResult publish(SessionContext context, Id itemId, Id versionId,
                                             String message) {
@@ -307,14 +320,11 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
 
 
   public CollaborationMergeChange resetHistory(SessionContext context,
-                                               ElementContext elementContext,
-
-
-                                               Id changeId) {
+                                               ElementContext elementContext, String changeRef) {
     SourceControlDao dao = getSourceControlDao(context);
     Repository repository = dao.initRepository(context, elementContext.getItemId());
 
-    CollaborationDiffResult collaborationDiffResult = dao.reset(context, repository, changeId);
+    CollaborationDiffResult collaborationDiffResult = dao.reset(context, repository, changeRef);
     CollaborationMergeChange changes = getSourceControlUtil()
         .loadFileDiffElements(context, getSourceControlUtil().getPrivateRepositoryPath(context,
             PluginConstants.PRIVATE_PATH, elementContext.getItemId()),
@@ -335,7 +345,7 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
   public ItemVersionHistory listHistory(SessionContext context, Id itemId, Id versionId) {
     SourceControlDao dao = getSourceControlDao(context);
     Repository repository = dao.initRepository(context, itemId);
-    List<Change> commitIdList = dao.listRevisionHistory(context, repository,versionId);
+    List<Change> commitIdList = dao.listRevisionHistory(context, repository, versionId);
     ItemVersionHistory itemVersionHistory = new ItemVersionHistory();
 
     for (Change change : commitIdList) {
@@ -353,4 +363,6 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     change.setUser(revCommit.getAuthorIdent().getName());
     return change;
   }
+
+
 }

@@ -20,9 +20,9 @@ import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.itemversion.Change;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
-import org.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
+import org.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
 import org.amdocs.zusammen.plugin.collaborationstore.types.Repository;
 import org.eclipse.jgit.api.Git;
 
@@ -59,7 +59,7 @@ public class ItemVersionCollaborationStoreTestMock {
 
     @Override
     public CollaborationSyncResult merge(SessionContext context, Repository repository,
-                                        Id versionId) {
+                                         Id versionId) {
       return this.mergeResult;
     }
 
@@ -72,7 +72,7 @@ public class ItemVersionCollaborationStoreTestMock {
     }
 
     public void setSyncResult(CollaborationSyncResult collaborationSyncResult) {
-        this.syncResult = collaborationSyncResult;
+      this.syncResult = collaborationSyncResult;
 
     }
 
@@ -85,19 +85,19 @@ public class ItemVersionCollaborationStoreTestMock {
       this.revCommits = revCommits;
     }
 
-    public List<Change> listRevisionHistory(SessionContext context,Repository repository,Id
-        versionId){
+    public List<Change> listRevisionHistory(SessionContext context, Repository repository, Id
+        versionId) {
       return this.revCommits;
 
     }
 
-    public void setCollaborationDiffResult(CollaborationDiffResult collaborationDiffResult){
+    public void setCollaborationDiffResult(CollaborationDiffResult collaborationDiffResult) {
       this.collaborationDiffResult = collaborationDiffResult;
     }
 
     @Override
     public CollaborationDiffResult reset(SessionContext context, Repository repository,
-                                         Id changeId){
+                                         String changeRef) {
       return this.collaborationDiffResult;
 
     }
@@ -108,6 +108,12 @@ public class ItemVersionCollaborationStoreTestMock {
     @Override
     public Repository initRepository(SessionContext context, Id ItemId) {
       return null;
+    }
+
+    @Override
+    public boolean checkoutChange(SessionContext context, Repository<Git> repository,
+                                  String changeRef) {
+      return false;
     }
 
     @Override
@@ -137,9 +143,14 @@ public class ItemVersionCollaborationStoreTestMock {
     }
 
     @Override
-    public void store(SessionContext context, Repository<Git
-        > repository, Collection<String>
-        files) {
+    public void store(SessionContext context, Repository<Git> repository,
+                      Collection<String> files) {
+
+    }
+
+    @Override
+    public void tag(SessionContext context, Repository<Git> repository, Id changeId, String tag,
+                    String message) {
 
     }
 
@@ -183,7 +194,7 @@ public class ItemVersionCollaborationStoreTestMock {
 
     @Override
     public CollaborationDiffResult reset(SessionContext context, Repository repository,
-                                         Id changeId) {
+                                         String changeRef) {
       return null;
     }
 

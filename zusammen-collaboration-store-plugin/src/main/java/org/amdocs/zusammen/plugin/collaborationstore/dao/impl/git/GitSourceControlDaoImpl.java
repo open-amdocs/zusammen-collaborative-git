@@ -132,7 +132,7 @@ public class GitSourceControlDaoImpl implements SourceControlDao<Git> {
       }
       collaborationSyncResult.setCollaborationConflictResult(collaborationConflictResult);
       getSourceControlCommand(context)
-          .reset(context, repository.getRepository(), previousRevisionId);
+          .reset(context, repository.getRepository(), previousRevisionId.getName());
     }
 
     return collaborationSyncResult;
@@ -191,30 +191,31 @@ public class GitSourceControlDaoImpl implements SourceControlDao<Git> {
 
   @Override
   public CollaborationDiffResult reset(SessionContext context, Repository<Git> repository,
-                                       Id changeId) {
-
-
-    ObjectId revId = ObjectId.fromString(changeId.getValue());
-
+                                       String changeRef) {
+    Git git = repository.getRepository();
+    ObjectId revisionId;
+    try {
+      revisionId = git.getRepository().resolve(changeRef + "^{commit}");
+    } catch (IOException ioe) {
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_RESET, Module.ZCSP, ioe.getMessage(), null);
+      logger.error(returnCode.toString(), ioe);
+      throw new ZusammenException(returnCode);
+    }
 
     Collection<DiffEntry> resetResult =
-        getSourceControlCommand(context).diff(context, repository.getRepository(), revId, null);
-    getSourceControlCommand(context).reset(context, repository.getRepository(),
-        revId);
-    CollaborationDiffResult collaborationDiffResult = getGitSourceControlUtil().getFileDiff
-        (resetResult);
-    return collaborationDiffResult;
+        getSourceControlCommand(context).diff(context, git, revisionId, null);
+    getSourceControlCommand(context).reset(context, git, changeRef);
 
-
+    return getGitSourceControlUtil().getFileDiff(resetResult);
   }
 
   @Override
   public List<Change> listRevisionHistory(SessionContext context, Repository<Git> repository,
                                           Id versionId) {
     List<Change> changeList = new ArrayList<>();
-    Iterable<RevCommit> listRev = getSourceControlCommand(context).listRevisionList(repository
-            .getRepository(),
-        versionId);
+    Iterable<RevCommit> listRev =
+        getSourceControlCommand(context).listRevisionList(repository.getRepository(), versionId);
 
     for (RevCommit rev : listRev) {
       changeList.add(getChange(rev));
@@ -243,29 +244,42 @@ public class GitSourceControlDaoImpl implements SourceControlDao<Git> {
   }
 
   @Override
-  public void createBranch(SessionContext context, Repository<Git> repository, String
-      baseBranchId,
+  public void createBranch(SessionContext context, Repository<Git> repository, String baseBranchId,
                            Id versionId) {
     getSourceControlCommand(context).createBranch(context, repository.getRepository()
         , baseBranchId, versionId.getValue());
   }
 
   @Override
-  public boolean checkoutBranch(SessionContext context, Repository<Git> repository, Id
-      versionId) {
-    return getSourceControlCommand(context).checkoutBranch(context, repository.getRepository(),
-        versionId
-            .getValue());
+  public boolean checkoutBranch(SessionContext context, Repository<Git> repository,
+                                Id branchId) {
+    return getSourceControlCommand(context)
+        .checkoutChange(context, repository.getRepository(), branchId.toString());
   }
 
   @Override
-  public void  store(SessionContext context, Repository<Git> repository, Collection<String> files) {
+  public boolean checkoutChange(SessionContext context, Repository<Git> repository,
+                                String changeRef) {
+    return getSourceControlCommand(context)
+        .checkoutChange(context, repository.getRepository(), changeRef);
+  }
+
+  @Override
+  public void store(SessionContext context, Repository<Git> repository, Collection<String> files) {
     getSourceControlCommand(context).add(context, repository.getRepository(), files);
   }
 
   @Override
   public void commit(SessionContext context, Repository<Git> repository, String message) {
     getSourceControlCommand(context).commit(context, repository.getRepository(), message);
+  }
+
+  @Override
+  public void tag(SessionContext context, Repository<Git> repository, Id changeId, String tag,
+                  String message) {
+    getSourceControlCommand(context)
+        .tag(context, repository.getRepository(),
+            changeId == null ? null : ObjectId.fromString(changeId.getValue()), tag, message);
   }
 
   @Override

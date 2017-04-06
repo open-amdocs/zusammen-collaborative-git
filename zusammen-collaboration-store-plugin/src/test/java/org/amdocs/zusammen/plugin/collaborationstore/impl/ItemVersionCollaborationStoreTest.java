@@ -29,13 +29,13 @@ import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.util.SourceControlUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
-import org.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationConflictResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.FileInfoDiff;
 import org.amdocs.zusammen.plugin.collaborationstore.types.ItemVersionRawData;
 import org.amdocs.zusammen.plugin.collaborationstore.types.Repository;
+import org.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElementConflict;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeChange;
 import org.eclipse.jgit.api.Git;
@@ -123,8 +123,9 @@ public class ItemVersionCollaborationStoreTest {
     itemVersionData.setInfo(info);
     info.setName("createItemVersion");
 
-    doReturn(new ArrayList<>()).when(itemVersionCollaborationStoreTest).storeItemVersionData(anyObject(),
-        anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+    doReturn(new ArrayList<>()).when(itemVersionCollaborationStoreTest)
+        .storeItemVersionData(anyObject(),
+            anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
 
     itemVersionCollaborationStoreTest.create(context, ITEM_ID, null, VERSION_ID, itemVersionData);
 
@@ -156,8 +157,9 @@ public class ItemVersionCollaborationStoreTest {
     Info info = new Info();
     itemVersionData.setInfo(info);
     info.setName("createItemVersion");
-    doReturn(new ArrayList<>()).when(itemVersionCollaborationStoreTest).storeItemVersionData(anyObject(),
-        anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+    doReturn(new ArrayList<>()).when(itemVersionCollaborationStoreTest)
+        .storeItemVersionData(anyObject(),
+            anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
 
 
     itemVersionCollaborationStoreTest
@@ -192,8 +194,9 @@ public class ItemVersionCollaborationStoreTest {
     itemVersionData.setInfo(info);
     info.setName("saveItemVersion");
 
-    doReturn(new ArrayList<>()).when(itemVersionCollaborationStoreTest).storeItemVersionData(anyObject(),
-        anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
+    doReturn(new ArrayList<>()).when(itemVersionCollaborationStoreTest)
+        .storeItemVersionData(anyObject(),
+            anyObject(), anyObject(), anyObject(), anyObject(), anyObject());
 
 
     itemVersionCollaborationStoreTest.save(context, ITEM_ID, VERSION_ID, itemVersionData);
@@ -478,14 +481,13 @@ public class ItemVersionCollaborationStoreTest {
     ItemVersionCollaborationStore itemVersionCollaborationStoreTest = spy(new
         ItemVersionCollaborationStore(sourceControlDaoFactoryMock));
 
-    Id id = new Id(ObjectId.zeroId().getName());
     CollaborationDiffResult collaborationDiffResult = new CollaborationDiffResult(
         CollaborationDiffResult.MODE.NEW);
     FileInfoDiff fileDiff = new FileInfoDiff(".", Action.CREATE);
     collaborationDiffResult.add(fileDiff);
     sourceControlDaoMock.setCollaborationDiffResult(collaborationDiffResult);
     itemVersionCollaborationStoreTest.resetHistory(context, new ElementContext(ITEM_ID, VERSION_ID),
-        id);
+        ObjectId.zeroId().getName());
   }
 
   @Test

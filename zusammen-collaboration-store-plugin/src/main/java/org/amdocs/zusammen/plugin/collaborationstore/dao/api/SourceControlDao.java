@@ -19,9 +19,9 @@ package org.amdocs.zusammen.plugin.collaborationstore.dao.api;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.itemversion.Change;
-import org.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
 import org.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
+import org.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
 import org.amdocs.zusammen.plugin.collaborationstore.types.Repository;
 
 import java.util.Collection;
@@ -35,33 +35,37 @@ public interface SourceControlDao<T> {
 
   void close(SessionContext context, Repository<T> repository);
 
-  String getRepositoryLocation(SessionContext context,Repository<T> repository);
+  String getRepositoryLocation(SessionContext context, Repository<T> repository);
 
   void createBranch(SessionContext context, Repository<T> repository, String baseBranchId,
                     Id versionId);
 
-  boolean checkoutBranch(SessionContext context, Repository<T> repository, Id versionId);
+  boolean checkoutBranch(SessionContext context, Repository<T> repository, Id branchId);
 
-  void  store(SessionContext context, Repository<T> repository, Collection<String> files);
+  boolean checkoutChange(SessionContext context, Repository<T> repository, String changeRef);
+
+  void store(SessionContext context, Repository<T> repository, Collection<String> files);
 
   void commit(SessionContext context, Repository<T> repository, String message);
+
+  void tag(SessionContext context, Repository<T> repository, Id changeId, String tag,
+           String message);
 
   CollaborationSyncResult sync(SessionContext context, Repository<T> repository, Id versionId);
 
   LocalRemoteDataConflict splitFileContentConflict(SessionContext context, byte[] data);
 
   Repository<T> cloneRepository(SessionContext context, String source, String target,
-                                  Id branch);
+                                Id branch);
 
   Collection<String> getBranchFileList(SessionContext context, Repository<T> repository);
 
-  CollaborationSyncResult merge(SessionContext context, Repository<T> repository, Id
-      sourceVersionId);
+  CollaborationSyncResult merge(SessionContext context, Repository<T> repository,
+                                Id sourceVersionId);
 
   void delete(SessionContext context, Repository<T> repository, String fullPath);
 
-  CollaborationDiffResult reset(SessionContext context, Repository<T> repository, Id changeId);
+  CollaborationDiffResult reset(SessionContext context, Repository<T> repository, String changeRef);
 
   List<Change> listRevisionHistory(SessionContext context, Repository<T> repository, Id versionId);
-
 }

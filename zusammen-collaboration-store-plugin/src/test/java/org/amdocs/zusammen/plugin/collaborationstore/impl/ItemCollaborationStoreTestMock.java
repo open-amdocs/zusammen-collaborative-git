@@ -39,6 +39,12 @@ public class ItemCollaborationStoreTestMock {
     }
 
     @Override
+    public boolean checkoutChange(SessionContext context, Repository<Git> repository,
+                                  String changeRef) {
+      return false;
+    }
+
+    @Override
     public CollaborationDiffResult publish(SessionContext context, Repository repository) {
       return null;
     }
@@ -67,6 +73,12 @@ public class ItemCollaborationStoreTestMock {
     @Override
     public void store(SessionContext context, Repository<Git> repository, Collection<String>
         files) {
+
+    }
+
+    @Override
+    public void tag(SessionContext context, Repository<Git> repository, Id changeId, String tag,
+                    String message) {
 
     }
 
@@ -110,7 +122,7 @@ public class ItemCollaborationStoreTestMock {
 
     @Override
     public CollaborationDiffResult reset(SessionContext context, Repository repository,
-                                         Id changeId) {
+                                         String changeRef) {
       return null;
     }
 
