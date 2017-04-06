@@ -40,6 +40,7 @@ import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElementConflict;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeChange;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -457,7 +458,6 @@ public class ItemVersionCollaborationStoreTest {
 
     sourceControlDaoMock.setListRevisionHistory(revCommits);
     Change change = new Change();
-    Mockito.doReturn(change).when(itemVersionCollaborationStoreTest).getChange(anyObject());
 
     ItemVersionHistory changes =
         itemVersionCollaborationStoreTest.listHistory(context, ITEM_ID, VERSION_ID);
@@ -501,6 +501,5 @@ public class ItemVersionCollaborationStoreTest {
         itemVersionData,
         Action.CREATE);
   }
-
 
 }

@@ -34,7 +34,7 @@ public class CollaborationStore {
     sourceControlUtil = new SourceControlUtil();
   }
 
-  protected SourceControlDao getSourceControlDao(SessionContext context) {
+  protected <T> SourceControlDao<T> getSourceControlDao(SessionContext context) {
     return this.sourceControlDaoFactory.createInterface(context);
   }
 

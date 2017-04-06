@@ -92,6 +92,7 @@ public class ElementUtil {
                 }.getType()))
         .ifPresent(element::setRelations);
 
+
     consumeFileContentAsInputStream(elementPath, PluginConstants.VISUALIZATION_FILE_NAME,
         element::setVisualization);
     consumeFileContentAsInputStream(elementPath, PluginConstants.DATA_FILE_NAME,

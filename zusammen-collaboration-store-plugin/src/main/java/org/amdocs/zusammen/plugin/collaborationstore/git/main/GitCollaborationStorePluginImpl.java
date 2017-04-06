@@ -39,6 +39,9 @@ import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeChange;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeResult;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationPublishResult;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   private final ItemCollaborationStore itemCollaborationStore =
@@ -251,6 +254,21 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
           null, ze
           .getReturnCode()));
     }
+  }
+
+  @Override
+  public Response<Collection<CollaborationElement>> getList(SessionContext context,
+                                                            ElementContext elementContext,
+                                                            Namespace namespace, Id elementId) {
+    ElementCollaborationStore collaborationStore = getElementCollaborationStore();
+    CollaborationElement parentElement = collaborationStore.get(context,
+        elementContext, namespace, elementId);
+
+    Namespace childNamespace = new Namespace(namespace,parentElement.getId());
+
+    return new Response<>(parentElement.getSubElements().stream().map
+        (id->collaborationStore.get(context,
+        elementContext, childNamespace, id)).collect(Collectors.toList()));
   }
 
 

@@ -100,6 +100,7 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
     RefSpec refSpec = new RefSpec(branch);
     Iterable<PushResult> pushResults;
     try {
+      command.setPushTags();
       command.setRefSpecs(refSpec);
       pushResults = command.call();
     } catch (GitAPIException e) {

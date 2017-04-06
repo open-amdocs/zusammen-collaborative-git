@@ -43,6 +43,7 @@ import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeResult;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationPublishResult;
 import org.amdocs.zusammen.utils.fileutils.FileUtils;
 import org.amdocs.zusammen.utils.fileutils.json.JsonUtil;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.File;
@@ -285,7 +286,6 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     return getSourceControlUtil().uploadRawItemVersionData(context, repositoryPath);
   }
 
-
   public CollaborationMergeResult merge(SessionContext context, Id itemId, Id
       versionId, Id sourceVersionId) {
     CollaborationMergeResult result = new CollaborationMergeResult();
@@ -352,16 +352,6 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
       itemVersionHistory.addChange(change);
     }
     return itemVersionHistory;
-  }
-
-  protected Change getChange(RevCommit revCommit) {
-    Change change;
-    change = new Change();
-    change.setChangeId(new Id(revCommit.getId().getName()));
-    change.setTime(revCommit.getCommitTime());
-    change.setMessage(revCommit.getFullMessage());
-    change.setUser(revCommit.getAuthorIdent().getName());
-    return change;
   }
 
 
