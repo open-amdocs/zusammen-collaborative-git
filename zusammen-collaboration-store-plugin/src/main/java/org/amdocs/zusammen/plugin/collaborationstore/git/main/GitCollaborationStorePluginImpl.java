@@ -263,9 +263,12 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     ElementCollaborationStore collaborationStore = getElementCollaborationStore();
     CollaborationElement parentElement = collaborationStore.get(context,
         elementContext, namespace, elementId);
-
-    Namespace childNamespace = new Namespace(namespace,parentElement.getId());
-
+    Namespace childNamespace;
+    if(Id.ZERO.getValue().equals(parentElement.getId().getValue())){
+      childNamespace = Namespace.ROOT_NAMESPACE;
+    }else {
+      childNamespace = new Namespace(namespace, parentElement.getId());
+    }
     return new Response<>(parentElement.getSubElements().stream().map
         (id->collaborationStore.get(context,
         elementContext, childNamespace, id)).collect(Collectors.toList()));

@@ -95,7 +95,13 @@ public class ElementCollaborationStore extends CollaborationStore {
   public CollaborationElement get(SessionContext context, ElementContext elementContext,
                                   Namespace namespace, Id elementId) {
     SourceControlDao dao = getSourceControlDao(context);
-    String elementPath = getSourceControlUtil().getElementRelativePath(namespace, elementId);
+    String elementPath;
+    if(elementId ==null){
+      elementId = Id.ZERO;
+      elementPath = namespace.ROOT_NAMESPACE.getValue();
+    }else {
+      elementPath = getSourceControlUtil().getElementRelativePath(namespace, elementId);
+    }
     String repositoryPath = getSourceControlUtil().getPrivateRepositoryPath(context,
         PluginConstants.PRIVATE_PATH.replace(PluginConstants.TENANT, context.getTenant()),
         elementContext.getItemId());
