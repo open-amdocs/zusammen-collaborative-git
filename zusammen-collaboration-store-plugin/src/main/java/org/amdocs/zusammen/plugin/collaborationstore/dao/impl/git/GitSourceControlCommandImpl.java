@@ -221,18 +221,18 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
       changeRef = "master";
     }
     try {
-      String current = git.getRepository().getBranch();
+/*      String current = git.getRepository().getBranch();
       if (current.equals(changeRef) ||
           current.equals(git.getRepository().resolve(changeRef + "^{commit}").getName())) {
         return true;
-      }
+      }*/
 
       CheckoutCommand command = git.checkout();
       command.setName(changeRef);
       command.call();
     } catch (RefNotFoundException noSuchBranch) {
       return false;
-    } catch (IOException | GitAPIException gae) {
+    } catch (GitAPIException gae) {
       ReturnCode returnCode =
           new ReturnCode(GitErrorCode.GI_CHECKOUT_BRANCH, Module.ZCSP, gae.getMessage(), null);
       logger.error(returnCode.toString());
