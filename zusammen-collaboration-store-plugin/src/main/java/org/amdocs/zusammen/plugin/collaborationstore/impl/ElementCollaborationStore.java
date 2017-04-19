@@ -96,16 +96,15 @@ public class ElementCollaborationStore extends CollaborationStore {
                                   Namespace namespace, Id elementId) {
     SourceControlDao dao = getSourceControlDao(context);
     String elementPath;
-    if(elementId ==null){
+    if (elementId == null) {
       elementId = Id.ZERO;
-      elementPath = namespace.ROOT_NAMESPACE.getValue();
-    }else {
+      elementPath = Namespace.ROOT_NAMESPACE.getValue();
+    } else {
       elementPath = getSourceControlUtil().getElementRelativePath(namespace, elementId);
     }
     String repositoryPath = getSourceControlUtil().getPrivateRepositoryPath(context,
         PluginConstants.PRIVATE_PATH.replace(PluginConstants.TENANT, context.getTenant()),
         elementContext.getItemId());
-    //String fullPath = repositoryPath + File.separator + elementPath;
 
     Repository repository = dao.initRepository(context, elementContext.getItemId());
     try {
@@ -114,8 +113,12 @@ public class ElementCollaborationStore extends CollaborationStore {
       } else {
         dao.checkoutChange(context, repository, elementContext.getChangeRef());
       }
-      return uploadCollaborationElement(context, elementContext, repositoryPath, elementPath,
-          elementId);
+
+      // TODO: 4/18/2017 hide the use of file (as this class shouldn't be aware of the repo impl)
+      return new File(repositoryPath + File.separator + elementPath).exists()
+          ? uploadCollaborationElement(context, elementContext, repositoryPath, elementPath,
+          elementId)
+          : null;
     } finally {
       if (repository != null) {
         dao.close(context, repository);
