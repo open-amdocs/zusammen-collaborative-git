@@ -107,7 +107,8 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public Response<Void> commit(SessionContext context, Id itemId, Id versionId, String message) {
+  public Response<Void> commitElements(SessionContext context, Id itemId, Id versionId,
+                                       String message) {
     try {
       getElementCollaborationStore().commit(context, itemId, versionId, message);
       return new Response(Void.TYPE);
@@ -256,9 +257,10 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public Response<Collection<CollaborationElement>> list(SessionContext context,
-                                                         ElementContext elementContext,
-                                                         Namespace namespace, Id elementId) {
+  public Response<Collection<CollaborationElement>> listElements(SessionContext context,
+                                                                 ElementContext elementContext,
+                                                                 Namespace namespace,
+                                                                 Id elementId) {
     ElementCollaborationStore collaborationStore = getElementCollaborationStore();
     CollaborationElement parentElement =
         collaborationStore.get(context, elementContext, namespace, elementId);
