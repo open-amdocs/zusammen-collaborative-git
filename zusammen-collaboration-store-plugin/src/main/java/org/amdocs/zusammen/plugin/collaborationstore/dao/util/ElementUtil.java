@@ -81,24 +81,26 @@ public class ElementUtil {
   }
 
   private void populateElementContent(CollaborationElement element, String elementPath) {
-    getFileContentAsInputStream(elementPath, PluginConstants.INFO_FILE_NAME).map(fileContent ->
-        JsonUtil.json2Object(fileContent, Info.class))
-        .ifPresent(element::setInfo);
+    if(!element.getId().getValue().equals(Id.ZERO.getValue())) { // if not root
+      getFileContentAsInputStream(elementPath, PluginConstants.INFO_FILE_NAME).map(fileContent ->
+          JsonUtil.json2Object(fileContent, Info.class))
+          .ifPresent(element::setInfo);
 
-    getFileContentAsInputStream(elementPath, PluginConstants.RELATIONS_FILE_NAME)
-        .map(fileContent ->
-            (ArrayList<Relation>) JsonUtil
-                .json2Object(fileContent, new TypeToken<ArrayList<Relation>>() {
-                }.getType()))
-        .ifPresent(element::setRelations);
+      getFileContentAsInputStream(elementPath, PluginConstants.RELATIONS_FILE_NAME)
+          .map(fileContent ->
+              (ArrayList<Relation>) JsonUtil
+                  .json2Object(fileContent, new TypeToken<ArrayList<Relation>>() {
+                  }.getType()))
+          .ifPresent(element::setRelations);
 
-    consumeFileContentAsInputStream(elementPath, PluginConstants.VISUALIZATION_FILE_NAME,
-        element::setVisualization);
-    consumeFileContentAsInputStream(elementPath, PluginConstants.DATA_FILE_NAME,
-        element::setData);
-    consumeFileContentAsInputStream(elementPath, PluginConstants.SEARCH_DATA_FILE_NAME,
-        element::setSearchableData);
 
+      consumeFileContentAsInputStream(elementPath, PluginConstants.VISUALIZATION_FILE_NAME,
+          element::setVisualization);
+      consumeFileContentAsInputStream(elementPath, PluginConstants.DATA_FILE_NAME,
+          element::setData);
+      consumeFileContentAsInputStream(elementPath, PluginConstants.SEARCH_DATA_FILE_NAME,
+          element::setSearchableData);
+    }
     element.setSubElements(
         getSubElementIds(elementPath).stream().map(Id::new).collect(Collectors.toSet()));
   }

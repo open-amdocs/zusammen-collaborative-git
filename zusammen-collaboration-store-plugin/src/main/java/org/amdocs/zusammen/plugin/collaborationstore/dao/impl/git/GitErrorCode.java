@@ -37,4 +37,5 @@ public class GitErrorCode {
   public static final int GI_CHECKOUT_BRANCH = 61800;
   public static final int GI_OPEN = 61900;
   public static final int GI_GET_BRANCH = 62000;
+  public static final int GI_TAG = 62100;
 }

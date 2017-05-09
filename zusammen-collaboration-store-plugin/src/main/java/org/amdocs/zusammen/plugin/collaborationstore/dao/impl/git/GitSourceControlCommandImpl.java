@@ -42,7 +42,9 @@ import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.RmCommand;
+import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidTagNameException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.dircache.DirCache;
@@ -51,6 +53,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.PushResult;
@@ -67,8 +70,8 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
   private static final String GIT_FILE_SEPARATOR = "/";
   private SourceControlUtil sourceControlUtil;
 
-  private static ZusammenLogger logger = ZusammenLoggerFactory.getLogger
-      (GitSourceControlCommandImpl.class.getName());
+  private static ZusammenLogger logger =
+      ZusammenLoggerFactory.getLogger(GitSourceControlCommandImpl.class.getName());
 
   private GitSourceControlUtil gitSourceControlUtil = new GitSourceControlUtil();
 
@@ -83,22 +86,21 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
     try {
       return Git.open(new File(repositoryPath));
     } catch (IOException ioe) {
-      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_OPEN, Module.ZCSP, ioe
-          .getMessage(), null);
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_OPEN, Module.ZCSP, ioe.getMessage(), null);
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
     }
   }
 
   @Override
-  public CollaborationDiffResult publish(SessionContext context,
-                                         Git git,
-                                         String branch) {
+  public CollaborationDiffResult publish(SessionContext context, Git git, String branch) {
 
     PushCommand command = git.push();
     RefSpec refSpec = new RefSpec(branch);
     Iterable<PushResult> pushResults;
     try {
+      command.setPushTags();
       command.setRefSpecs(refSpec);
       pushResults = command.call();
     } catch (GitAPIException e) {
@@ -139,8 +141,8 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
       }
       return mergeResult;
     } catch (GitAPIException | IOException ex) {
-      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_MERGE, Module.ZCSP, ex.getMessage
-          (), null);
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_MERGE, Module.ZCSP, ex.getMessage(), null);
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
     }
@@ -148,8 +150,6 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
 
   @Override
   public PullResult sync(SessionContext context, Git git, String branchId) {
-
-
     PullCommand command = git.pull();
 
     try {
@@ -159,8 +159,8 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
       return result;
 
     } catch (GitAPIException gae) {
-      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_SYNC, Module.ZCSP, gae.getMessage
-          (), null);
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_SYNC, Module.ZCSP, gae.getMessage(), null);
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
     }
@@ -169,8 +169,7 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
 
 
   @Override
-  public Collection<DiffEntry> diff(SessionContext context, Git git, ObjectId from,
-                                    ObjectId to) {
+  public Collection<DiffEntry> diff(SessionContext context, Git git, ObjectId from, ObjectId to) {
     to = to != null ? to : getHead(context, git);
     RevisionDiffCommand command = RevisionDiffCommand.init(git);
     command.from(from);
@@ -200,18 +199,16 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
   public void createBranch(SessionContext context, Git git, String baseBranch, String branch) {
 
     if (baseBranch != null) {
-      checkoutBranch(context, git, baseBranch);
+      checkoutChange(context, git, baseBranch);
     }
     CreateBranchCommand command = git.branchCreate();
 
     try {
-
       command.setName(branch);
       command.call();
-
     } catch (GitAPIException /*| IOException*/ gae) {
-      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_CREATE_BRANCH, Module.ZCSP, gae
-          .getMessage(), null);
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_CREATE_BRANCH, Module.ZCSP, gae.getMessage(), null);
       logger.error(returnCode.toString());
 
       throw new ZusammenException(returnCode);
@@ -219,22 +216,25 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
   }
 
   @Override
-  public boolean checkoutBranch(SessionContext context, Git git, String branch) {
-    if (branch == null) {
-      branch = "master";
+  public boolean checkoutChange(SessionContext context, Git git, String changeRef) {
+    if (changeRef == null) {
+      changeRef = "master";
     }
     try {
-      if (branch.equals(git.getRepository().getBranch())) {
+/*      String current = git.getRepository().getBranch();
+      if (current.equals(changeRef) ||
+          current.equals(git.getRepository().resolve(changeRef + "^{commit}").getName())) {
         return true;
-      }
+      }*/
+
       CheckoutCommand command = git.checkout();
-      command.setName(branch);
+      command.setName(changeRef);
       command.call();
     } catch (RefNotFoundException noSuchBranch) {
       return false;
-    } catch (IOException | GitAPIException gae) {
-      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_CHECKOUT_BRANCH, Module.ZCSP, gae
-          .getMessage(), null);
+    } catch (GitAPIException gae) {
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_CHECKOUT_BRANCH, Module.ZCSP, gae.getMessage(), null);
       logger.error(returnCode.toString());
 
       throw new ZusammenException(returnCode);
@@ -252,11 +252,12 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
     AddCommand command = git.add();
 
     try {
-      files.stream().forEach(file -> command.addFilepattern(file));
+      files.forEach(
+          file -> command.addFilepattern(file.replace(File.separator, GIT_FILE_SEPARATOR)));
       command.call();
     } catch (GitAPIException gae) {
-      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_ADD, Module.ZCSP, gae
-          .getMessage(), null);
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_ADD, Module.ZCSP, gae.getMessage(), null);
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
     }
@@ -272,10 +273,37 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
       command.setAuthor(context.getUser().getUserName(), "zusammen@amdocs.com");
       return command.call();
     } catch (GitAPIException gae) {
-      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_COMMIT, Module.ZCSP, gae.getMessage
-          (), null);
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_COMMIT, Module.ZCSP, gae.getMessage(), null);
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
+    }
+  }
+
+  @Override
+  public void tag(SessionContext context, Git git, ObjectId revisionId, String tag,
+                  String message) {
+    TagCommand command = git.tag();
+    command.setAnnotated(true);
+    command.setName(tag);
+    command.setMessage(message);
+
+    if (revisionId != null) {
+      RevWalk revWalk = new RevWalk(git.getRepository());
+      try {
+        RevObject revObject = revWalk.parseAny(revisionId);
+        command.setObjectId(revObject);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+    try {
+      command.call();
+    } catch (InvalidTagNameException e) {
+      e.printStackTrace();
+    } catch (GitAPIException gae) {
+      throw handleException(context, GitErrorCode.GI_TAG, gae);
     }
   }
 
@@ -285,8 +313,8 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
       return git.getRepository().resolve(Constants.HEAD);
 
     } catch (IOException ioe) {
-      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_GET_HEAD, Module.ZCSP, ioe.getMessage
-          (), null);
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_GET_HEAD, Module.ZCSP, ioe.getMessage(), null);
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
     }
@@ -340,9 +368,8 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
       return files;
 
     } catch (IOException ioe) {
-      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_GET_BRANCH_FILE_LIST, Module.ZCSP, ioe
-          .getMessage
-              (), null);
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_GET_BRANCH_FILE_LIST, Module.ZCSP, ioe.getMessage(), null);
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
     }
@@ -357,8 +384,7 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
       command.call();
     } catch (GitAPIException gae) {
       ReturnCode returnCode =
-          new ReturnCode(GitErrorCode.GI_RESET_MERGE, Module.ZCSP, gae.getMessage
-              (), null);
+          new ReturnCode(GitErrorCode.GI_RESET_MERGE, Module.ZCSP, gae.getMessage(), null);
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
     }
@@ -377,8 +403,8 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
       try {
         DirCache ret = command.call();
       } catch (GitAPIException gae) {
-        ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_DELETE, Module.ZCSP, gae.getMessage
-            (), null);
+        ReturnCode returnCode =
+            new ReturnCode(GitErrorCode.GI_DELETE, Module.ZCSP, gae.getMessage(), null);
         logger.error(returnCode.toString());
         throw new ZusammenException(returnCode);
       }
@@ -387,19 +413,18 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
 
 
   @Override
-  public void reset(SessionContext context, Git git, ObjectId revisionId) {
+  public void reset(SessionContext context, Git git, String revisionRef) {
     ResetCommand command = git.reset();
     try {
-      command.setRef(revisionId.getName());
+      command.setRef(revisionRef);
       command.setMode(ResetCommand.ResetType.HARD);
       command.call();
     } catch (GitAPIException gae) {
-      ReturnCode returnCode = new ReturnCode(GitErrorCode.GI_RESET, Module.ZCSP, gae.getMessage
-          (), null);
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_RESET, Module.ZCSP, gae.getMessage(), null);
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
     }
-
   }
 
   @Override
@@ -409,12 +434,9 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
       return command.call();
     } catch (GitAPIException gae) {
       ReturnCode returnCode =
-          new ReturnCode(GitErrorCode.GI_LIST_HISTORY, Module.ZCSP, gae.getMessage
-              (), null);
+          new ReturnCode(GitErrorCode.GI_LIST_HISTORY, Module.ZCSP, gae.getMessage(), null);
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
     }
   }
-
-
 }

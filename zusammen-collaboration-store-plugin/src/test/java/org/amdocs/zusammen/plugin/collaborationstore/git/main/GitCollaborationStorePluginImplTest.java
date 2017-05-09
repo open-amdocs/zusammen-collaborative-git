@@ -19,10 +19,10 @@ package org.amdocs.zusammen.plugin.collaborationstore.git.main;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.ElementContext;
+import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
 import org.amdocs.zusammen.plugin.collaborationstore.impl.ElementCollaborationStore;
 import org.amdocs.zusammen.plugin.collaborationstore.impl.ItemCollaborationStore;
 import org.amdocs.zusammen.plugin.collaborationstore.impl.ItemVersionCollaborationStore;
-import org.amdocs.zusammen.plugin.collaborationstore.git.util.TestUtil;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -44,9 +44,11 @@ public class GitCollaborationStorePluginImplTest {
   @Mock
   ItemCollaborationStore itemCollaborationStore = mock(ItemCollaborationStore.class);
   @Mock
-  ItemVersionCollaborationStore itemVersionCollaborationStore  = mock(ItemVersionCollaborationStore.class);
+  ItemVersionCollaborationStore itemVersionCollaborationStore =
+      mock(ItemVersionCollaborationStore.class);
   @Mock
-  ElementCollaborationStore elementCollaborationStore = mock(ElementCollaborationStore.class);;
+  ElementCollaborationStore elementCollaborationStore = mock(ElementCollaborationStore.class);
+  ;
 
 
   @BeforeMethod
@@ -127,7 +129,7 @@ public class GitCollaborationStorePluginImplTest {
   @Test
   public void testSyncItemVersion() throws Exception {
     gitCollaborationStorePluginMock.syncItemVersion(context, null, null);
-    verify(itemVersionCollaborationStore).sync(anyObject(),anyObject(),anyObject());
+    verify(itemVersionCollaborationStore).sync(anyObject(), anyObject(), anyObject());
   }
 
   @Test
@@ -156,13 +158,10 @@ public class GitCollaborationStorePluginImplTest {
   public void testResetItemVersionHistory() {
     Id itemId = new Id("itemId");
     Id versionId = new Id("versionId");
-    Id changeId = new Id("changeId");
+    String changeId = "changeId";
 
-    gitCollaborationStorePluginMock.revertItemVersionHistory(context, itemId, versionId, changeId);
-    verify(itemVersionCollaborationStore).resetHistory(context, new ElementContext(itemId,
-        versionId),
-        changeId);
+    gitCollaborationStorePluginMock.resetItemVersionHistory(context, itemId, versionId, changeId);
+    verify(itemVersionCollaborationStore)
+        .resetHistory(context, new ElementContext(itemId, versionId), changeId);
   }
-
-
 }

@@ -23,6 +23,7 @@ import org.amdocs.zusammen.datatypes.item.ElementContext;
 import org.amdocs.zusammen.datatypes.item.Info;
 import org.amdocs.zusammen.datatypes.item.ItemVersionData;
 import org.amdocs.zusammen.datatypes.itemversion.ItemVersionHistory;
+import org.amdocs.zusammen.datatypes.itemversion.Tag;
 import org.amdocs.zusammen.datatypes.response.ErrorCode;
 import org.amdocs.zusammen.datatypes.response.Module;
 import org.amdocs.zusammen.datatypes.response.Response;
@@ -38,6 +39,9 @@ import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeChange;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeResult;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationPublishResult;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   private final ItemCollaborationStore itemCollaborationStore =
@@ -50,12 +54,11 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
   @Override
   public Response<Void> createItem(SessionContext context, Id itemId, Info info) {
-
     try {
       itemCollaborationStore.create(context, itemId, info);
       return new Response(Void.TYPE);
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ITEM_CREATE, Module.ZCSP, null, ze
+      return new Response<>(new ReturnCode(ErrorCode.CL_ITEM_CREATE, Module.ZCSP, null, ze
           .getReturnCode()));
     }
   }
@@ -66,7 +69,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       itemCollaborationStore.delete(context, itemId);
       return new Response(Void.TYPE);
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ITEM_DELETE, Module.ZCSP, null, ze
+      return new Response<>(new ReturnCode(ErrorCode.CL_ITEM_DELETE, Module.ZCSP, null, ze
           .getReturnCode()));
     }
 
@@ -82,7 +85,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
           .create(context, itemId, baseVersionId, versionId, itemVersionData);
       return new Response(Void.TYPE);
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_CREATE, Module.ZCSP, null, ze
+      return new Response<>(new ReturnCode(ErrorCode.CL_ITEM_VERSION_CREATE, Module.ZCSP, null, ze
           .getReturnCode()));
     }
 
@@ -97,19 +100,20 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       return new Response(Void.TYPE);
     } catch (ZusammenException ze) {
       return
-          new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_UPDATE, Module.ZCSP, null, ze
+          new Response<>(new ReturnCode(ErrorCode.CL_ITEM_VERSION_UPDATE, Module.ZCSP, null, ze
               .getReturnCode()));
     }
 
   }
 
   @Override
-  public Response<Void> commit(SessionContext context,Id itemId, Id versionId,String message){
+  public Response<Void> commitElements(SessionContext context, Id itemId, Id versionId,
+                                       String message) {
     try {
       getElementCollaborationStore().commit(context, itemId, versionId, message);
       return new Response(Void.TYPE);
-    }catch (ZusammenException zue){
-      return new Response(new ReturnCode(ErrorCode.CL_ELEMENT_CREATE, Module.ZCSP, null, zue
+    } catch (ZusammenException zue) {
+      return new Response<>(new ReturnCode(ErrorCode.CL_ELEMENT_CREATE, Module.ZCSP, null, zue
           .getReturnCode()));
     }
   }
@@ -120,7 +124,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       getElementCollaborationStore().create(context, element);
       return new Response(Void.TYPE);
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ELEMENT_CREATE, Module.ZCSP, null, ze
+      return new Response<>(new ReturnCode(ErrorCode.CL_ELEMENT_CREATE, Module.ZCSP, null, ze
           .getReturnCode()));
     }
 
@@ -132,7 +136,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       getElementCollaborationStore().update(context, element);
       return new Response(Void.TYPE);
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ELEMENT_UPDATE, Module.ZCSP, null, ze
+      return new Response<>(new ReturnCode(ErrorCode.CL_ELEMENT_UPDATE, Module.ZCSP, null, ze
           .getReturnCode()));
     }
 
@@ -145,7 +149,7 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       getElementCollaborationStore().delete(context, element);
       return new Response(Void.TYPE);
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ELEMENT_DELETE, Module.ZCSP, null, ze
+      return new Response<>(new ReturnCode(ErrorCode.CL_ELEMENT_DELETE, Module.ZCSP, null, ze
           .getReturnCode()));
     }
 
@@ -157,10 +161,21 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       getItemVersionCollaborationStore().delete(context, itemId, versionId);
       return new Response(Void.TYPE);
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_DELETE, Module.ZCSP, null, ze
+      return new Response<>(new ReturnCode(ErrorCode.CL_ITEM_VERSION_DELETE, Module.ZCSP, null, ze
           .getReturnCode()));
     }
+  }
 
+  @Override
+  public Response<Void> tagItemVersion(SessionContext context, Id itemId, Id versionId,
+                                       Id changeId, Tag tag) {
+    try {
+      getItemVersionCollaborationStore().tag(context, itemId, versionId, changeId, tag);
+      return new Response(Void.TYPE);
+    } catch (ZusammenException ze) {
+      return new Response<>(
+          new ReturnCode(ErrorCode.CL_ITEM_VERSION_TAG, Module.ZCSP, null, ze.getReturnCode()));
+    }
   }
 
   @Override
@@ -170,9 +185,9 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     try {
       CollaborationPublishResult collaborationPublishResult = getItemVersionCollaborationStore()
           .publish(context, itemId, versionId, message);
-      return new Response(collaborationPublishResult);
+      return new Response<>(collaborationPublishResult);
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_PUBLISH, Module.ZCSP, null, ze
+      return new Response<>(new ReturnCode(ErrorCode.CL_ITEM_VERSION_PUBLISH, Module.ZCSP, null, ze
           .getReturnCode()));
     }
   }
@@ -181,9 +196,9 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   public Response<CollaborationMergeResult> syncItemVersion(SessionContext context, Id itemId, Id
       versionId) {
     try {
-      return new Response(getItemVersionCollaborationStore().sync(context, itemId, versionId));
+      return new Response<>(getItemVersionCollaborationStore().sync(context, itemId, versionId));
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_SYNC, Module.ZCSP, null, ze
+      return new Response<>(new ReturnCode(ErrorCode.CL_ITEM_VERSION_SYNC, Module.ZCSP, null, ze
           .getReturnCode()));
     }
   }
@@ -192,10 +207,10 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   public Response<CollaborationMergeResult> mergeItemVersion(SessionContext context, Id itemId, Id
       versionId, Id sourceVersionId) {
     try {
-      return new Response(getItemVersionCollaborationStore().merge(context, itemId, versionId,
+      return new Response<>(getItemVersionCollaborationStore().merge(context, itemId, versionId,
           sourceVersionId));
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_MERGE, Module.ZCSP, null, ze
+      return new Response<>(new ReturnCode(ErrorCode.CL_ITEM_VERSION_MERGE, Module.ZCSP, null, ze
           .getReturnCode()));
     }
   }
@@ -205,10 +220,10 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       elementContext,
                                                    Namespace namespace, Id elementId) {
     try {
-      return new Response(getElementCollaborationStore().get(context, elementContext, namespace,
+      return new Response<>(getElementCollaborationStore().get(context, elementContext, namespace,
           elementId));
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ELEMENT_GET, Module.ZCSP, null, ze
+      return new Response<>(new ReturnCode(ErrorCode.CL_ELEMENT_GET, Module.ZCSP, null, ze
           .getReturnCode()));
     }
   }
@@ -217,33 +232,50 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   public Response<ItemVersionHistory> listItemVersionHistory(SessionContext context, Id itemId,
                                                              Id versionId) {
     try {
-      return new Response(
+      return new Response<>(
           getItemVersionCollaborationStore().listHistory(context, itemId, versionId));
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_HISTORY, Module.ZCSP,
+      return new Response<>(new ReturnCode(ErrorCode.CL_ITEM_VERSION_HISTORY, Module.ZCSP,
           null, ze
           .getReturnCode()));
     }
   }
 
   @Override
-  public Response<CollaborationMergeChange> revertItemVersionHistory(SessionContext context, Id
-      itemId, Id
-                                                                         versionId, Id changeId) {
+  public Response<CollaborationMergeChange> resetItemVersionHistory(SessionContext context,
+                                                                    Id itemId, Id versionId,
+                                                                    String changeRef) {
     try {
       ElementContext elementContext = new ElementContext(itemId, versionId);
-      return new Response(getItemVersionCollaborationStore().resetHistory(context,elementContext, changeId));
+      return new Response<>(
+          getItemVersionCollaborationStore().resetHistory(context, elementContext, changeRef));
     } catch (ZusammenException ze) {
-      return new Response(new ReturnCode(ErrorCode.CL_ITEM_VERSION_REVERT_HISTORY, Module.ZCSP,
-          null, ze
-          .getReturnCode()));
+      return new Response<>(
+          new ReturnCode(ErrorCode.CL_ITEM_VERSION_RESET_HISTORY, Module.ZCSP, null,
+              ze.getReturnCode()));
     }
   }
 
+  @Override
+  public Response<Collection<CollaborationElement>> listElements(SessionContext context,
+                                                                 ElementContext elementContext,
+                                                                 Namespace namespace,
+                                                                 Id elementId) {
+    ElementCollaborationStore collaborationStore = getElementCollaborationStore();
+    CollaborationElement parentElement =
+        collaborationStore.get(context, elementContext, namespace, elementId);
+
+    Namespace childNamespace = Id.ZERO.getValue().equals(parentElement.getId().getValue())
+        ? Namespace.ROOT_NAMESPACE
+        : new Namespace(namespace, parentElement.getId());
+
+    return new Response<>(parentElement.getSubElements().stream()
+        .map(id -> collaborationStore.get(context, elementContext, childNamespace, id))
+        .collect(Collectors.toList()));
+  }
 
   protected ItemCollaborationStore getItemCollaborationStore() {
     return this.itemCollaborationStore;
-
   }
 
   protected ItemVersionCollaborationStore getItemVersionCollaborationStore() {

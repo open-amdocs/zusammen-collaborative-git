@@ -21,11 +21,10 @@ import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
 import org.amdocs.zusammen.datatypes.item.Action;
 import org.amdocs.zusammen.datatypes.item.ElementContext;
-import org.amdocs.zusammen.datatypes.response.Response;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
-import org.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import org.amdocs.zusammen.plugin.collaborationstore.types.Repository;
+import org.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElement;
 
 import java.io.File;
@@ -40,8 +39,8 @@ public class ElementCollaborationStore extends CollaborationStore {
   public void commit(SessionContext context, Id itemId, Id versionId, String message) {
     SourceControlDao dao = getSourceControlDao(context);
     Repository repository = dao.initRepository(context, itemId);
-    dao.checkoutBranch(context,repository,versionId);
-    dao.commit(context,repository,message);
+    dao.checkoutBranch(context, repository, versionId);
+    dao.commit(context, repository, message);
   }
 
   public void create(SessionContext context, CollaborationElement element) {
@@ -58,7 +57,7 @@ public class ElementCollaborationStore extends CollaborationStore {
     elementPathFile.mkdirs();
     Collection<String> files = updateCollaborationElement(context, repositoryPath, elementPath,
         element, Action.CREATE);
-    dao.store(context, repository,files);
+    dao.store(context, repository, files);
     //dao.commit(context, repository, PluginConstants.CREATE_ELEMENT_MESSAGE);
     dao.close(context, repository);
 
@@ -76,8 +75,9 @@ public class ElementCollaborationStore extends CollaborationStore {
         sourceControlUtil.getElementRelativePath(element.getNamespace(), element.getId());*/
     Repository repository = dao.initRepository(context, element.getItemId());
     dao.checkoutBranch(context, repository, element.getVersionId());
-    Collection<String> files = updateCollaborationElement(context, repositoryPath, elementPath, element, Action.UPDATE);
-    dao.store(context, repository,files);
+    Collection<String> files =
+        updateCollaborationElement(context, repositoryPath, elementPath, element, Action.UPDATE);
+    dao.store(context, repository, files);
     //dao.commit(context, repository, PluginConstants.UPDATE_ELEMENT_MESSAGE);
     dao.close(context, repository);
   }
@@ -86,7 +86,8 @@ public class ElementCollaborationStore extends CollaborationStore {
     SourceControlDao dao = getSourceControlDao(context);
     Repository repository = dao.initRepository(context, element.getItemId());
     dao.checkoutBranch(context, repository, element.getVersionId());
-    dao.delete(context, repository, getSourceControlUtil().getElementRelativePath(element.getNamespace(), element.getId()));
+    dao.delete(context, repository,
+        getSourceControlUtil().getElementRelativePath(element.getNamespace(), element.getId()));
     //dao.commit(context, repository, PluginConstants.DELETE_ELEMENT_MESSAGE);
     dao.close(context, repository);
   }
@@ -94,31 +95,42 @@ public class ElementCollaborationStore extends CollaborationStore {
   public CollaborationElement get(SessionContext context, ElementContext elementContext,
                                   Namespace namespace, Id elementId) {
     SourceControlDao dao = getSourceControlDao(context);
-
-
-    String elementPath = getSourceControlUtil().getElementRelativePath(namespace, elementId);
+    String elementPath;
+    if (elementId == null) {
+      elementId = Id.ZERO;
+      elementPath = Namespace.ROOT_NAMESPACE.getValue();
+    } else {
+      elementPath = getSourceControlUtil().getElementRelativePath(namespace, elementId);
+    }
     String repositoryPath = getSourceControlUtil().getPrivateRepositoryPath(context,
         PluginConstants.PRIVATE_PATH.replace(PluginConstants.TENANT, context.getTenant()),
         elementContext.getItemId());
-    //String fullPath = repositoryPath + File.separator + elementPath;
 
     Repository repository = dao.initRepository(context, elementContext.getItemId());
     try {
-      dao.checkoutBranch(context, repository, elementContext.getVersionId());
-      return uploadCollaborationElement(context, elementContext, repositoryPath, elementPath,
-          elementId);
+      if (elementContext.getChangeRef() == null) {
+        dao.checkoutBranch(context, repository, elementContext.getVersionId());
+      } else {
+        dao.checkoutChange(context, repository, elementContext.getChangeRef());
+      }
+
+      // TODO: 4/18/2017 hide the use of file (as this class shouldn't be aware of the repo impl)
+      return new File(repositoryPath + File.separator + elementPath).exists()
+          ? uploadCollaborationElement(context, elementContext, repositoryPath, elementPath,
+          elementId)
+          : null;
     } finally {
       if (repository != null) {
         dao.close(context, repository);
       }
     }
-
   }
 
   protected Collection<String> updateCollaborationElement(SessionContext context,
                                                           String basePath,
                                                           String relativePath,
-                                                          CollaborationElement element, Action action) {
+                                                          CollaborationElement element,
+                                                          Action action) {
     return elementUtil.updateCollaborationElement(basePath, relativePath, element, action);
   }
 
