@@ -16,6 +16,10 @@
 
 package org.amdocs.zusammen.plugin.collaborationstore.git.main;
 
+import org.amdocs.zusammen.commons.health.data.HealthInfo;
+import org.amdocs.zusammen.commons.health.data.HealthStatus;
+import org.amdocs.zusammen.commons.log.ZusammenLogger;
+import org.amdocs.zusammen.commons.log.ZusammenLoggerFactory;
 import org.amdocs.zusammen.datatypes.Id;
 import org.amdocs.zusammen.datatypes.Namespace;
 import org.amdocs.zusammen.datatypes.SessionContext;
@@ -29,6 +33,7 @@ import org.amdocs.zusammen.datatypes.response.Module;
 import org.amdocs.zusammen.datatypes.response.Response;
 import org.amdocs.zusammen.datatypes.response.ReturnCode;
 import org.amdocs.zusammen.datatypes.response.ZusammenException;
+import org.amdocs.zusammen.plugin.collaborationstore.dao.api.CollaborationHealthCheck;
 import org.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
 import org.amdocs.zusammen.plugin.collaborationstore.impl.ElementCollaborationStore;
 import org.amdocs.zusammen.plugin.collaborationstore.impl.ItemCollaborationStore;
@@ -38,19 +43,47 @@ import org.amdocs.zusammen.sdk.collaboration.types.CollaborationElement;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeChange;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeResult;
 import org.amdocs.zusammen.sdk.collaboration.types.CollaborationPublishResult;
+import org.eclipse.jgit.api.errors.JGitInternalException;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
+  public static final Id HEALTH_CHECK_ID = new Id( "HealthCheck");
   private final ItemCollaborationStore itemCollaborationStore =
-      new ItemCollaborationStore(SourceControlDaoFactory.getInstance());
+          new ItemCollaborationStore(SourceControlDaoFactory.getInstance());
   private final ItemVersionCollaborationStore itemVersionCollaborationStore =
-      new ItemVersionCollaborationStore(SourceControlDaoFactory.getInstance());
+          new ItemVersionCollaborationStore(SourceControlDaoFactory.getInstance());
   private final ElementCollaborationStore elementCollaborationStore =
-      new ElementCollaborationStore(SourceControlDaoFactory.getInstance());
+          new ElementCollaborationStore(SourceControlDaoFactory.getInstance());
+  private static final ZusammenLogger loggger = ZusammenLoggerFactory.getLogger(GitCollaborationStorePluginImpl.class.getName());
 
+  @Override
+  public Response<HealthInfo> checkHealth(SessionContext sessionContext) {
+    try {
+      createItem(sessionContext, HEALTH_CHECK_ID, null);
+      createItem(sessionContext, HEALTH_CHECK_ID, null);
+    } catch (JGitInternalException e) {
+      if (e.getMessage().contains("already exists")) {
+        return new Response<HealthInfo>( new HealthInfo( CollaborationHealthCheck.MODULE_NAME,
+                HealthStatus.UP, ""));
+      }
+      loggger.error("Health check failed " +e.getMessage(),e);
+      return new Response<>(new HealthInfo( CollaborationHealthCheck.MODULE_NAME,
+              HealthStatus.DOWN, e.getMessage()));
+
+    } catch (Throwable ze) {
+      loggger.error("Health check failed " + ze);
+      return new Response<>(new HealthInfo( CollaborationHealthCheck.MODULE_NAME,
+              HealthStatus.DOWN, ze.getMessage()));
+    }
+    return new Response<>(new HealthInfo( CollaborationHealthCheck.MODULE_NAME,
+            HealthStatus.DOWN, "Should never succeed"));
+  }
 
   @Override
   public Response<Void> createItem(SessionContext context, Id itemId, Info info) {
