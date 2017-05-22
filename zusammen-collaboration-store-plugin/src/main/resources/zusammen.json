@@ -4,7 +4,7 @@
     "plugins": {
       "zusammen_collaborative_store": {
         "implementationClass":
-        "org.amdocs.zusammen.plugin.collaborationstore.git.main.GitCollaborationStorePluginImpl"
+        "com.amdocs.zusammen.plugin.collaborationstore.git.main.GitCollaborationStorePluginImpl"
       }
     }
   }

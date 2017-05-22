@@ -18,9 +18,9 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.amdocs.zusammen.plugin</groupId>
+    <groupId>com.amdocs.zusammen.plugin</groupId>
     <artifactId>zusammen-collaborative-store</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <packaging>pom</packaging>
     <url>http://maven.apache.org</url>
     <properties>
