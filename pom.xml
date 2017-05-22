@@ -20,7 +20,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.amdocs.zusammen.plugin</groupId>
     <artifactId>zusammen-collaborative-store</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <url>http://maven.apache.org</url>
     <properties>
