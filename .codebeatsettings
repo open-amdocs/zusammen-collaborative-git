@@ -1,5 +1,7 @@
 {
   "JAVA": {
     "ARITY": [6, 8, 10, 12]
+    "TOO_MANY_IVARS": [6, 8, 11, 14]
+    "TOO_MANY_FUNCTIONS": [20, 25, 30, 50]
   }
 }
