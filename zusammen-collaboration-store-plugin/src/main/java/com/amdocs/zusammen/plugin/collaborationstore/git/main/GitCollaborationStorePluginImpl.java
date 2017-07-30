@@ -16,11 +16,6 @@
 
 package com.amdocs.zusammen.plugin.collaborationstore.git.main;
 
-import com.amdocs.zusammen.plugin.collaborationstore.dao.api.CollaborationHealthCheck;
-import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
-import com.amdocs.zusammen.plugin.collaborationstore.impl.ElementCollaborationStore;
-import com.amdocs.zusammen.plugin.collaborationstore.impl.ItemCollaborationStore;
-import com.amdocs.zusammen.plugin.collaborationstore.impl.ItemVersionCollaborationStore;
 import com.amdocs.zusammen.commons.health.data.HealthInfo;
 import com.amdocs.zusammen.commons.health.data.HealthStatus;
 import com.amdocs.zusammen.commons.log.ZusammenLogger;
@@ -31,6 +26,8 @@ import com.amdocs.zusammen.datatypes.SessionContext;
 import com.amdocs.zusammen.datatypes.item.ElementContext;
 import com.amdocs.zusammen.datatypes.item.Info;
 import com.amdocs.zusammen.datatypes.item.ItemVersionData;
+import com.amdocs.zusammen.datatypes.item.ItemVersionStatus;
+import com.amdocs.zusammen.datatypes.item.Resolution;
 import com.amdocs.zusammen.datatypes.itemversion.ItemVersionHistory;
 import com.amdocs.zusammen.datatypes.itemversion.Tag;
 import com.amdocs.zusammen.datatypes.response.ErrorCode;
@@ -38,8 +35,15 @@ import com.amdocs.zusammen.datatypes.response.Module;
 import com.amdocs.zusammen.datatypes.response.Response;
 import com.amdocs.zusammen.datatypes.response.ReturnCode;
 import com.amdocs.zusammen.datatypes.response.ZusammenException;
+import com.amdocs.zusammen.plugin.collaborationstore.dao.api.CollaborationHealthCheck;
+import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
+import com.amdocs.zusammen.plugin.collaborationstore.impl.ElementCollaborationStore;
+import com.amdocs.zusammen.plugin.collaborationstore.impl.ItemCollaborationStore;
+import com.amdocs.zusammen.plugin.collaborationstore.impl.ItemVersionCollaborationStore;
 import com.amdocs.zusammen.sdk.collaboration.CollaborationStore;
 import com.amdocs.zusammen.sdk.collaboration.types.CollaborationElement;
+import com.amdocs.zusammen.sdk.collaboration.types.CollaborationElementConflict;
+import com.amdocs.zusammen.sdk.collaboration.types.CollaborationItemVersionConflict;
 import com.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeChange;
 import com.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeResult;
 import com.amdocs.zusammen.sdk.collaboration.types.CollaborationPublishResult;
@@ -50,14 +54,15 @@ import java.util.stream.Collectors;
 
 public class GitCollaborationStorePluginImpl implements CollaborationStore {
 
-  public static final Id HEALTH_CHECK_ID = new Id( "HealthCheck");
+  public static final Id HEALTH_CHECK_ID = new Id("HealthCheck");
   private final ItemCollaborationStore itemCollaborationStore =
-          new ItemCollaborationStore(SourceControlDaoFactory.getInstance());
+      new ItemCollaborationStore(SourceControlDaoFactory.getInstance());
   private final ItemVersionCollaborationStore itemVersionCollaborationStore =
-          new ItemVersionCollaborationStore(SourceControlDaoFactory.getInstance());
+      new ItemVersionCollaborationStore(SourceControlDaoFactory.getInstance());
   private final ElementCollaborationStore elementCollaborationStore =
-          new ElementCollaborationStore(SourceControlDaoFactory.getInstance());
-  private static final ZusammenLogger loggger = ZusammenLoggerFactory.getLogger(GitCollaborationStorePluginImpl.class.getName());
+      new ElementCollaborationStore(SourceControlDaoFactory.getInstance());
+  private static final ZusammenLogger loggger =
+      ZusammenLoggerFactory.getLogger(GitCollaborationStorePluginImpl.class.getName());
 
   @Override
   public Response<HealthInfo> checkHealth(SessionContext sessionContext) {
@@ -66,20 +71,20 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
       createItem(sessionContext, HEALTH_CHECK_ID, null);
     } catch (JGitInternalException e) {
       if (e.getMessage().contains("already exists")) {
-        return new Response<HealthInfo>( new HealthInfo( CollaborationHealthCheck.MODULE_NAME,
-                HealthStatus.UP, ""));
+        return new Response<HealthInfo>(new HealthInfo(CollaborationHealthCheck.MODULE_NAME,
+            HealthStatus.UP, ""));
       }
-      loggger.error("Health check failed " +e.getMessage(),e);
-      return new Response<>(new HealthInfo( CollaborationHealthCheck.MODULE_NAME,
-              HealthStatus.DOWN, e.getMessage()));
+      loggger.error("Health check failed " + e.getMessage(), e);
+      return new Response<>(new HealthInfo(CollaborationHealthCheck.MODULE_NAME,
+          HealthStatus.DOWN, e.getMessage()));
 
     } catch (Throwable ze) {
       loggger.error("Health check failed " + ze);
-      return new Response<>(new HealthInfo( CollaborationHealthCheck.MODULE_NAME,
-              HealthStatus.DOWN, ze.getMessage()));
+      return new Response<>(new HealthInfo(CollaborationHealthCheck.MODULE_NAME,
+          HealthStatus.DOWN, ze.getMessage()));
     }
-    return new Response<>(new HealthInfo( CollaborationHealthCheck.MODULE_NAME,
-            HealthStatus.DOWN, "Should never succeed"));
+    return new Response<>(new HealthInfo(CollaborationHealthCheck.MODULE_NAME,
+        HealthStatus.DOWN, "Should never succeed"));
   }
 
   @Override
@@ -197,6 +202,12 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
+  public Response<ItemVersionStatus> getItemVersionStatus(SessionContext context, Id itemId,
+                                                          Id versionId) {
+    throw new UnsupportedOperationException("getItemVersionStatus is not yet supported");
+  }
+
+  @Override
   public Response<Void> tagItemVersion(SessionContext context, Id itemId, Id versionId,
                                        Id changeId, Tag tag) {
     try {
@@ -303,6 +314,30 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
         .map(id -> collaborationStore.get(context, elementContext, childNamespace, id))
         .collect(Collectors.toList()));
   }
+
+  @Override
+  public Response<CollaborationItemVersionConflict> getItemVersionConflict(SessionContext context,
+                                                                           Id itemId,
+                                                                           Id versionId) {
+    throw new UnsupportedOperationException(
+        "conflict resolution is not supported in the current git plugin");
+  }
+
+  @Override
+  public Response<CollaborationElementConflict> getElementConflict(SessionContext context,
+                                                                   ElementContext elementContext,
+                                                                   Id elementId) {
+    throw new UnsupportedOperationException(
+        "conflict resolution is not supported in the current git plugin");
+  }
+
+  @Override
+  public Response<Void> resolveConflict(SessionContext context, ElementContext elementContext,
+                                        Id elementId, Resolution resolution) {
+    throw new UnsupportedOperationException(
+        "conflict resolution is not supported in the current git plugin");
+  }
+
 
   protected ItemCollaborationStore getItemCollaborationStore() {
     return this.itemCollaborationStore;
