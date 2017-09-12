@@ -191,6 +191,13 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
+  public Response<Void> resolveElementConflict(SessionContext context, CollaborationElement element,
+                                               Resolution resolution) {
+    throw new UnsupportedOperationException(
+        "conflict resolution is not supported in the current git plugin");
+  }
+
+  @Override
   public Response<Void> deleteItemVersion(SessionContext context, Id itemId, Id versionId) {
     try {
       getItemVersionCollaborationStore().delete(context, itemId, versionId);
@@ -270,6 +277,15 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
+  public Response<CollaborationElementConflict> getElementConflict(SessionContext context,
+                                                                   ElementContext elementContext,
+                                                                   Namespace namespace,
+                                                                   Id elementId) {
+    throw new UnsupportedOperationException(
+        "conflict resolution is not supported in the current git plugin");
+  }
+
+  @Override
   public Response<ItemVersionHistory> listItemVersionHistory(SessionContext context, Id itemId,
                                                              Id versionId) {
     try {
@@ -322,22 +338,6 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     throw new UnsupportedOperationException(
         "conflict resolution is not supported in the current git plugin");
   }
-
-  @Override
-  public Response<CollaborationElementConflict> getElementConflict(SessionContext context,
-                                                                   ElementContext elementContext,
-                                                                   Id elementId) {
-    throw new UnsupportedOperationException(
-        "conflict resolution is not supported in the current git plugin");
-  }
-
-  @Override
-  public Response<Void> resolveConflict(SessionContext context, ElementContext elementContext,
-                                        Id elementId, Resolution resolution) {
-    throw new UnsupportedOperationException(
-        "conflict resolution is not supported in the current git plugin");
-  }
-
 
   protected ItemCollaborationStore getItemCollaborationStore() {
     return this.itemCollaborationStore;
