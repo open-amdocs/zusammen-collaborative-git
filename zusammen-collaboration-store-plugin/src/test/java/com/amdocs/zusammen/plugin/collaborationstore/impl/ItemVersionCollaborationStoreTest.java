@@ -16,7 +16,6 @@
 
 package com.amdocs.zusammen.plugin.collaborationstore.impl;
 
-import com.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import com.amdocs.zusammen.datatypes.Id;
 import com.amdocs.zusammen.datatypes.SessionContext;
 import com.amdocs.zusammen.datatypes.item.Action;
@@ -24,8 +23,8 @@ import com.amdocs.zusammen.datatypes.item.ElementContext;
 import com.amdocs.zusammen.datatypes.item.Info;
 import com.amdocs.zusammen.datatypes.item.ItemVersionData;
 import com.amdocs.zusammen.datatypes.item.ItemVersionDataConflict;
-import com.amdocs.zusammen.datatypes.itemversion.Change;
-import com.amdocs.zusammen.datatypes.itemversion.ItemVersionHistory;
+import com.amdocs.zusammen.datatypes.itemversion.ItemVersionRevisions;
+import com.amdocs.zusammen.datatypes.itemversion.Revision;
 import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
 import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
 import com.amdocs.zusammen.plugin.collaborationstore.dao.util.SourceControlUtil;
@@ -36,6 +35,7 @@ import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResu
 import com.amdocs.zusammen.plugin.collaborationstore.types.FileInfoDiff;
 import com.amdocs.zusammen.plugin.collaborationstore.types.ItemVersionRawData;
 import com.amdocs.zusammen.plugin.collaborationstore.types.Repository;
+import com.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import com.amdocs.zusammen.sdk.collaboration.types.CollaborationElementConflict;
 import com.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeChange;
 import org.eclipse.jgit.api.Git;
@@ -57,7 +57,6 @@ import java.util.List;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -294,10 +293,7 @@ public class ItemVersionCollaborationStoreTest {
         VERSION_ID, collaborationDiffResult);
 
     itemVersionCollaborationStoreTest.merge(context, ITEM_ID, VERSION_ID, BASE_VERSION_ID);
-
-
   }
-
 
   @Test
   public void testSync() throws Exception {
@@ -311,7 +307,6 @@ public class ItemVersionCollaborationStoreTest {
         return sourceControlDaoMock;
       }
     };
-
 
     sourceControlDaoMock.setCheckOutBranch(true);
 
@@ -351,9 +346,7 @@ public class ItemVersionCollaborationStoreTest {
       }
     };
 
-
     sourceControlDaoMock.setCheckOutBranch(true);
-
 
     CollaborationSyncResult collaborationSyncResult = new CollaborationSyncResult();
     CollaborationConflictResult collaborationConflictResult = new CollaborationConflictResult();
@@ -361,7 +354,6 @@ public class ItemVersionCollaborationStoreTest {
     collaborationConflictResult.addItemVersionFile(PluginConstants.ITEM_VERSION_INFO_FILE_NAME);
     collaborationSyncResult.setCollaborationConflictResult(collaborationConflictResult);
     sourceControlDaoMock.setSyncResult(collaborationSyncResult);
-
 
     ItemVersionCollaborationStore itemVersionCollaborationStoreTest = Mockito.spy(new
         ItemVersionCollaborationStore(sourceControlDaoFactoryMock));
@@ -430,7 +422,7 @@ public class ItemVersionCollaborationStoreTest {
 
 
   @Test
-  public void testListHistory() {
+  public void testListRevisions() {
 
 
     final ItemVersionCollaborationStoreTestMock.SourceControlDaoMock sourceControlDaoMock =
@@ -446,26 +438,26 @@ public class ItemVersionCollaborationStoreTest {
     ItemVersionCollaborationStore itemVersionCollaborationStoreTest = Mockito.spy(new
         ItemVersionCollaborationStore(sourceControlDaoFactoryMock));
 
-    List<Change> revCommits = new ArrayList<>();
+    List<Revision> revCommits = new ArrayList<>();
 
-    Change change1 = new Change();
-    change1.setChangeId(new Id());
-    Change change2 = new Change();
-    change2.setChangeId(new Id());
-    revCommits.add(change1);
-    revCommits.add(change2);
+    Revision revision1 = new Revision();
+    revision1.setRevisionId(new Id());
+    Revision revision2 = new Revision();
+    revision2.setRevisionId(new Id());
+    revCommits.add(revision1);
+    revCommits.add(revision2);
 
-    sourceControlDaoMock.setListRevisionHistory(revCommits);
-    Change change = new Change();
+    sourceControlDaoMock.setListRevisionRevisions(revCommits);
+    Revision change = new Revision();
 
-    ItemVersionHistory changes =
-        itemVersionCollaborationStoreTest.listHistory(context, ITEM_ID, VERSION_ID);
+    ItemVersionRevisions changes =
+        itemVersionCollaborationStoreTest.listRevisions(context, ITEM_ID, VERSION_ID);
     Assert.assertNotNull(changes);
-    Assert.assertEquals(changes.getItemVersionChanges().size(), revCommits.size());
+    Assert.assertEquals(changes.getItemVersionRevisions().size(), revCommits.size());
   }
 
   @Test
-  public void testResetHistory() {
+  public void testResetRevisions() {
 
     final ItemVersionCollaborationStoreTestMock.SourceControlDaoMock sourceControlDaoMock =
         new ItemVersionCollaborationStoreTestMock.SourceControlDaoMock();
@@ -485,8 +477,9 @@ public class ItemVersionCollaborationStoreTest {
     FileInfoDiff fileDiff = new FileInfoDiff(".", Action.CREATE);
     collaborationDiffResult.add(fileDiff);
     sourceControlDaoMock.setCollaborationDiffResult(collaborationDiffResult);
-    itemVersionCollaborationStoreTest.resetHistory(context, new ElementContext(ITEM_ID, VERSION_ID),
-        ObjectId.zeroId().getName());
+    itemVersionCollaborationStoreTest
+        .resetRevisions(context, new ElementContext(ITEM_ID, VERSION_ID),
+            new Id(ObjectId.zeroId().getName()));
   }
 
   @Test
@@ -500,5 +493,4 @@ public class ItemVersionCollaborationStoreTest {
         itemVersionData,
         Action.CREATE);
   }
-
 }

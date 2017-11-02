@@ -16,12 +16,6 @@
 
 package com.amdocs.zusammen.plugin.collaborationstore.impl;
 
-import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
-import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
-import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
-import com.amdocs.zusammen.plugin.collaborationstore.types.ItemVersionRawData;
-import com.amdocs.zusammen.plugin.collaborationstore.types.Repository;
-import com.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import com.amdocs.zusammen.commons.configuration.impl.ConfigurationAccessor;
 import com.amdocs.zusammen.datatypes.Id;
 import com.amdocs.zusammen.datatypes.SessionContext;
@@ -29,12 +23,18 @@ import com.amdocs.zusammen.datatypes.item.Action;
 import com.amdocs.zusammen.datatypes.item.ElementContext;
 import com.amdocs.zusammen.datatypes.item.ItemVersionData;
 import com.amdocs.zusammen.datatypes.item.ItemVersionDataConflict;
-import com.amdocs.zusammen.datatypes.itemversion.Change;
-import com.amdocs.zusammen.datatypes.itemversion.ItemVersionHistory;
+import com.amdocs.zusammen.datatypes.itemversion.ItemVersionRevisions;
+import com.amdocs.zusammen.datatypes.itemversion.Revision;
 import com.amdocs.zusammen.datatypes.itemversion.Tag;
+import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
+import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDaoFactory;
 import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationConflictResult;
 import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
+import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
 import com.amdocs.zusammen.plugin.collaborationstore.types.ElementRawData;
+import com.amdocs.zusammen.plugin.collaborationstore.types.ItemVersionRawData;
+import com.amdocs.zusammen.plugin.collaborationstore.types.Repository;
+import com.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import com.amdocs.zusammen.sdk.SdkConstants;
 import com.amdocs.zusammen.sdk.collaboration.types.CollaborationElementConflict;
 import com.amdocs.zusammen.sdk.collaboration.types.CollaborationMergeChange;
@@ -101,7 +101,8 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
       }
     }
     if (itemVersionData.getRelations() != null && itemVersionData.getRelations().size() > 0) {
-      if (storeData(context, itemId, PluginConstants.RELATIONS_FILE_NAME, itemVersionData.getRelations())) {
+      if (storeData(context, itemId, PluginConstants.RELATIONS_FILE_NAME,
+          itemVersionData.getRelations())) {
         files.add(PluginConstants.RELATIONS_FILE_NAME);
       }
     }
@@ -126,7 +127,8 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     }
     itemVersionInformation.put(PluginConstants.ITEM_VERSION_ID, versionId.getValue());
     itemVersionInformation.put(PluginConstants.ITEM_VERSION_BASE_ID, baseId);
-    return storeData(context, itemId, PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME, itemVersionInformation);
+    return storeData(context, itemId, PluginConstants.ZUSAMMEN_TAGGING_FILE_NAME,
+        itemVersionInformation);
   }
 
 
@@ -313,9 +315,24 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
   }
 
 
-  public CollaborationMergeChange resetHistory(SessionContext context,
-                                               ElementContext elementContext, String changeRef) {
+  public CollaborationMergeChange resetRevisions(SessionContext context,
+                                                 ElementContext elementContext, Id revisionId) {
     SourceControlDao dao = getSourceControlDao(context);
+    Repository repository = dao.initRepository(context, elementContext.getItemId());
+
+    CollaborationDiffResult collaborationDiffResult = dao.reset(context, repository, revisionId!=
+        null?revisionId.getValue():null);
+    CollaborationMergeChange changes = getSourceControlUtil()
+        .loadFileDiffElements(context, getSourceControlUtil().getPrivateRepositoryPath(context,
+            PluginConstants.PRIVATE_PATH, elementContext.getItemId()),
+            elementContext.getItemId(),
+            elementContext.getVersionId(), collaborationDiffResult);
+    return changes;
+  }
+
+  public CollaborationMergeChange revertRevisions(SessionContext context,
+                                                  ElementContext elementContext, Id revisionId) {
+    /*SourceControlDao dao = getSourceControlDao(context);
     Repository repository = dao.initRepository(context, elementContext.getItemId());
 
     CollaborationDiffResult collaborationDiffResult = dao.reset(context, repository, changeRef);
@@ -324,7 +341,8 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
             PluginConstants.PRIVATE_PATH, elementContext.getItemId()),
             elementContext.getItemId(),
             elementContext.getVersionId(), collaborationDiffResult);
-    return changes;
+    return changes;*/
+    throw new RuntimeException("revert action is no supported in this version");
   }
 
  /* private Git init(SessionContext context, Id itemId, Id versionId, GitSourceControlDao dao) {
@@ -336,16 +354,16 @@ public class ItemVersionCollaborationStore extends CollaborationStore {
     return git;
   }*/
 
-  public ItemVersionHistory listHistory(SessionContext context, Id itemId, Id versionId) {
+  public ItemVersionRevisions listRevisions(SessionContext context, Id itemId, Id versionId) {
     SourceControlDao dao = getSourceControlDao(context);
     Repository repository = dao.initRepository(context, itemId);
-    List<Change> commitIdList = dao.listRevisionHistory(context, repository, versionId);
-    ItemVersionHistory itemVersionHistory = new ItemVersionHistory();
+    List<Revision> commitIdList = dao.listRevisionRevisions(context, repository, versionId);
+    ItemVersionRevisions itemVersionRevision = new ItemVersionRevisions();
 
-    for (Change change : commitIdList) {
-      itemVersionHistory.addChange(change);
+    for (Revision revision : commitIdList) {
+      itemVersionRevision.addChange(revision);
     }
-    return itemVersionHistory;
+    return itemVersionRevision;
   }
 
 

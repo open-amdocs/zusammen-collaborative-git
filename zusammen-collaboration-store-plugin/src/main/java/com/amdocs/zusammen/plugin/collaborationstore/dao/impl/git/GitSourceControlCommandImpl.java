@@ -216,30 +216,8 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
   }
 
   @Override
-  public boolean checkoutChange(SessionContext context, Git git, String changeRef) {
-    if (changeRef == null) {
-      changeRef = "master";
-    }
-    try {
-/*      String current = git.getRepository().getBranch();
-      if (current.equals(changeRef) ||
-          current.equals(git.getRepository().resolve(changeRef + "^{commit}").getName())) {
-        return true;
-      }*/
-
-      CheckoutCommand command = git.checkout();
-      command.setName(changeRef);
-      command.call();
-    } catch (RefNotFoundException noSuchBranch) {
-      return false;
-    } catch (GitAPIException gae) {
-      ReturnCode returnCode =
-          new ReturnCode(GitErrorCode.GI_CHECKOUT_BRANCH, Module.ZCSP, gae.getMessage(), null);
-      logger.error(returnCode.toString());
-
-      throw new ZusammenException(returnCode);
-    }
-    return true;
+  public boolean checkoutChange(SessionContext context, Git git, Id revisionId) {
+   return checkoutChange(context,git,revisionId!=null?revisionId.getValue():null);
   }
 
   @Override
@@ -438,5 +416,32 @@ public class GitSourceControlCommandImpl implements GitSourceControlCommand<Git>
       logger.error(returnCode.toString());
       throw new ZusammenException(returnCode);
     }
+  }
+
+  private boolean checkoutChange(SessionContext context, Git git, String revisionId) {
+
+    if (revisionId == null) {
+      revisionId = "master";
+    }
+    try {
+/*      String current = git.getRepository().getBranch();
+      if (current.equals(changeRef) ||
+          current.equals(git.getRepository().resolve(changeRef + "^{commit}").getName())) {
+        return true;
+      }*/
+
+      CheckoutCommand command = git.checkout();
+      command.setName(revisionId);
+      command.call();
+    } catch (RefNotFoundException noSuchBranch) {
+      return false;
+    } catch (GitAPIException gae) {
+      ReturnCode returnCode =
+          new ReturnCode(GitErrorCode.GI_CHECKOUT_BRANCH, Module.ZCSP, gae.getMessage(), null);
+      logger.error(returnCode.toString());
+
+      throw new ZusammenException(returnCode);
+    }
+    return true;
   }
 }

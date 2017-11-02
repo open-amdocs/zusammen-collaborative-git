@@ -16,14 +16,14 @@
 
 package com.amdocs.zusammen.plugin.collaborationstore.impl;
 
+import com.amdocs.zusammen.datatypes.Id;
+import com.amdocs.zusammen.datatypes.SessionContext;
+import com.amdocs.zusammen.datatypes.itemversion.Revision;
 import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
 import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
 import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
 import com.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
 import com.amdocs.zusammen.plugin.collaborationstore.types.Repository;
-import com.amdocs.zusammen.datatypes.Id;
-import com.amdocs.zusammen.datatypes.SessionContext;
-import com.amdocs.zusammen.datatypes.itemversion.Change;
 import org.eclipse.jgit.api.Git;
 
 import java.util.Collection;
@@ -38,7 +38,7 @@ public class ItemVersionCollaborationStoreTestMock {
     private boolean checkoutInd = false;
     private CollaborationSyncResult syncResult = null;
     private CollaborationSyncResult mergeResult = null;
-    private List<Change> revCommits;
+    private List<Revision> revCommits;
     private CollaborationDiffResult collaborationDiffResult;
 
     @Override
@@ -81,11 +81,11 @@ public class ItemVersionCollaborationStoreTestMock {
 
     }
 
-    public void setListRevisionHistory(List<Change> revCommits) {
+    public void setListRevisionRevisions(List<Revision> revCommits) {
       this.revCommits = revCommits;
     }
 
-    public List<Change> listRevisionHistory(SessionContext context, Repository repository, Id
+    public List<Revision> listRevisionRevisions(SessionContext context, Repository repository, Id
         versionId) {
       return this.revCommits;
 
@@ -112,7 +112,7 @@ public class ItemVersionCollaborationStoreTestMock {
 
     @Override
     public boolean checkoutChange(SessionContext context, Repository<Git> repository,
-                                  String changeRef) {
+                                  Id revisionId) {
       return false;
     }
 
@@ -199,8 +199,8 @@ public class ItemVersionCollaborationStoreTestMock {
     }
 
     @Override
-    public List<Change> listRevisionHistory(SessionContext context, Repository repository,
-                                            Id versionId) {
+    public List<Revision> listRevisionRevisions(SessionContext context, Repository repository,
+                                                Id versionId) {
       return null;
     }
   }

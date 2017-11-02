@@ -147,22 +147,23 @@ public class GitCollaborationStorePluginImplTest {
   }
 
   @Test
-  public void testGetItemVersionHistory() {
+  public void testGetItemVersionRevisions() {
     Id itemId = new Id("itemId");
     Id versionId = new Id("versionId");
 
-    gitCollaborationStorePluginMock.listItemVersionHistory(context, itemId, versionId);
-    verify(itemVersionCollaborationStore).listHistory(context, itemId, versionId);
+    gitCollaborationStorePluginMock.listItemVersionRevisions(context, itemId, versionId);
+    verify(itemVersionCollaborationStore).listRevisions(context, itemId, versionId);
   }
 
   @Test
-  public void testResetItemVersionHistory() {
+  public void testResetItemVersionRevisions() {
     Id itemId = new Id("itemId");
     Id versionId = new Id("versionId");
-    String changeId = "changeId";
+    Id revisionId = new Id("changeId");
 
-    gitCollaborationStorePluginMock.resetItemVersionHistory(context, itemId, versionId, changeId);
+    gitCollaborationStorePluginMock.resetItemVersionRevision(context, itemId, versionId,
+        revisionId);
     verify(itemVersionCollaborationStore)
-        .resetHistory(context, new ElementContext(itemId, versionId), changeId);
+        .resetRevisions(context, new ElementContext(itemId, versionId), revisionId);
   }
 }

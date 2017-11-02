@@ -47,7 +47,7 @@ public interface GitSourceControlCommand<T> {
 
   void createBranch(SessionContext context, Git git, String baseBranch, String branch);
 
-  boolean checkoutChange(SessionContext context, Git git, String changeRef);
+  boolean checkoutChange(SessionContext context, Git git, Id revisionId);
 
   Collection<String> add(SessionContext context, Git git, Collection<String> files);
 

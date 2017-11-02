@@ -16,10 +16,10 @@
 
 package com.amdocs.zusammen.plugin.collaborationstore.dao.api;
 
+import com.amdocs.zusammen.datatypes.itemversion.Revision;
 import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
 import com.amdocs.zusammen.datatypes.Id;
 import com.amdocs.zusammen.datatypes.SessionContext;
-import com.amdocs.zusammen.datatypes.itemversion.Change;
 import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
 import com.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
 import com.amdocs.zusammen.plugin.collaborationstore.types.Repository;
@@ -42,7 +42,7 @@ public interface SourceControlDao<T> {
 
   boolean checkoutBranch(SessionContext context, Repository<T> repository, Id branchId);
 
-  boolean checkoutChange(SessionContext context, Repository<T> repository, String changeRef);
+  boolean checkoutChange(SessionContext context, Repository<T> repository, Id revisionId);
 
   void store(SessionContext context, Repository<T> repository, Collection<String> files);
 
@@ -67,5 +67,6 @@ public interface SourceControlDao<T> {
 
   CollaborationDiffResult reset(SessionContext context, Repository<T> repository, String changeRef);
 
-  List<Change> listRevisionHistory(SessionContext context, Repository<T> repository, Id versionId);
+  List<Revision> listRevisionRevisions(SessionContext context, Repository<T> repository, Id
+      versionId);
 }

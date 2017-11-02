@@ -16,14 +16,15 @@
 
 package com.amdocs.zusammen.plugin.collaborationstore.impl;
 
-import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
-import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
-import com.amdocs.zusammen.plugin.collaborationstore.types.Repository;
 import com.amdocs.zusammen.datatypes.Id;
 import com.amdocs.zusammen.datatypes.SessionContext;
-import com.amdocs.zusammen.datatypes.itemversion.Change;
+
+import com.amdocs.zusammen.datatypes.itemversion.Revision;
+import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
 import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
+import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
 import com.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
+import com.amdocs.zusammen.plugin.collaborationstore.types.Repository;
 import org.eclipse.jgit.api.Git;
 
 import java.util.Collection;
@@ -40,7 +41,7 @@ public class ItemCollaborationStoreTestMock {
 
     @Override
     public boolean checkoutChange(SessionContext context, Repository<Git> repository,
-                                  String changeRef) {
+                                  Id revisionId) {
       return false;
     }
 
@@ -127,13 +128,13 @@ public class ItemCollaborationStoreTestMock {
     }
 
     @Override
-    public List<Change> listRevisionHistory(SessionContext context, Repository repository,
-                                            Id versionId) {
+    public List<Revision> listRevisionRevisions(SessionContext context, Repository repository,
+                                                Id versionId) {
       return null;
     }
   }
 
 
-  public static class SourceControlDaoMock extends SourceControlDaoMockBase{
+  public static class SourceControlDaoMock extends SourceControlDaoMockBase {
   }
 }

@@ -108,10 +108,10 @@ public class ElementCollaborationStore extends CollaborationStore {
 
     Repository repository = dao.initRepository(context, elementContext.getItemId());
     try {
-      if (elementContext.getChangeRef() == null) {
+      if (elementContext.getRevisionId() == null) {
         dao.checkoutBranch(context, repository, elementContext.getVersionId());
       } else {
-        dao.checkoutChange(context, repository, elementContext.getChangeRef());
+        dao.checkoutChange(context, repository, elementContext.getRevisionId());
       }
 
       // TODO: 4/18/2017 hide the use of file (as this class shouldn't be aware of the repo impl)

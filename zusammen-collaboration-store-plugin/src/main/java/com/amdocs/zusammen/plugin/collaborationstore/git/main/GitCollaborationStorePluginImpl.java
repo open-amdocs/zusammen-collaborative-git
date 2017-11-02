@@ -23,12 +23,14 @@ import com.amdocs.zusammen.commons.log.ZusammenLoggerFactory;
 import com.amdocs.zusammen.datatypes.Id;
 import com.amdocs.zusammen.datatypes.Namespace;
 import com.amdocs.zusammen.datatypes.SessionContext;
+import com.amdocs.zusammen.datatypes.Space;
 import com.amdocs.zusammen.datatypes.item.ElementContext;
 import com.amdocs.zusammen.datatypes.item.Info;
+import com.amdocs.zusammen.datatypes.item.ItemVersion;
 import com.amdocs.zusammen.datatypes.item.ItemVersionData;
 import com.amdocs.zusammen.datatypes.item.ItemVersionStatus;
 import com.amdocs.zusammen.datatypes.item.Resolution;
-import com.amdocs.zusammen.datatypes.itemversion.ItemVersionHistory;
+import com.amdocs.zusammen.datatypes.itemversion.ItemVersionRevisions;
 import com.amdocs.zusammen.datatypes.itemversion.Tag;
 import com.amdocs.zusammen.datatypes.response.ErrorCode;
 import com.amdocs.zusammen.datatypes.response.Module;
@@ -286,32 +288,50 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public Response<ItemVersionHistory> listItemVersionHistory(SessionContext context, Id itemId,
-                                                             Id versionId) {
+  public Response<ItemVersionRevisions> listItemVersionRevisions(SessionContext context, Id
+      itemId,
+                                                                 Id versionId) {
     try {
       return new Response<>(
-          getItemVersionCollaborationStore().listHistory(context, itemId, versionId));
+          getItemVersionCollaborationStore().listRevisions(context, itemId, versionId));
     } catch (ZusammenException ze) {
-      return new Response<>(new ReturnCode(ErrorCode.CL_ITEM_VERSION_HISTORY, Module.ZCSP,
+      return new Response<>(new ReturnCode(ErrorCode.CL_ITEM_VERSION_REVISION, Module
+          .ZCSP,
           null, ze
           .getReturnCode()));
     }
   }
 
   @Override
-  public Response<CollaborationMergeChange> resetItemVersionHistory(SessionContext context,
-                                                                    Id itemId, Id versionId,
-                                                                    String changeRef) {
+  public Response<CollaborationMergeChange> resetItemVersionRevision(SessionContext context,
+                                                                     Id itemId, Id versionId,
+                                                                     Id revisionId) {
     try {
       ElementContext elementContext = new ElementContext(itemId, versionId);
       return new Response<>(
-          getItemVersionCollaborationStore().resetHistory(context, elementContext, changeRef));
+          getItemVersionCollaborationStore().resetRevisions(context, elementContext, revisionId));
     } catch (ZusammenException ze) {
       return new Response<>(
-          new ReturnCode(ErrorCode.CL_ITEM_VERSION_RESET_HISTORY, Module.ZCSP, null,
+          new ReturnCode(ErrorCode.CL_ITEM_VERSION_RESET_REVISION, Module.ZCSP, null,
               ze.getReturnCode()));
     }
   }
+
+  @Override
+  public Response<CollaborationMergeChange> revertItemVersionRevision(SessionContext context,
+                                                                      Id itemId, Id versionId,
+                                                                      Id revisionId) {
+    try {
+      ElementContext elementContext = new ElementContext(itemId, versionId);
+      return new Response<>(
+          getItemVersionCollaborationStore().revertRevisions(context, elementContext, revisionId));
+    } catch (ZusammenException ze) {
+      return new Response<>(
+          new ReturnCode(ErrorCode.CL_ITEM_VERSION_REVERT_REVISION, Module.ZCSP, null,
+              ze.getReturnCode()));
+    }
+  }
+
 
   @Override
   public Response<Collection<CollaborationElement>> listElements(SessionContext context,
@@ -338,6 +358,21 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
     throw new UnsupportedOperationException(
         "conflict resolution is not supported in the current git plugin");
   }
+
+
+
+
+
+  @Override
+  public Response<ItemVersion> getItemVersion(SessionContext context, Space space, Id itemId,
+                                              Id versionId, Id revisionId) {
+    /*todo - add get item version by revision
+
+     */
+    throw new RuntimeException("get itemVersion by revision not supported");
+
+  }
+
 
   protected ItemCollaborationStore getItemCollaborationStore() {
     return this.itemCollaborationStore;

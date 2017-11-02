@@ -16,24 +16,24 @@
 
 package com.amdocs.zusammen.plugin.collaborationstore.dao.impl.git;
 
-import com.amdocs.zusammen.plugin.collaborationstore.dao.api.git.GitSourceControlCommand;
-import com.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import com.amdocs.zusammen.commons.log.ZusammenLogger;
 import com.amdocs.zusammen.commons.log.ZusammenLoggerFactory;
 import com.amdocs.zusammen.datatypes.Id;
 import com.amdocs.zusammen.datatypes.SessionContext;
-import com.amdocs.zusammen.datatypes.itemversion.Change;
+import com.amdocs.zusammen.datatypes.itemversion.Revision;
 import com.amdocs.zusammen.datatypes.response.Module;
 import com.amdocs.zusammen.datatypes.response.ReturnCode;
 import com.amdocs.zusammen.datatypes.response.ZusammenException;
 import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlCommandFactory;
 import com.amdocs.zusammen.plugin.collaborationstore.dao.api.SourceControlDao;
+import com.amdocs.zusammen.plugin.collaborationstore.dao.api.git.GitSourceControlCommand;
 import com.amdocs.zusammen.plugin.collaborationstore.dao.util.SourceControlUtil;
 import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationConflictResult;
 import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationDiffResult;
 import com.amdocs.zusammen.plugin.collaborationstore.types.CollaborationSyncResult;
 import com.amdocs.zusammen.plugin.collaborationstore.types.LocalRemoteDataConflict;
 import com.amdocs.zusammen.plugin.collaborationstore.types.Repository;
+import com.amdocs.zusammen.plugin.collaborationstore.utils.PluginConstants;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 public class GitSourceControlDaoImpl implements SourceControlDao<Git> {
@@ -211,9 +212,9 @@ public class GitSourceControlDaoImpl implements SourceControlDao<Git> {
   }
 
   @Override
-  public List<Change> listRevisionHistory(SessionContext context, Repository<Git> repository,
-                                          Id versionId) {
-    List<Change> changeList = new ArrayList<>();
+  public List<Revision> listRevisionRevisions(SessionContext context, Repository<Git> repository,
+                                              Id versionId) {
+    List<Revision> changeList = new ArrayList<>();
     Iterable<RevCommit> listRev =
         getSourceControlCommand(context).listRevisionList(repository.getRepository(), versionId);
 
@@ -254,14 +255,14 @@ public class GitSourceControlDaoImpl implements SourceControlDao<Git> {
   public boolean checkoutBranch(SessionContext context, Repository<Git> repository,
                                 Id branchId) {
     return getSourceControlCommand(context)
-        .checkoutChange(context, repository.getRepository(), branchId.toString());
+        .checkoutChange(context, repository.getRepository(), branchId);
   }
 
   @Override
   public boolean checkoutChange(SessionContext context, Repository<Git> repository,
-                                String changeRef) {
+                                Id revisionId) {
     return getSourceControlCommand(context)
-        .checkoutChange(context, repository.getRepository(), changeRef);
+        .checkoutChange(context, repository.getRepository(), revisionId);
   }
 
   @Override
@@ -316,11 +317,11 @@ public class GitSourceControlDaoImpl implements SourceControlDao<Git> {
 
   }
 
-  protected Change getChange(RevCommit revCommit) {
-    Change change;
-    change = new Change();
-    change.setChangeId(new Id(revCommit.getId().getName()));
-    change.setTime(revCommit.getCommitTime());
+  protected Revision getChange(RevCommit revCommit) {
+    Revision change;
+    change = new Revision();
+    change.setRevisionId(new Id(revCommit.getId().getName()));
+    change.setTime(new Date(revCommit.getCommitTime()));
     change.setMessage(revCommit.getFullMessage());
     change.setUser(revCommit.getAuthorIdent().getName());
     return change;
