@@ -193,8 +193,9 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
-  public Response<Void> resolveElementConflict(SessionContext context, CollaborationElement element,
-                                               Resolution resolution) {
+  public Response<CollaborationMergeResult> resolveElementConflict(SessionContext context,
+                                                                   CollaborationElement element,
+                                                                   Resolution resolution) {
     throw new UnsupportedOperationException(
         "conflict resolution is not supported in the current git plugin");
   }
