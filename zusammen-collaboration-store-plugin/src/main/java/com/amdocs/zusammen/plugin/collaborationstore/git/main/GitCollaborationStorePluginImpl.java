@@ -31,6 +31,7 @@ import com.amdocs.zusammen.datatypes.item.ItemVersionData;
 import com.amdocs.zusammen.datatypes.item.ItemVersionStatus;
 import com.amdocs.zusammen.datatypes.item.Resolution;
 import com.amdocs.zusammen.datatypes.itemversion.ItemVersionRevisions;
+import com.amdocs.zusammen.datatypes.itemversion.Revision;
 import com.amdocs.zusammen.datatypes.itemversion.Tag;
 import com.amdocs.zusammen.datatypes.response.ErrorCode;
 import com.amdocs.zusammen.datatypes.response.Module;
@@ -255,6 +256,12 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
   }
 
   @Override
+  public Response<CollaborationMergeResult> forceSyncItemVersion(SessionContext context, Id itemId,
+                                                                 Id versionId) {
+    throw new UnsupportedOperationException("force sync version is not yet supported");
+  }
+
+  @Override
   public Response<CollaborationMergeResult> mergeItemVersion(SessionContext context, Id itemId, Id
       versionId, Id sourceVersionId) {
     try {
@@ -301,6 +308,13 @@ public class GitCollaborationStorePluginImpl implements CollaborationStore {
           null, ze
           .getReturnCode()));
     }
+  }
+
+  @Override
+  public Response<Revision> getItemVersionRevision(SessionContext context, Id itemId, Id versionId,
+                                                   Id revisionId) {
+    throw new UnsupportedOperationException(
+        "get revision is not supported in the current git plugin");
   }
 
   @Override
