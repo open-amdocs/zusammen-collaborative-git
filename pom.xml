@@ -39,7 +39,7 @@
         
     <groupId>com.amdocs.zusammen.plugin</groupId>
     <artifactId>zusammen-collaborative-store</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.3.0</version>
     <packaging>pom</packaging>
     <url>http://maven.apache.org</url>
     <properties>
