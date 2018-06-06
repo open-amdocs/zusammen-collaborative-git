@@ -39,13 +39,13 @@
         
     <groupId>com.amdocs.zusammen.plugin</groupId>
     <artifactId>zusammen-collaborative-store</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
     <url>http://maven.apache.org</url>
     <properties>
         <java.source>1.8</java.source>
         <java.target>1.8</java.target>
-        <project.version>0.0.1-SNAPSHOT</project.version>
+        <project.version>1.0.0</project.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
         <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
